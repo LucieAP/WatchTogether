@@ -75,8 +75,7 @@
               "RelativeToolTip": "WatchTogetherCore\\ChatHub\\ChatHub.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-28T12:12:19.618Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-01-28T12:12:19.618Z"
             },
             {
               "$type": "Document",
@@ -88,8 +87,7 @@
               "RelativeToolTip": "WatchTogetherCore\\Models\\Participant.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAABwAAAAmAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-28T11:27:31.299Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-01-28T11:27:31.299Z"
             },
             {
               "$type": "Document",
@@ -101,8 +99,7 @@
               "RelativeToolTip": "WatchTogetherCore\\Models\\User.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAB8AAABGAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-28T11:27:19.06Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-01-28T11:27:19.06Z"
             }
           ]
         },
