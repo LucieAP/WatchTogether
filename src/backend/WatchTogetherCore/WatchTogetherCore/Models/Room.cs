@@ -1,11 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WatchTogetherCore.Models
 {
     public enum RoomStatus
     {
+        [Description("Приватная")]
         Private,
+
+        [Description("Публичная")]
         Public
     }
 
@@ -15,23 +19,28 @@ namespace WatchTogetherCore.Models
         public Guid RoomId { get; set; } = Guid.NewGuid();
 
         [Required]
+        [Display(Name = "Название комнаты")]
         [StringLength(50)]
         public string RoomName { get; set; }
+
         [Required]
+        [Display(Name = "Описание комнаты")]
         [MaxLength(150)]
         public string Description { get; set; }
-        [Required]
+
+        //[Required]
+        [Display(Name = "Тип")]
         public RoomStatus Status { get; set; }
 
         [ForeignKey("CreatedByUser")]       // Ссылаемся на навигационное свойство
-        public Guid CreatedByUserId { get; set; }
+        public Guid? CreatedByUserId { get; set; }
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime ExpiresAt { get; set; }
 
-        [Url]
+        //[Url]
         public string VideoUrl { get; set; }
 
         public string InvitationLink { get; set; }

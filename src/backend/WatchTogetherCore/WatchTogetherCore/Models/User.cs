@@ -17,8 +17,11 @@ namespace WatchTogetherCore.Models
         [MaxLength(50)]
         public string Username { get; set; }
 
+        //[Required]
+        //public byte[] PasswordHash { get; set; }
+
         [Required]
-        public byte[] PasswordHash { get; set; }
+        public string PasswordHash { get; set; }
 
         [Required]
         public UserStatus Status { get; set; }

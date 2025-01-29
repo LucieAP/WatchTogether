@@ -15,6 +15,8 @@ namespace WatchTogetherCore.Data.AppDbContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             // Настройка составного ключа для Participant, состоящий из двух полей: UserId и RoomId.
             modelBuilder.Entity<Participant>()
                 .HasKey(p => new { p.UserId, p.RoomId });
@@ -34,8 +36,6 @@ namespace WatchTogetherCore.Data.AppDbContext
             modelBuilder.Entity<Room>()     // Неуникальный индекс для Room.RoomName(ускорение поиска по имени комнаты).
                 .HasIndex(r => r.RoomName);
         }
-
-        
     }
 }
 
