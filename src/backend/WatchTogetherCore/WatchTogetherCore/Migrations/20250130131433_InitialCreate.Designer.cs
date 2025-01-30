@@ -12,7 +12,7 @@ using WatchTogetherCore.Data.AppDbContext;
 namespace WatchTogetherCore.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250129165041_InitialCreate")]
+    [Migration("20250130131433_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

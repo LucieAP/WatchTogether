@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Rooms\" />
+    <Folder Include="Views\" />
   </ItemGroup>
 
 </Project>

@@ -6,6 +6,7 @@ using WatchTogetherCore.Models;
 namespace WatchTogetherCore.Controllers
 {
     [Route("api/[controller]")]
+    [ApiController]
     public class UsersController : Controller
     {
         private readonly AppDbContext _context;

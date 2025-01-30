@@ -20,8 +20,8 @@ namespace WatchTogetherCore.Models
         //[Required]
         //public byte[] PasswordHash { get; set; }
 
-        [Required]
-        public string PasswordHash { get; set; }
+        //[Required]
+        public string PasswordHash { get; set; } = "default-hash";
 
         [Required]
         public UserStatus Status { get; set; }

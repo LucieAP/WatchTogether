@@ -12,19 +12,26 @@ namespace WatchTogetherCore
 
             // Add services to the container.
 
+            builder.Services.AddDistributedMemoryCache(); // Обязательно для хранения сессий
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(20);
+                options.Cookie.HttpOnly = true;
+            });
+
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddRazorPages();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-            //builder.Services.AddDbContext<AppDbContext>(options =>
-            //    options.UseNpgsql(connectionString));
-
             builder.Services.AddDbContext<AppDbContext>(options =>
-                    options.UseNpgsql(connectionString)
-                        .LogTo(Console.WriteLine, LogLevel.Information) // Логи в консоль
-                        .EnableSensitiveDataLogging());
+                options.UseNpgsql(connectionString));
+
+            //builder.Services.AddDbContext<AppDbContext>(options =>
+            //        options.UseNpgsql(connectionString)
+            //            .LogTo(Console.WriteLine, LogLevel.Information) // Логи в консоль
+            //            .EnableSensitiveDataLogging());
 
             builder.Services.AddRazorPages();
 
@@ -32,20 +39,20 @@ namespace WatchTogetherCore
 
             // Автоматическое примениение миграций 
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                try
-                {
-                    var dbContext = services.GetRequiredService<AppDbContext>();
-                    dbContext.Database.Migrate(); // Применяем все pending миграции
-                }
-                catch (Exception ex)
-                {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "Произошла ошибка при применении миграций");
-                }
-            }
+            //using (var scope = app.Services.CreateScope())
+            //{
+            //    var services = scope.ServiceProvider;
+            //    try
+            //    {
+            //        var dbContext = services.GetRequiredService<AppDbContext>();
+            //        dbContext.Database.Migrate(); // Применяем все pending миграции
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        var logger = services.GetRequiredService<ILogger<Program>>();
+            //        logger.LogError(ex, "Произошла ошибка при применении миграций");
+            //    }
+            //}
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
