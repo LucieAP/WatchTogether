@@ -15,6 +15,11 @@ namespace WatchTogetherCore.Models
 
     public class Room
     {
+        public Room()
+        {
+            Participants = new List<Participant>();
+        }
+
         [Key]
         public Guid RoomId { get; set; } = Guid.NewGuid();
 
@@ -33,7 +38,7 @@ namespace WatchTogetherCore.Models
         public RoomStatus Status { get; set; }
 
         [ForeignKey("CreatedByUser")]       // Ссылаемся на навигационное свойство
-        public Guid? CreatedByUserId { get; set; }
+        public Guid CreatedByUserId { get; set; }
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
@@ -49,7 +54,7 @@ namespace WatchTogetherCore.Models
         // Навигационные свойства с внешними сущностями
 
         public User CreatedByUser {  get; set; }        
-        public ICollection<Participant> Participants { get; set; }
+        public List<Participant> Participants { get; set; }
     
     }
 }

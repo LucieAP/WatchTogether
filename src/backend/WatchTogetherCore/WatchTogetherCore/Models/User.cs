@@ -10,6 +10,12 @@ namespace WatchTogetherCore.Models
 
     public class User
     {
+        public User()
+        {
+            CreatedRooms = new List<Room>();
+            RoomParticipants = new List<Participant>();
+        }
+
         [Key]
         public Guid UserId { get; set; } = Guid.NewGuid();
 
@@ -31,7 +37,7 @@ namespace WatchTogetherCore.Models
 
         // Навигационные свойства с внешними сущностями
 
-        public ICollection<Room> CreatedRooms { get; set; }
-        public ICollection<Participant> RoomParticipants { get; set; }
+        public List<Room> CreatedRooms { get; set; }
+        public List<Participant> RoomParticipants { get; set; }
     }
 }

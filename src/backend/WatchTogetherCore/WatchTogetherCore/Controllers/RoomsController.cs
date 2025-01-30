@@ -27,14 +27,18 @@ namespace WatchTogetherCore.Controllers
         }
 
 
-        // GET: Rooms
+        // GET: api/Rooms
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Room>>> GetRooms()
+        {
+            return await _context.Rooms.ToListAsync();
+        }
 
 
-        // GET: Rooms/Create
+        // POST: api/Rooms/Create
 
-        // POST: Rooms/Create
-
-        [HttpPost("create")]
+        [HttpPost("Create")]
 
         public async Task<IActionResult> CreateRoom([FromBody] CreateRoomRequest request)
         {
@@ -50,6 +54,7 @@ namespace WatchTogetherCore.Controllers
                 };
 
                 _context.Users.Add(guestUser);
+                await _context.SaveChangesAsync(); // Сохранение guestUser сразу, чтобы получить UserId
 
                 // Создаем комнату
 
@@ -58,7 +63,7 @@ namespace WatchTogetherCore.Controllers
                     RoomName = request.RoomName,
                     Description = request.Description,
                     Status = request.Status,
-                    CreatedByUser = guestUser,
+                    CreatedByUser = guestUser,      // Теперь у guestUser будет UserId
                     CreatedAt = DateTime.UtcNow,
                     ExpiresAt = DateTime.UtcNow.AddHours(24),
                     InvitationLink = "tempInvitationLink",
@@ -66,19 +71,22 @@ namespace WatchTogetherCore.Controllers
                 };
 
                 _context.Rooms.Add(newRoom);
+                await _context.SaveChangesAsync(); // Сохранение newRoom сразу, чтобы получить RoomId
 
                 // Добавляем участника
 
                 var participant = new Participant
                 {
-                    User = guestUser,
-                    Room = newRoom,
+                    //User = guestUser,
+                    //Room = newRoom,
+                    RoomId = newRoom.RoomId, // Use the RoomId from the saved room
+                    UserId = guestUser.UserId, // Use the UserId from the saved user
                     Role = ParticipantRole.Creator,
                     JoinedAt = DateTime.UtcNow
                 };
 
+                //newRoom.Participants.Add(participant);
                 _context.Participants.Add(participant);
-
                 await _context.SaveChangesAsync();
 
                 return Ok(new
@@ -91,11 +99,6 @@ namespace WatchTogetherCore.Controllers
                         guestUser.Username,
                         guestUser.Status
                     }
-                    //Participant = new
-                    //{
-                    //    Role = participant.Role,
-                    //    JoinedAt = participant.JoinedAt
-                    //}
                 });
             }
             catch (Exception ex) 
@@ -117,6 +120,7 @@ namespace WatchTogetherCore.Controllers
 
         // POST: Rooms/Delete/5
 
+        // Генератор никнеймов
 
         private string GenerateRandomUsername(int length = 8)
         {

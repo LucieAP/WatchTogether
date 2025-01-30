@@ -16,7 +16,7 @@ namespace WatchTogetherCore.Controllers
             _context = context;       
         }
 
-        // GET: api/users
+        // GET: api/Users
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
@@ -24,7 +24,7 @@ namespace WatchTogetherCore.Controllers
             return await _context.Users.ToListAsync();
         }
 
-        // GET: api/users/5
+        // GET: api/Users/{id}
 
         [HttpGet("{id}")]
 
