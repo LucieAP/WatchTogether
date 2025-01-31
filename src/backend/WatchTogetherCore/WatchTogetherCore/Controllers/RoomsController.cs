@@ -36,9 +36,9 @@ namespace WatchTogetherCore.Controllers
         }
 
 
-        // POST: api/Rooms/Create
+        // POST: api/Rooms/сreate
 
-        [HttpPost("Create")]
+        [HttpPost("сreate")]
 
         public async Task<IActionResult> CreateRoom([FromBody] CreateRoomRequest request)
         {
@@ -63,15 +63,20 @@ namespace WatchTogetherCore.Controllers
                     RoomName = request.RoomName,
                     Description = request.Description,
                     Status = request.Status,
-                    CreatedByUser = guestUser,      // Теперь у guestUser будет UserId
+                    CreatedByUserId = guestUser.UserId,      // Теперь у guestUser будет UserId
                     CreatedAt = DateTime.UtcNow,
                     ExpiresAt = DateTime.UtcNow.AddHours(24),
-                    InvitationLink = "tempInvitationLink",
+                    InvitationLink = "",
                     VideoUrl = "tempVideoUrl"
                 };
 
                 _context.Rooms.Add(newRoom);
                 await _context.SaveChangesAsync(); // Сохранение newRoom сразу, чтобы получить RoomId
+
+                // Генерируем ссылку-приглашение
+
+                newRoom.InvitationLink = $"/api/rooms/{newRoom.RoomId}"; // Фиксим генерацию ссылки
+                await _context.SaveChangesAsync();                      
 
                 // Добавляем участника
 
@@ -89,7 +94,11 @@ namespace WatchTogetherCore.Controllers
                 _context.Participants.Add(participant);
                 await _context.SaveChangesAsync();
 
-                return Ok(new
+                // CreatedAtAction - перенаправление после создания комнаты
+                // Это вернет статус 201 Created и установит заголовок Location с URL новой комнаты.
+                // CreatedAtAction автоматически генерирует URL вида /api/Rooms/{roomId}
+
+                var response = new
                 {
                     RoomId = newRoom.RoomId,
                     InvitationLink = newRoom.InvitationLink,
@@ -99,7 +108,13 @@ namespace WatchTogetherCore.Controllers
                         guestUser.Username,
                         guestUser.Status
                     }
-                });
+                };
+
+                return CreatedAtAction(
+                    nameof(GetRoom),                        // Имя целевого метода
+                    new { roomId = newRoom.RoomId },        // Параметры маршрута
+                    response                                // Тело ответа
+                );
             }
             catch (Exception ex) 
             {
@@ -107,6 +122,75 @@ namespace WatchTogetherCore.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
+        // GET: api/Rooms/{roomId}
+
+        [HttpGet("{roomId}")]
+
+        public async Task<IActionResult> GetRoom(Guid roomId)
+        {
+            try
+            {
+                var room = await _context.Rooms
+                    .Include(r => r.Participants)
+                    .ThenInclude(p => p.User)
+                    .Include(r => r.CreatedByUser)
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
+
+                if (room == null)
+                {
+                    return NotFound(new { Message = "Комната не найдена" });
+                }
+
+                // Получаем текущего пользователя из сессии/куков/токена
+
+                var currentUser = await GetCurrentUserAsync();
+
+                // Проверка доступа для приватных комнат
+
+                if (room.Status == RoomStatus.Private)
+                {
+                    if (currentUser == null || !IsUserInRoom(currentUser, room))
+                    {
+                        return StatusCode(403, new { Message = "Access denied" });
+                    }
+                }
+
+                var response = new
+                {
+                    RoomId = room.RoomId,
+                    RoomName = room.RoomName,
+                    Description = room.Description,
+                    Status = room.Status.ToString(),
+                    CreatedAt = room.CreatedAt,
+                    ExpiresAt = room.ExpiresAt,
+                    InvitationLink = room.InvitationLink,
+                    VideoUrl = room.VideoUrl,
+                    Creator = new
+                    {
+                        room.CreatedByUser.UserId,
+                        room.CreatedByUser.Username
+                    },
+                    Participants = room.Participants.Select(p => new
+                    {
+                        p.User.UserId,
+                        p.User.Username,
+                        Role = p.Role.ToString(),
+                        p.JoinedAt
+                    })
+                };
+
+                return Ok(response);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error getting room {roomId}");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+
 
 
         // GET: Rooms/Edit/id
@@ -119,6 +203,30 @@ namespace WatchTogetherCore.Controllers
 
 
         // POST: Rooms/Delete/5
+
+
+
+        private async Task<User> GetCurrentUserAsync()
+        {
+            // Реализация получения текущего пользователя
+            // Например, через cookie или JWT токен
+            // Для гостей можно создать нового пользователя
+
+            // Пример простой реализации через заголовок
+            var userIdHeader = Request.Headers["X-User-Id"].FirstOrDefault();
+
+            if (Guid.TryParse(userIdHeader, out var userId))
+            {
+                return await _context.Users.FindAsync(userId);
+            }
+
+            // Для гостевых пользователей
+            return null;
+        }
+
+        private bool IsUserInRoom(User user, Room room) =>
+                    room.Participants.Any(p => p.UserId == user.UserId);
+
 
         // Генератор никнеймов
 
