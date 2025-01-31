@@ -1,0 +1,155 @@
+﻿@{
+    ViewData["Title"] = "Создание комнаты";
+}
+
+<div class="container mt-5">
+    <h2>Создать новую комнату</h2>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <div class="form-group">
+                <label for="roomName">Название комнаты:</label>
+                <input type="text" id="roomName" class="form-control" required>
+            </div>
+
+            <div class="form-group mt-3">
+                <label for="description">Описание:</label>
+                <textarea id="description" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <div class="form-group mt-3">
+                <label for="roomType">Тип комнаты:</label>
+                <select id="roomType" class="form-control" required>
+                    <option value="0">Приватная</option>
+                    <option value="1">Публичная</option>
+                </select>
+            </div>
+
+            @* <button class="btn btn-primary mt-4" onclick="createRoom()">Создать комнату</button> *@
+            <button class="btn btn-primary mt-4" id="createRoomBtn">Создать комнату</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    async function createRoom() {
+        const requestBody = {
+            RoomName: document.getElementById('roomName').value,
+            Description: document.getElementById('description').value,
+            Status: parseInt(document.getElementById('roomType').value)
+        };
+
+        try {
+            const response = await fetch('/api/Rooms/Create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.title || 'Ошибка сервера');
+            }
+
+            const result = await response.json();
+            window.location.href = result.invitationLink;
+
+        } catch (error) {
+            alert(`Ошибка: ${error.message}`);
+            console.error('Error details:', error);
+        }
+    }
+
+    // Назначение обработчика после загрузки DOM
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('createRoomBtn').addEventListener('click', createRoom);
+    });
+</script>
+
+<style>
+    .container {
+        max-width: 600px;
+    }
+
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-control {
+        border-radius: 8px;
+        padding: 12px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+</style>
+
+@* @section Scripts {
+    <script>
+        async function createRoom() {
+            const requestBody = {
+                RoomName: document.getElementById('roomName').value,
+                Description: document.getElementById('description').value,
+                Status: parseInt(document.getElementById('roomType').value)
+            };
+
+            try {
+                const response = await fetch('/api/Rooms/Create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.title || 'Ошибка сервера');
+                }
+
+                const result = await response.json();
+                window.location.href = result.InvitationLink;
+
+            } catch (error) {
+                alert(`Ошибка: ${error.message}`);
+                console.error('Error details:', error);
+            }
+        }
+
+        // Назначение обработчика после загрузки DOM
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('createRoomBtn').addEventListener('click', createRoom);
+        });
+    </script>
+
+    <style>
+        .container {
+            max-width: 600px;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+    </style>
+} *@

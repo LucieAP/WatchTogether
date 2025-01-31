@@ -35,11 +35,17 @@ namespace WatchTogetherCore.Controllers
             return await _context.Rooms.ToListAsync();
         }
 
+        // GET: api/Rooms/Create
 
-        // POST: api/Rooms/сreate
+        [HttpGet("Create")]
+        public IActionResult CreateRoom()
+        {
+            return View();
+        }
 
-        [HttpPost("сreate")]
+        // POST: api/Rooms/Create
 
+        [HttpPost("Create")]
         public async Task<IActionResult> CreateRoom([FromBody] CreateRoomRequest request)
         {
             try
@@ -75,7 +81,7 @@ namespace WatchTogetherCore.Controllers
 
                 // Генерируем ссылку-приглашение
 
-                newRoom.InvitationLink = $"/api/rooms/{newRoom.RoomId}"; // Фиксим генерацию ссылки
+                newRoom.InvitationLink = $"/api/Rooms/{newRoom.RoomId}"; // Фиксим генерацию ссылки
                 await _context.SaveChangesAsync();                      
 
                 // Добавляем участника
@@ -101,7 +107,7 @@ namespace WatchTogetherCore.Controllers
                 var response = new
                 {
                     RoomId = newRoom.RoomId,
-                    InvitationLink = newRoom.InvitationLink,
+                    InvitationLink = $"/api/Rooms/{newRoom.RoomId}",
                     User = new
                     {
                         guestUser.UserId,
@@ -111,9 +117,9 @@ namespace WatchTogetherCore.Controllers
                 };
 
                 return CreatedAtAction(
-                    nameof(GetRoom),                        // Имя целевого метода
-                    new { roomId = newRoom.RoomId },        // Параметры маршрута
-                    response                                // Тело ответа
+                    nameof(GetRoom),                                    // Имя целевого метода
+                    new { roomId = newRoom.RoomId.ToString() },         // Параметры маршрута
+                    response                                            // Тело ответа
                 );
             }
             catch (Exception ex) 
@@ -126,7 +132,6 @@ namespace WatchTogetherCore.Controllers
         // GET: api/Rooms/{roomId}
 
         [HttpGet("{roomId}")]
-
         public async Task<IActionResult> GetRoom(Guid roomId)
         {
             try
@@ -189,8 +194,6 @@ namespace WatchTogetherCore.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
-
-
 
 
         // GET: Rooms/Edit/id

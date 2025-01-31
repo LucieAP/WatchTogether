@@ -24,6 +24,16 @@ namespace WatchTogetherCore
             builder.Services.AddSwaggerGen();
             builder.Services.AddRazorPages();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(connectionString));
@@ -72,6 +82,8 @@ namespace WatchTogetherCore
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
             app.MapControllers();
+
+            app.UseCors("AllowAll");
 
             app.Run();
         }

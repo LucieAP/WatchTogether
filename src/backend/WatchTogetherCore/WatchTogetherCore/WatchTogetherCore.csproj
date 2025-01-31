@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Views\CreateRoom.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FirebaseAdmin" Version="3.1.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.3.0" />
@@ -28,7 +32,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\" />
+    <UpToDateCheckInput Remove="Views\CreateRoom.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Views\CreateRoom.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Views\Rooms\CreateRoom.cshtml" />
   </ItemGroup>
 
 </Project>
