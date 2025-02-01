@@ -48,6 +48,9 @@ namespace WatchTogetherCore.Controllers
         [HttpPost("Create")]
         public async Task<IActionResult> CreateRoom([FromBody] CreateRoomRequest request)
         {
+            // Начинаем транзакцию
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
             try
             {
                 // Создаем гостевого пользователя
@@ -100,9 +103,8 @@ namespace WatchTogetherCore.Controllers
                 _context.Participants.Add(participant);
                 await _context.SaveChangesAsync();
 
-                // CreatedAtAction - перенаправление после создания комнаты
-                // Это вернет статус 201 Created и установит заголовок Location с URL новой комнаты.
-                // CreatedAtAction автоматически генерирует URL вида /api/Rooms/{roomId}
+                // Фиксируем транзакцию
+                await transaction.CommitAsync();
 
                 var response = new
                 {
@@ -116,6 +118,10 @@ namespace WatchTogetherCore.Controllers
                     }
                 };
 
+                // CreatedAtAction - перенаправление после создания комнаты
+                // Это вернет статус 201 Created и установит заголовок Location с URL новой комнаты.
+                // CreatedAtAction автоматически генерирует URL вида /api/Rooms/{roomId}
+
                 return CreatedAtAction(
                     nameof(GetRoom),                                    // Имя целевого метода
                     new { roomId = newRoom.RoomId.ToString() },         // Параметры маршрута
@@ -124,6 +130,9 @@ namespace WatchTogetherCore.Controllers
             }
             catch (Exception ex) 
             {
+                // В случае ошибки откатываем транзакцию
+                await transaction.RollbackAsync();
+
                 _logger.LogError(ex, "Ошибка создания комнаты");
                 return StatusCode(500, "Internal server error");
             }
@@ -199,7 +208,66 @@ namespace WatchTogetherCore.Controllers
         // GET: Rooms/Edit/id
 
 
-        // POST: Rooms/Edit/id
+
+        // PUT: api/Rooms/{id}
+
+        [HttpPut("{roomId}")]
+        public async Task<IActionResult> UpdateRoom(Guid roomId, [FromBody] UpdateRoomRequest request)
+        {
+            if (request.RoomName == null && request.Description == null)
+            {
+                return BadRequest("Необходимо указать новое название комнаты или описание.");
+            }
+
+            //Поиск комнаты по идентификатору
+            var room = await _context.Rooms.FindAsync(roomId);
+            if (room == null)
+            {
+                return NotFound(new {Message = "Комната не найдена"});
+            }
+
+            // Получаем текущего пользователя 
+            var currentUser = await GetCurrentUserAsync();
+
+            if (currentUser == null)
+            {
+                return NotFound(new { Message = "Пользователь не найден" });
+            }
+
+            // Разрешаем изменять данные только создателю комнаты
+            if (room.CreatedByUserId != currentUser.UserId)
+            {
+                return Forbid();
+            }
+
+            if (request.RoomName != null)
+            {
+                room.RoomName = request.RoomName;
+            }
+
+            if (request.Description != null)
+            {
+                room.Description = request.Description;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при обновлении комнаты.");
+                return StatusCode(500, "Ошибка при сохранении изменений.");
+            }
+
+            return Ok(new
+            {
+                RoomId = room.RoomId,
+                newRoomName = room.RoomName,
+                newDescription = room.Description
+            });
+        }
+
 
 
         // GET: Rooms/Delete/id
