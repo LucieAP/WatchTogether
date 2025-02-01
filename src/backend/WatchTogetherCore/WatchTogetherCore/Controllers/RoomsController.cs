@@ -194,6 +194,15 @@ namespace WatchTogetherCore.Controllers
                     })
                 };
 
+                // Выполняем проверку типа контента, который ожидает клиент, либо HTML-представление (веб-страницу), либо данные в формате JSON.
+
+                if (Request.Headers["Accept"].ToString().Contains("text/html"))
+                {
+                    // Возврат HTML-представления
+                    return View("Room", room);
+                }
+
+                // Возврат JSON
                 return Ok(response);
 
             }
@@ -203,10 +212,6 @@ namespace WatchTogetherCore.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
-
-
-        // GET: Rooms/Edit/id
-
 
 
         // PUT: api/Rooms/{id}
@@ -270,19 +275,15 @@ namespace WatchTogetherCore.Controllers
 
 
 
-        // GET: Rooms/Delete/id
+        // GET: api/Rooms/Delete/id
 
 
-        // POST: Rooms/Delete/5
+        // POST: api/Rooms/Delete/id
 
 
-
+        // Реализация получения текущего пользователя 
         private async Task<User> GetCurrentUserAsync()
         {
-            // Реализация получения текущего пользователя
-            // Например, через cookie или JWT токен
-            // Для гостей можно создать нового пользователя
-
             // Пример простой реализации через заголовок
             var userIdHeader = Request.Headers["X-User-Id"].FirstOrDefault();
 
@@ -295,12 +296,12 @@ namespace WatchTogetherCore.Controllers
             return null;
         }
 
+        // Проверка на наличие пользователя в комнате
         private bool IsUserInRoom(User user, Room room) =>
                     room.Participants.Any(p => p.UserId == user.UserId);
 
 
         // Генератор никнеймов
-
         private string GenerateRandomUsername(int length = 8)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

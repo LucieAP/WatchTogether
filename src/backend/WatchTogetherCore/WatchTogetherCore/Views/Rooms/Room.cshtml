@@ -1,0 +1,164 @@
+﻿@model WatchTogetherCore.Models.Room
+
+@{
+    ViewBag.Title = "Комната просмотра видео";
+    ViewBag.RoomName = Model.RoomName;              // Передаём динамическое название комнаты для шапки Layout
+}
+
+<main class="main-content">
+    @section Header {
+        <!-- Шапка -->
+        <header class="header">
+            <div class="logo">WatchTogether</div>
+            <div class="room-info">
+                <!-- Если ViewBag.RoomName не задан, отобразится "Название комнаты" -->
+                <h1 id="room-title">@ViewBag.RoomName</h1>
+            </div>
+            <div class="user-profile">
+                <img src="~/images/user-icon.png" alt="Профиль пользователя" />
+            </div>
+        </header>
+    }
+    <!-- Левая колонка: Видео-плеер -->
+    <section class="video-section">
+        <div id="video-player">
+            <!-- Здесь будет интеграция YouTube плеера -->
+        </div>
+        <button id="add-video-btn" class="btn">+</button>
+    </section>
+    <!-- Правая колонка: Чат -->
+    <section class="chat-section">
+        <button id="invite-btn" class="btn">Invite</button>
+        <div id="chat-messages">
+            <!-- Сообщения чата -->
+        </div>
+        <form id="chat-form">
+            <input type="text" id="chat-input" placeholder="Введите сообщение..." />
+            <button type="submit" class="btn">Отправить</button>
+        </form>
+    </section>
+
+    <style> 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            color: #333;
+        }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+
+            .header .logo {
+                font-size: 1.5em;
+                font-weight: bold;
+            }
+
+            .header .room-info {
+                display: flex;
+                align-items: center;
+            }
+
+            .header h1 {
+                margin-right: 15px;
+                font-size: 1.2em;
+            }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            background: #007BFF;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Основной контент */
+        .main-content {
+            display: flex;
+            height: calc(100vh - 120px); /* Вычитаем высоту шапки и футера */
+        }
+
+        .video-section {
+            flex: 7;
+            padding: 20px;
+            position: relative;
+        }
+
+        #video-player {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 8px;
+            position: relative; /* Для абсолютного позиционирования кнопки внутри блока */
+        }
+
+        /* Центрирование круглой кнопки внутри видеоплеера */
+        #add-video-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            border: none;
+            background: #007BFF;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        /* Чат */
+        .chat-section {
+            flex: 3;
+            padding: 20px;
+            border-left: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        #chat-form {
+            display: flex;
+        }
+
+        #chat-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Подвал */
+        .footer {
+            margin: 0px;
+            padding: 10px 20px;
+            text-align: center;
+            background: #fff;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+        }
+    </style>
+</main>
