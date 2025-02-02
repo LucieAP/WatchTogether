@@ -53,6 +53,9 @@ namespace WatchTogetherCore.Controllers
 
             try
             {
+                // Генерация базового URL
+                var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+
                 // Создаем гостевого пользователя
 
                 var guestUser = new User
@@ -84,7 +87,10 @@ namespace WatchTogetherCore.Controllers
 
                 // Генерируем ссылку-приглашение
 
-                newRoom.InvitationLink = $"/api/Rooms/{newRoom.RoomId}"; // Фиксим генерацию ссылки
+                //newRoom.InvitationLink = $"/api/Rooms/{newRoom.RoomId}";
+
+                // Формируем полную ссылку
+                newRoom.InvitationLink = $"{baseUrl}/api/Rooms/{newRoom.RoomId}";
                 await _context.SaveChangesAsync();                      
 
                 // Добавляем участника
@@ -154,6 +160,14 @@ namespace WatchTogetherCore.Controllers
                 if (room == null)
                 {
                     return NotFound(new { Message = "Комната не найдена" });
+                }
+
+                // Формируем полную ссылку если она не заполнена
+                if (string.IsNullOrEmpty(room.InvitationLink))
+                {
+                    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+                    room.InvitationLink = $"{baseUrl}/api/Rooms/{room.RoomId}";
+                    await _context.SaveChangesAsync();
                 }
 
                 // Получаем текущего пользователя из сессии/куков/токена

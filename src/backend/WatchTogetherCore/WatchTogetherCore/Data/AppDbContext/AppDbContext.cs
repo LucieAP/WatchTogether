@@ -28,6 +28,12 @@ namespace WatchTogetherCore.Data.AppDbContext
                 .HasForeignKey(r => r.CreatedByUserId)   // Внешний ключ: CreatedByUserId в таблице Rooms
                 .OnDelete(DeleteBehavior.Restrict);      // Запрет каскадного удаления
 
+            // Добавляем каскадное удаление для участников комнаты
+            modelBuilder.Entity<Room>()
+                .HasMany(r => r.Participants)
+                .WithOne(p => p.Room)
+                .OnDelete(DeleteBehavior.Cascade); // <-- Вот это новая строка
+
             // Настройка индексов
             modelBuilder.Entity<User>()     // Уникальный индекс для User.Username (логины не повторяются)
                 .HasIndex(u => u.Username)
