@@ -1,64 +1,67 @@
 ﻿<!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewBag.Title - WatchTogether</title>
-    <link rel="stylesheet" href="~/css/styles.css" />
-</head>
-<body>
-    <!-- Проверка секции -->
-    @if (IsSectionDefined("Header"))
-    {
-        @RenderSection("Header")
-    }
-    else
-    {
-        @*Проверка на наличие секции Header. Если секция определена — используйте её, иначе отобразить шапку по умолчанию. *@
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>@ViewBag.Title - WatchTogether</title>
 
-        <!-- Шапка по умолчанию-->
-        <header class="header">
-            <div class="logo">WatchTogether</div>
+        <!-- Подключение стилей -->
+        @RenderSection("Styles", required: false) 
 
-            <div class="user-profile">
-                <img src="~/images/user-icon.png" alt="Профиль пользователя" />
-            </div>
-        </header>
-    }
+    </head>
+    <body>
+        <!-- Проверка секции -->
+        @if (IsSectionDefined("Header"))
+        {
+            @RenderSection("Header")
+        }
+        else
+        {
+            @*Проверка на наличие секции Header. Если секция определена — используйте её, иначе отобразить шапку по умолчанию. *@
 
-    <!-- Основной контент -->
-    <div class="container">
-        @RenderBody()
-    </div>
+            <!-- Шапка по умолчанию-->
+            <header class="header">
+                <div class="logo">WatchTogether</div>
 
-    <!-- Подвал -->
-    <footer class="footer">
-        <p>&copy; 2025 WatchTogether. Все права защищены.</p>
-    </footer>
-
-    <style> 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+                <div class="user-profile">
+                    <img src="~/images/user-icon.png" alt="Профиль пользователя" />
+                </div>
+            </header>
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #f9f9f9;
-            color: #333;
-        }
+        <!-- Основной контент -->
+        <div class="container">
+            @RenderBody()
+        </div>
 
-        /* Шапка */
+        <!-- Подвал -->
+        <footer class="footer">
+            <p>&copy; 2025 WatchTogether. Все права защищены.</p>
+        </footer>
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background: #fff;
-            border-bottom: 1px solid #ddd;
-        }
+        <style> 
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: Arial, sans-serif;
+                background: #f9f9f9;
+                color: #333;
+            }
+
+            /* Шапка */
+
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 20px;
+                background: #fff;
+                border-bottom: 1px solid #ddd;
+            }
 
             .header .logo {
                 font-size: 1.5em;
@@ -75,17 +78,18 @@
                 font-size: 1.2em;
             }
 
-        /* Подвал */
-        .footer {
-            margin: 0px;
-            padding: 10px 20px;
-            text-align: center;
-            background: #fff;
-            border-top: 1px solid #ddd;
-            font-size: 0.9em;
-        }
-    </style>
+            /* Подвал */
+            .footer {
+                margin: 0px;
+                padding: 10px 20px;
+                text-align: center;
+                background: #fff;
+                border-top: 1px solid #ddd;
+                font-size: 0.9em;
+            }
+        </style>
 
-    <script src="~/js/app.js"></script>
-</body>
+        <!-- Общие скрипты -->
+        @RenderSection("Scripts", required: false) <!-- Для скриптов -->
+    </body>
 </html>

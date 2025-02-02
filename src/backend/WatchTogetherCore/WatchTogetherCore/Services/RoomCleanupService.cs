@@ -55,10 +55,10 @@ namespace WatchTogetherCore.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error cleaning rooms");
+                        _logger.LogError(ex, "Error cleaning rooms");       
                     }
 
-                    await Task.Delay(TimeSpan.FromMinutes(60), stoppingToken);
+                    await Task.Delay(TimeSpan.FromMinutes(60), stoppingToken);      // Задержка между проверками 60 минут
                 }
             }
             catch (Exception ex)

@@ -1,11 +1,15 @@
 ﻿@model WatchTogetherCore.Models.Room
+@using System.Text.Json
+
 
 @{
     ViewBag.Title = "Комната просмотра видео";
     ViewBag.RoomName = Model.RoomName;              // Передаём динамическое название комнаты для шапки Layout
     ViewBag.InvitationLink = Model.InvitationLink;
+    ViewBag.Description = Model.Description;
 }
 
+<!-- Основная разметка -->
 <main class="main-content">
     @section Header {
         <!-- Шапка -->
@@ -15,23 +19,24 @@
 
             <div class="room-info">
                 <h1 id="room-title">@ViewBag.RoomName</h1>
+                <img src="~/icons/gear-icon.png" alt="Настройки" class="gear-icon" id="gear-icon" />
             </div>
 
             <div class="user-profile">
-                <img src="~/images/user-icon.png" alt="Профиль пользователя" />
+                <img src="~/icons/user-icon.png" alt="Профиль пользователя" />
             </div>
         </header>
     }
+
     <!-- Левая колонка: Видео-плеер -->
     <section class="video-section">
-
         <div id="video-player">
             <!-- Здесь будет интеграция YouTube плеера -->
         </div>
 
         <button id="add-video-btn" class="btn">+</button>
-
     </section>
+
     <!-- Правая колонка: Чат -->
     <section class="chat-section">
         <!-- Ссылка-приглашение -->
@@ -42,7 +47,7 @@
                 <h2>Invite Link</h2>
                 <div class="link-container">
                     <span id="inviteLink">@ViewBag.InvitationLink</span>
-                    <button id="copy-btn" onclick="copyToClipboard()">Copy</button>
+                    <button id="copy-btn">Copy</button>
                 </div>
                 <div id="notification" class="notification">Copied to clipboard!</div>
             </div>
@@ -57,42 +62,33 @@
             <input type="text" id="chat-input" placeholder="Введите сообщение..." />
             <button type="submit" class="btn">Отправить</button>
         </form>
-
     </section>
 
-    <script>
-        // Показать модальное окно
-        document.getElementById('invite-btn').addEventListener('click', function () {
-            document.getElementById('modal').style.display = 'flex';
-        });
+    <!-- Добавлено модальное окно для настроек комнаты, при нажатии на шестеренку -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <h2>Настройки комнаты</h2>
+            <div class="form-group">
+                <label for="room-name-input">Название комнаты:</label>
+                <input type="text" id="room-name-input" @* value="@ViewBag.RoomName" *@ />
+            </div>
+            <div class="form-group">
+                <label for="room-description-input">Описание:</label>
+                <textarea id="room-description-input" @* placeholder="@ViewBag.Description" *@></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button id="save-settings-btn" class="btn">Сохранить</button>
+                <button id="cancel-settings-btn" class="btn">Отмена</button>
+            </div>
+        </div>
+    </div>
+</main>
 
-        // Скрыть модальное окно при клике вне его области
-        window.addEventListener('click', function (event) {
-            if (event.target === document.getElementById('modal')) {
-                document.getElementById('modal').style.display = 'none';
-            }
-        });
 
-        // Функция копирования в буфер обмена
-        function copyToClipboard() {
-            const link = document.getElementById('inviteLink').textContent;
-
-            navigator.clipboard.writeText(link)
-                .then(() => {
-                    // Показать уведомление об успешном копировании
-                    const notification = document.getElementById('notification');
-                    notification.style.display = 'block';
-                    setTimeout(() => {
-                        notification.style.display = 'none';
-                    }, 2000);
-                })
-                .catch(err => {
-                    console.error('Failed to copy text:', err);
-                });
-        }
-    </script>
-
-    <style> 
+<!-- Стили -->
+@section Styles
+{
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -115,20 +111,20 @@
             border-bottom: 1px solid #ddd;
         }
 
-        .header .logo {
-            font-size: 1.5em;
-            font-weight: bold;
-        }
+            .header .logo {
+                font-size: 1.5em;
+                font-weight: bold;
+            }
 
-        .header .room-info {
-            display: flex;
-            align-items: center;
-        }
+            .header .room-info {
+                display: flex;
+                align-items: center;
+            }
 
-        .header h1 {
-            margin-right: 15px;
-            font-size: 1.2em;
-        }
+            .header h1 {
+                margin-right: 15px;
+                font-size: 1.2em;
+            }
 
         .btn {
             padding: 8px 12px;
@@ -138,6 +134,46 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
+        /* Настройка комнаты */
+        .gear-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+            .gear-icon:hover {
+                opacity: 0.7;
+            }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+
+            .form-group input,
+            .form-group textarea {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 14px;
+                resize: none;
+            }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
 
         /* Основной контент */
         .main-content {
@@ -171,9 +207,9 @@
             border-radius: 5px;
         }
 
-        #invite-btn:hover {
-            background-color: #45a049;
-        }
+            #invite-btn:hover {
+                background-color: #45a049;
+            }
 
         .modal {
             display: none;
@@ -298,4 +334,120 @@
             font-size: 0.9em;
         }
     </style>
-</main>
+}
+
+<!-- Скрипты -->
+
+@section Scripts
+{
+    <script>
+        // Инициализация всех обработчиков
+        document.addEventListener('DOMContentLoaded', () => {
+            initModals();
+            initClipboard();
+            initRoomSettings();
+        });
+
+
+        // Функции работы с буфером обмена
+        function initClipboard() {
+            function copyToClipboard() {
+                navigator.clipboard.writeText(document.getElementById('inviteLink').textContent)
+                    .then(() => showNotification())
+                    .catch(err => console.error('Ошибка копирования:', err));
+            }
+
+            function showNotification() {
+                const notification = document.getElementById('notification');
+                notification.style.display = 'block';
+                setTimeout(() => notification.style.display = 'none', 2000);
+            }
+
+            document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
+        }
+
+
+        // Обработчики модальных окон
+        function initModals() {
+            // Модалка приглашения
+            document.getElementById('invite-btn').addEventListener('click', () => {
+                document.getElementById('modal').style.display = 'flex';
+            });
+
+            // Закрытие по клику вне области
+            window.addEventListener('click', (event) => {
+                if (event.target === document.getElementById('modal')) {
+                    document.getElementById('modal').style.display = 'none';
+                }
+            });
+
+            // Модалка настроек
+            document.getElementById('gear-icon').addEventListener('click', () => {
+                const modal = document.getElementById('settings-modal');
+                modal.style.display = 'flex';
+                document.getElementById('room-name-input').value = @Html.Raw(JsonSerializer.Serialize(Model.RoomName));
+                document.getElementById('room-description-input').value = @Html.Raw(JsonSerializer.Serialize(Model.Description));
+            });
+        }
+
+        // Инициализация настроек комнаты
+
+        function initRoomSettings() {
+            const roomId = '@Model.RoomId';
+
+            // Обработчик сохранения настроек
+            document.getElementById('save-settings-btn').addEventListener('click', async (e) => {
+                e.preventDefault();
+
+                const newName = document.getElementById('room-name-input').value;
+                const newDescription = document.getElementById('room-description-input').value;
+                const userId = localStorage.getItem('currentUserId');
+
+                try {
+                    const response = await fetch(`/api/Rooms/${roomId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-Id': userId || ''
+                        },
+                        body: JSON.stringify({
+                            RoomName: newName,
+                            Description: newDescription
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.Message || 'Ошибка сохранения');
+                    }
+
+                    const result = await response.json();
+                    updateUIElements(result);
+                    document.getElementById('settings-modal').style.display = 'none';
+
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    alert(error.message || 'Не удалось сохранить настройки');
+                }
+            });
+
+            // Обработчик отмены
+            document.getElementById('cancel-settings-btn').addEventListener('click', () => {
+                document.getElementById('settings-modal').style.display = 'none';
+            });
+        }
+
+        // Обновление элементов интерфейса
+        function updateUIElements(data) {
+            document.getElementById('room-title').textContent = data.newRoomName;
+            const descriptionElement = document.getElementById('room-description');
+            if (descriptionElement) {
+                descriptionElement.textContent = data.newDescription;
+            }
+        }
+    </script>
+}
+
+    
+
+   

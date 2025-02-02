@@ -288,13 +288,6 @@ namespace WatchTogetherCore.Controllers
         }
 
 
-
-        // GET: api/Rooms/Delete/id
-
-
-        // POST: api/Rooms/Delete/id
-
-
         // Реализация получения текущего пользователя 
         private async Task<User> GetCurrentUserAsync()
         {

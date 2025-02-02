@@ -57,6 +57,8 @@ namespace WatchTogetherCore
 
             app.UseSession();
 
+            app.UseStaticFiles();           // разрешает отдавать файлы из wwwroot
+
             app.UseAuthorization();
 
             app.MapControllerRoute(
