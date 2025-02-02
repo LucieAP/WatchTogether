@@ -385,8 +385,11 @@
             document.getElementById('gear-icon').addEventListener('click', () => {
                 const modal = document.getElementById('settings-modal');
                 modal.style.display = 'flex';
-                document.getElementById('room-name-input').value = @Html.Raw(JsonSerializer.Serialize(Model.RoomName));
-                document.getElementById('room-description-input').value = @Html.Raw(JsonSerializer.Serialize(Model.Description));
+
+                // Получаем текущие значения из интерфейса
+                document.getElementById('room-name-input').value = document.getElementById('room-title').textContent;
+                const descriptionElement = document.getElementById('room-description-input');
+                document.getElementById('room-description-input').value = descriptionElement.value;
             });
         }
 
@@ -399,19 +402,19 @@
             document.getElementById('save-settings-btn').addEventListener('click', async (e) => {
                 e.preventDefault();
 
-                const newName = document.getElementById('room-name-input').value;
+                const newRoomName = document.getElementById('room-name-input').value;
                 const newDescription = document.getElementById('room-description-input').value;
-                const userId = localStorage.getItem('currentUserId');
+                const userId = localStorage.getItem('userId');
 
                 try {
                     const response = await fetch(`/api/Rooms/${roomId}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-User-Id': userId || ''
+                            'X-User-Id': userId         // Передаем UserId в заголовке
                         },
                         body: JSON.stringify({
-                            RoomName: newName,
+                            RoomName: newRoomName,
                             Description: newDescription
                         })
                     });
@@ -422,7 +425,13 @@
                     }
 
                     const result = await response.json();
-                    updateUIElements(result);
+
+                    updateUIElements({
+                        roomName: result.newRoomName,
+                        description: result.newDescription
+                    });
+
+
                     document.getElementById('settings-modal').style.display = 'none';
 
                 } catch (error) {
@@ -439,15 +448,14 @@
 
         // Обновление элементов интерфейса
         function updateUIElements(data) {
-            document.getElementById('room-title').textContent = data.newRoomName;
-            const descriptionElement = document.getElementById('room-description');
+            // Обновляем название комнаты
+            document.getElementById('room-title').textContent = data.roomName;
+
+            // Обновляем описание комнаты
+            const descriptionElement = document.getElementById('room-description-input');
             if (descriptionElement) {
-                descriptionElement.textContent = data.newDescription;
+                descriptionElement.textContent = data.description;
             }
         }
     </script>
 }
-
-    
-
-   
