@@ -33,7 +33,7 @@ namespace WatchTogetherCore.Models
         [MaxLength(150)]
         public string Description { get; set; }
 
-        //[Required]
+        [Required]
         [Display(Name = "Тип")]
         public RoomStatus Status { get; set; }
 
@@ -45,7 +45,6 @@ namespace WatchTogetherCore.Models
 
         public DateTime ExpiresAt { get; set; }
 
-        //[Url]
         public string VideoUrl { get; set; }
 
         public string InvitationLink { get; set; }
@@ -54,7 +53,7 @@ namespace WatchTogetherCore.Models
         // Навигационные свойства с внешними сущностями
 
         public virtual User CreatedByUser {  get; set; }        
-        public virtual List<Participant> Participants { get; set; }
+        public virtual ICollection<Participant> Participants { get; set; }
     
     }
 }

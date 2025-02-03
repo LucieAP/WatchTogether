@@ -17,7 +17,6 @@ namespace WatchTogetherCore.Models
         [ForeignKey("User")]
         public Guid UserId { get; set; }
 
-        [Required]
         public DateTime JoinedAt { get; set; } = DateTime.Now;
 
         [Required]
@@ -27,6 +26,5 @@ namespace WatchTogetherCore.Models
 
         public virtual User User { get; set; }
         public virtual Room Room { get; set; }
-
     }
 }

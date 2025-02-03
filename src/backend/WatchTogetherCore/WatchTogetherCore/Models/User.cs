@@ -24,10 +24,6 @@ namespace WatchTogetherCore.Models
         [MaxLength(50)]
         public string Username { get; set; }
 
-        //[Required]
-        //public byte[] PasswordHash { get; set; }
-
-        //[Required]
         public string PasswordHash { get; set; } = "default-hash";
 
         [Required]
@@ -38,8 +34,10 @@ namespace WatchTogetherCore.Models
 
         // Навигационные свойства с внешними сущностями
 
-        [JsonIgnore]
-        public virtual List<Room> CreatedRooms { get; set; }
-        public virtual List<Participant> RoomParticipants { get; set; }
+        //[JsonIgnore]
+        public virtual ICollection<Room> CreatedRooms { get; set; }
+
+        //[JsonIgnore]
+        public virtual ICollection<Participant> RoomParticipants { get; set; }
     }
 }

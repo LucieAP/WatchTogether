@@ -23,8 +23,8 @@ namespace WatchTogetherCore
 
             builder.Services.AddControllers()
                 .AddJsonOptions(options => {              // Обработка циклических ссылок   
-                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-            });
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; //
+                });
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
