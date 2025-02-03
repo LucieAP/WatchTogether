@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿    using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WatchTogetherCore.Models
@@ -25,8 +25,8 @@ namespace WatchTogetherCore.Models
 
         // Навигационные свойства с внешними сущностями
 
-        public User User { get; set; }
-        public Room Room { get; set; }
+        public virtual User User { get; set; }
+        public virtual Room Room { get; set; }
 
     }
 }

@@ -1,5 +1,6 @@
 
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 using WatchTogetherCore.Data.AppDbContext;
 using WatchTogetherCore.Services;
 
@@ -20,7 +21,11 @@ namespace WatchTogetherCore
                 options.Cookie.HttpOnly = true;
             });
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options => {              // Обработка циклических ссылок   
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddRazorPages();

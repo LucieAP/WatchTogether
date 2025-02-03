@@ -32,7 +32,14 @@ namespace WatchTogetherCore.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Room>>> GetRooms()
         {
-            return await _context.Rooms.ToListAsync();
+            //return await _context.Rooms.ToListAsync();
+
+            return await _context.Rooms
+                .Include(r => r.CreatedByUser)
+                    .ThenInclude(u => u.CreatedRooms)
+                .Include(r => r.Participants)
+                    .ThenInclude(p => p.User)
+                .ToListAsync();
         }
 
         // GET: api/Rooms/Create
@@ -66,7 +73,7 @@ namespace WatchTogetherCore.Controllers
                 };
 
                 _context.Users.Add(guestUser);
-                await _context.SaveChangesAsync(); // Сохранение guestUser сразу, чтобы получить UserId
+                await _context.SaveChangesAsync(); // Сохранение guestUser, чтобы получить UserId
 
                 // Создаем комнату
 
@@ -79,15 +86,12 @@ namespace WatchTogetherCore.Controllers
                     CreatedAt = DateTime.UtcNow,
                     ExpiresAt = DateTime.UtcNow.AddHours(24),
                     InvitationLink = "",
-                    VideoUrl = "tempVideoUrl"
+                    VideoUrl = "tempVideoUrl",
+                    CreatedByUser = guestUser
                 };
 
                 _context.Rooms.Add(newRoom);
-                await _context.SaveChangesAsync(); // Сохранение newRoom сразу, чтобы получить RoomId
-
-                // Генерируем ссылку-приглашение
-
-                //newRoom.InvitationLink = $"/api/Rooms/{newRoom.RoomId}";
+                await _context.SaveChangesAsync();      // Сохранение newRoom, чтобы получить RoomId
 
                 // Формируем полную ссылку
                 newRoom.InvitationLink = $"{baseUrl}/api/Rooms/{newRoom.RoomId}";
@@ -105,7 +109,6 @@ namespace WatchTogetherCore.Controllers
                     JoinedAt = DateTime.UtcNow
                 };
 
-                //newRoom.Participants.Add(participant);
                 _context.Participants.Add(participant);
                 await _context.SaveChangesAsync();
 
@@ -153,7 +156,7 @@ namespace WatchTogetherCore.Controllers
             {
                 var room = await _context.Rooms
                     .Include(r => r.Participants)
-                    .ThenInclude(p => p.User)
+                        .ThenInclude(p => p.User)   
                     .Include(r => r.CreatedByUser)
                     .FirstOrDefaultAsync(r => r.RoomId == roomId);
 

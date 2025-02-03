@@ -53,8 +53,8 @@ namespace WatchTogetherCore.Models
 
         // Навигационные свойства с внешними сущностями
 
-        public User CreatedByUser {  get; set; }        
-        public List<Participant> Participants { get; set; }
+        public virtual User CreatedByUser {  get; set; }        
+        public virtual List<Participant> Participants { get; set; }
     
     }
 }

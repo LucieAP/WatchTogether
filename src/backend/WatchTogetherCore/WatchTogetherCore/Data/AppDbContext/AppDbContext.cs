@@ -24,9 +24,17 @@ namespace WatchTogetherCore.Data.AppDbContext
             // Настройка связей для Room → User
             modelBuilder.Entity<Room>()
                 .HasOne(r => r.CreatedByUser)            // У комнаты есть один создатель (User)
-                .WithMany(u => u.CreatedRooms)           // У пользователя может быть мclearного созданных комнат
+                .WithMany(u => u.CreatedRooms)           // У пользователя может быть несколько созданных комнат
                 .HasForeignKey(r => r.CreatedByUserId)   // Внешний ключ: CreatedByUserId в таблице Rooms
                 .OnDelete(DeleteBehavior.Restrict);      // Запрет каскадного удаления
+
+            // Правильная настройка связи User → Room
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.CreatedRooms) // У пользователя много комнат
+                .WithOne(r => r.CreatedByUser) // У комнаты один создатель
+                .HasForeignKey(r => r.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
             // Добавляем каскадное удаление для участников комнаты
             modelBuilder.Entity<Room>()

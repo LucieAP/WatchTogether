@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace WatchTogetherCore.Models
 {
@@ -37,7 +38,8 @@ namespace WatchTogetherCore.Models
 
         // Навигационные свойства с внешними сущностями
 
-        public List<Room> CreatedRooms { get; set; }
-        public List<Participant> RoomParticipants { get; set; }
+        [JsonIgnore]
+        public virtual List<Room> CreatedRooms { get; set; }
+        public virtual List<Participant> RoomParticipants { get; set; }
     }
 }

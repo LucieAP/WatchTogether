@@ -7,24 +7,36 @@
       "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\views\\rooms\\room.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogethercore\\watchtogethercore\\models\\room.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\models\\room.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogethercore\\watchtogethercore\\views\\rooms\\createroom.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\views\\rooms\\createroom.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogethercore\\watchtogethercore\\controllers\\roomscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\controllers\\roomscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogethercore\\watchtogethercore\\views\\rooms\\createroom.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\views\\rooms\\createroom.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogethercore\\watchtogethercore\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogethercore\\watchtogethercore\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogethercore\\watchtogethercore\\models\\room.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\models\\room.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogethercore\\watchtogethercore\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogethercore\\watchtogethercore\\data\\appdbcontext\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\data\\appdbcontext\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogethercore\\watchtogethercore\\models\\dto\\createroomrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\models\\dto\\createroomrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogethercore\\watchtogethercore\\models\\participant.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherCore\\WatchTogetherCore.csproj|solutionrelative:watchtogethercore\\models\\participant.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -33,32 +45,37 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 343,
-          "SelectedChildIndex": 6,
+          "DockedWidth": 276,
+          "SelectedChildIndex": 3,
           "Children": [
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "RoomsController.cs",
+              "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Controllers\\RoomsController.cs",
+              "RelativeDocumentMoniker": "WatchTogetherCore\\Controllers\\RoomsController.cs",
+              "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Controllers\\RoomsController.cs",
+              "RelativeToolTip": "WatchTogetherCore\\Controllers\\RoomsController.cs",
+              "ViewState": "AQIAAKMAAAAAAAAAAAD4v7kAAABNAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-02T10:36:00.852Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 7,
+              "Title": "CreateRoomRequest.cs",
+              "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Models\\DTO\\CreateRoomRequest.cs",
+              "RelativeDocumentMoniker": "WatchTogetherCore\\Models\\DTO\\CreateRoomRequest.cs",
+              "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Models\\DTO\\CreateRoomRequest.cs",
+              "RelativeToolTip": "WatchTogetherCore\\Models\\DTO\\CreateRoomRequest.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-03T12:15:36.403Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "CreateRoom.cshtml",
               "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Views\\Rooms\\CreateRoom.cshtml",
               "RelativeDocumentMoniker": "WatchTogetherCore\\Views\\Rooms\\CreateRoom.cshtml",
@@ -77,66 +94,79 @@
               "RelativeDocumentMoniker": "WatchTogetherCore\\Views\\Rooms\\Room.cshtml",
               "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Views\\Rooms\\Room.cshtml",
               "RelativeToolTip": "WatchTogetherCore\\Views\\Rooms\\Room.cshtml",
-              "ViewState": "AQIAAKYBAAAAAAAAAAAIwMkBAAANAAAA",
+              "ViewState": "AQIAACcAAAAAAAAAAADgv0wAAABKAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-02-02T10:36:06.616Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "User.cs",
-              "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Models\\User.cs",
-              "RelativeDocumentMoniker": "WatchTogetherCore\\Models\\User.cs",
-              "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Models\\User.cs",
-              "RelativeToolTip": "WatchTogetherCore\\Models\\User.cs",
-              "ViewState": "AQIAAAsAAAAAAAAAAAAgwCAAAAAuAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-02T18:19:46.403Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "_Layout.cshtml",
-              "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Views\\Shared\\_Layout.cshtml",
-              "RelativeDocumentMoniker": "WatchTogetherCore\\Views\\Shared\\_Layout.cshtml",
-              "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Views\\Shared\\_Layout.cshtml",
-              "RelativeToolTip": "WatchTogetherCore\\Views\\Shared\\_Layout.cshtml",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAwAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-02-02T13:37:21.845Z"
             }
           ]
         },
         {
-          "DockedWidth": 227,
-          "SelectedChildIndex": 1,
+          "DockedWidth": 294,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "RoomsController.cs",
-              "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Controllers\\RoomsController.cs",
-              "RelativeDocumentMoniker": "WatchTogetherCore\\Controllers\\RoomsController.cs",
-              "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Controllers\\RoomsController.cs",
-              "RelativeToolTip": "WatchTogetherCore\\Controllers\\RoomsController.cs",
-              "ViewState": "AQIAALMAAAAAAAAAAAAYwL4AAAAzAAAA",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Program.cs",
+              "RelativeDocumentMoniker": "WatchTogetherCore\\Program.cs",
+              "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Program.cs",
+              "RelativeToolTip": "WatchTogetherCore\\Program.cs",
+              "ViewState": "AQIAAAsAAAAAAAAAAAAgwBcAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-02T10:36:00.852Z",
+              "WhenOpened": "2025-02-03T13:34:22.018Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 8,
+              "Title": "Participant.cs",
+              "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Models\\Participant.cs",
+              "RelativeDocumentMoniker": "WatchTogetherCore\\Models\\Participant.cs",
+              "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Models\\Participant.cs",
+              "RelativeToolTip": "WatchTogetherCore\\Models\\Participant.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABwAAAAXAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-03T12:17:35.56Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "Room.cs",
               "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Models\\Room.cs",
               "RelativeDocumentMoniker": "WatchTogetherCore\\Models\\Room.cs",
               "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Models\\Room.cs",
               "RelativeToolTip": "WatchTogetherCore\\Models\\Room.cs",
-              "ViewState": "AQIAABAAAAAAAAAAAAAgwC4AAAAAAAAA",
+              "ViewState": "AQIAAA4AAAAAAAAAAAAQwDwAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-02T10:43:23.914Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Models\\User.cs",
+              "RelativeDocumentMoniker": "WatchTogetherCore\\Models\\User.cs",
+              "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Models\\User.cs",
+              "RelativeToolTip": "WatchTogetherCore\\Models\\User.cs",
+              "ViewState": "AQIAAAwAAAAAAAAAAAAIwCgAAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-03T12:17:31.939Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Data\\AppDbContext\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "WatchTogetherCore\\Data\\AppDbContext\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherCore\\WatchTogetherCore\\Data\\AppDbContext\\AppDbContext.cs",
+              "RelativeToolTip": "WatchTogetherCore\\Data\\AppDbContext\\AppDbContext.cs",
+              "ViewState": "AQIAABUAAAAAAAAAAAAmwCEAAAA1AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-03T12:31:51.699Z",
               "EditorCaption": ""
             }
           ]
