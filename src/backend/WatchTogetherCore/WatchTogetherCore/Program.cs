@@ -23,7 +23,8 @@ namespace WatchTogetherCore
 
             builder.Services.AddControllers()
                 .AddJsonOptions(options => {              // Обработка циклических ссылок   
-                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; //
+                    //options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 });
 
             builder.Services.AddEndpointsApiExplorer();
@@ -36,7 +37,8 @@ namespace WatchTogetherCore
                 {
                     policy.AllowAnyOrigin()
                           .AllowAnyMethod()
-                          .AllowAnyHeader();
+                          .AllowAnyHeader()
+                          .WithExposedHeaders("X-User-Id"); // Разрешаем клиенту видеть X-User-Id
                 });
             });
 

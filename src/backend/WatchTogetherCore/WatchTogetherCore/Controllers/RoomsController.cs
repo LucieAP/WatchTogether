@@ -127,6 +127,9 @@ namespace WatchTogetherCore.Controllers
                     }
                 };
 
+                //// Добавление заголовка X-User-Id, для создателя комнаты
+                //Response.Headers.Append("X-User-Id", guestUser.UserId.ToString());
+
                 // CreatedAtAction - перенаправление после создания комнаты
                 // Это вернет статус 201 Created и установит заголовок Location с URL новой комнаты.
                 // CreatedAtAction автоматически генерирует URL вида /api/Rooms/{roomId}
@@ -173,54 +176,69 @@ namespace WatchTogetherCore.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                // Получаем текущего пользователя из сессии/куков/токена
+                // Получаем текущего пользователя
+                //var currentUser = await GetCurrentUserAsync();
 
-                var currentUser = await GetCurrentUserAsync();
+                // Создание или получение текущего пользователя
 
-                // Проверка доступа для приватных комнат
+                var currentUser = await GetOrCreateUserAsync();
+                //var isNewUser = currentUser.Status == UserStatus.UnAuthed;
 
-                if (room.Status == RoomStatus.Private)
+
+                // Проверка на соответствие userId из localStorage (переданного в заголовке) с userId текущего пользователя
+                // Получаем userId из заголовка
+                var userIdHeader = Request.Headers["X-User-Id"].FirstOrDefault();
+                Guid.TryParse(userIdHeader, out var headerUserId);
+
+                // Проверяем, совпадает ли userId текущего пользователя с переданным в заголовке
+                bool isUserIdValid = currentUser.UserId == headerUserId;
+
+                // Проверка наличия пользователя в списке участников комнаты, и если его там нет, добавляет его в базу данных как нового участника 
+                if (isUserIdValid &&
+                    currentUser.UserId != room.CreatedByUserId && 
+                    !room.Participants.Any(p => p.UserId == currentUser.UserId))
                 {
-                    if (currentUser == null || !IsUserInRoom(currentUser, room))
+                    _context.Participants.Add(new Participant
                     {
-                        return StatusCode(403, new { Message = "Access denied" });
-                    }
+                        RoomId = roomId,
+                        UserId = currentUser.UserId,
+                        Role = ParticipantRole.Member,
+                        JoinedAt = DateTime.UtcNow
+                    });
+
+                    await _context.SaveChangesAsync();
                 }
 
+                // Обновление данных комнаты
+                room = await _context.Rooms
+                    .Include(r => r.Participants)
+                        .ThenInclude(p => p.User)
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
+
+                // Формирование ответа
                 var response = new
                 {
-                    RoomId = room.RoomId,
-                    RoomName = room.RoomName,
-                    Description = room.Description,
-                    Status = room.Status.ToString(),
-                    CreatedAt = room.CreatedAt,
-                    ExpiresAt = room.ExpiresAt,
-                    InvitationLink = room.InvitationLink,
-                    VideoUrl = room.VideoUrl,
-                    Creator = new
+                    UserId = currentUser.UserId,
+                    Room = new
                     {
-                        room.CreatedByUser.UserId,
-                        room.CreatedByUser.Username
-                    },
-                    Participants = room.Participants.Select(p => new
-                    {
-                        p.User.UserId,
-                        p.User.Username,
-                        Role = p.Role.ToString(),
-                        p.JoinedAt
-                    })
+                        room.RoomId,
+                        room.RoomName,
+                        Participants = room.Participants.Select(p => new
+                        {
+                            p.User.UserId,
+                            p.User.Username
+                        })
+                    }
                 };
 
-                // Выполняем проверку типа контента, который ожидает клиент, либо HTML-представление (веб-страницу), либо данные в формате JSON.
+                //if (isNewUser)
+                //{
+                //    Response.Headers.Append("X-New-User-Id", currentUser.UserId.ToString());
+                //}
 
-                if (Request.Headers["Accept"].ToString().Contains("text/html"))
-                {
-                    // Возврат HTML-представления
-                    return View("Room", room);
-                }
-
-                // Возврат JSON
-                return Ok(response);
+                return Request.Headers["Accept"].ToString().Contains("text/html")
+                    ? View("Room", room)
+                    : Ok(response);
 
             }
             catch (Exception ex)
@@ -249,7 +267,7 @@ namespace WatchTogetherCore.Controllers
             }
 
             // Получаем текущего пользователя 
-            var currentUser = await GetCurrentUserAsync();
+            var currentUser = await GetOrCreateUserAsync();
 
             if (currentUser == null)
             {
@@ -290,21 +308,39 @@ namespace WatchTogetherCore.Controllers
             });
         }
 
-
-        // Реализация получения текущего пользователя 
-        private async Task<User> GetCurrentUserAsync()
+        private async Task<User> GetOrCreateUserAsync()
         {
-            // Пример простой реализации через заголовок
-            var userIdHeader = Request.Headers["X-User-Id"].FirstOrDefault();
-
+            var userIdHeader = Request.Headers["X-User-Id"].FirstOrDefault();   // Из заголовков запроса берётся значение по ключу "X-User-Id" (id пользователя).
+                                                                                // Если заголовок отсутствует, FirstOrDefault() вернёт null.
+            
             if (Guid.TryParse(userIdHeader, out var userId))
             {
-                return await _context.Users.FindAsync(userId);
+                var user = await _context.Users.FindAsync(userId);          
+
+                if (user != null)               // Если пользователь найден (user != null), метод сразу возвращает его.
+                    return user;
             }
 
-            // Для гостевых пользователей
-            return null;
+            // Если идентификатор отсутствует, невалиден или пользователь с таким Guid не найден в базе данных, создаётся новый объект User:
+            // Т.е. если пользователь - новый
+
+            var newUser = new User
+            {
+                Username = GenerateRandomUsername(),
+                Status = UserStatus.UnAuthed,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(newUser);
+            await _context.SaveChangesAsync();
+
+            // Добавляется новый заголовок "X-New-User-Id" с идентификатором нового пользователя. 
+            Response.Headers.Append("X-New-User-Id", newUser.UserId.ToString());
+            
+            return newUser;
         }
+
+
 
         // Проверка на наличие пользователя в комнате
         private bool IsUserInRoom(User user, Room room) =>
