@@ -127,9 +127,6 @@ namespace WatchTogetherCore.Controllers
                     }
                 };
 
-                //// Добавление заголовка X-User-Id, для создателя комнаты
-                //Response.Headers.Append("X-User-Id", guestUser.UserId.ToString());
-
                 // CreatedAtAction - перенаправление после создания комнаты
                 // Это вернет статус 201 Created и установит заголовок Location с URL новой комнаты.
                 // CreatedAtAction автоматически генерирует URL вида /api/Rooms/{roomId}
@@ -176,26 +173,14 @@ namespace WatchTogetherCore.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                // Получаем текущего пользователя
-                //var currentUser = await GetCurrentUserAsync();
 
-                // Создание или получение текущего пользователя
-
+                // Получаем или создаем пользователя через Cookie
                 var currentUser = await GetOrCreateUserAsync();
-                //var isNewUser = currentUser.Status == UserStatus.UnAuthed;
 
+                // Основная логика добавления участника
+                // Проверка наличия пользователя в списке участников комнаты, и если его там нет, добавляем его в базу данных как нового участника 
 
-                // Проверка на соответствие userId из localStorage (переданного в заголовке) с userId текущего пользователя
-                // Получаем userId из заголовка
-                var userIdHeader = Request.Headers["X-User-Id"].FirstOrDefault();
-                Guid.TryParse(userIdHeader, out var headerUserId);
-
-                // Проверяем, совпадает ли userId текущего пользователя с переданным в заголовке
-                bool isUserIdValid = currentUser.UserId == headerUserId;
-
-                // Проверка наличия пользователя в списке участников комнаты, и если его там нет, добавляет его в базу данных как нового участника 
-                if (isUserIdValid &&
-                    currentUser.UserId != room.CreatedByUserId && 
+                if (currentUser.UserId != room.CreatedByUserId &&
                     !room.Participants.Any(p => p.UserId == currentUser.UserId))
                 {
                     _context.Participants.Add(new Participant
@@ -207,13 +192,13 @@ namespace WatchTogetherCore.Controllers
                     });
 
                     await _context.SaveChangesAsync();
-                }
 
-                // Обновление данных комнаты
-                room = await _context.Rooms
-                    .Include(r => r.Participants)
-                        .ThenInclude(p => p.User)
-                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                    // Обновляем данные комнаты после изменений
+                    room = await _context.Rooms
+                        .Include(r => r.Participants)
+                            .ThenInclude(p => p.User)
+                        .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                }
 
                 // Формирование ответа
                 var response = new
@@ -230,11 +215,6 @@ namespace WatchTogetherCore.Controllers
                         })
                     }
                 };
-
-                //if (isNewUser)
-                //{
-                //    Response.Headers.Append("X-New-User-Id", currentUser.UserId.ToString());
-                //}
 
                 return Request.Headers["Accept"].ToString().Contains("text/html")
                     ? View("Room", room)
@@ -310,15 +290,13 @@ namespace WatchTogetherCore.Controllers
 
         private async Task<User> GetOrCreateUserAsync()
         {
-            var userIdHeader = Request.Headers["X-User-Id"].FirstOrDefault();   // Из заголовков запроса берётся значение по ключу "X-User-Id" (id пользователя).
-                                                                                // Если заголовок отсутствует, FirstOrDefault() вернёт null.
-            
-            if (Guid.TryParse(userIdHeader, out var userId))
+            // Пробуем получить UserId из Cookie
+            if (Request.Cookies.TryGetValue("X-User-Id", out var userIdCookie) &&
+                Guid.TryParse(userIdCookie, out var userId))
             {
-                var user = await _context.Users.FindAsync(userId);          
-
-                if (user != null)               // Если пользователь найден (user != null), метод сразу возвращает его.
-                    return user;
+                var existingUser = await _context.Users.FindAsync(userId);
+                if (existingUser != null)       // Если пользователь найден (user != null), метод сразу возвращает его.
+                    return existingUser;
             }
 
             // Если идентификатор отсутствует, невалиден или пользователь с таким Guid не найден в базе данных, создаётся новый объект User:
@@ -334,18 +312,23 @@ namespace WatchTogetherCore.Controllers
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
 
-            // Добавляется новый заголовок "X-New-User-Id" с идентификатором нового пользователя. 
-            Response.Headers.Append("X-New-User-Id", newUser.UserId.ToString());
-            
+            // Устанавливаем Cookie в ответе
+            Response.Cookies.Append(
+                "X-User-Id",
+                newUser.UserId.ToString(),
+                new CookieOptions
+                {
+                    Path = "/",                     // cookie будет доступно для всех страниц сайта
+                    MaxAge = TimeSpan.FromDays(1),  // Срок жизни куки
+                    SameSite = SameSiteMode.Lax,    // браузер отправит cookie при переходах с других сайтов, но с ограничениями для защиты от CSRF.
+                    HttpOnly = true,                // cookie недоступно из JavaScript, что защищает от XSS-атак
+                    Secure = true,                   // cookie передаётся только по HTTPS
+                    IsEssential = true              // Для соблюдения GDPR
+                }
+            );
+
             return newUser;
         }
-
-
-
-        // Проверка на наличие пользователя в комнате
-        private bool IsUserInRoom(User user, Room room) =>
-                    room.Participants.Any(p => p.UserId == user.UserId);
-
 
         // Генератор никнеймов
         private string GenerateRandomUsername(int length = 8)

@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WatchTogetherCore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1e520aa6e6ef7f15a37492ce4f7c02833701b5a2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b516787b825db4e779aef8bcd21ae22773ef1d1f")]
 [assembly: System.Reflection.AssemblyProductAttribute("WatchTogetherCore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WatchTogetherCore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

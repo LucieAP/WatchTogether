@@ -35,10 +35,11 @@ namespace WatchTogetherCore
             {
                 options.AddPolicy("AllowAll", policy =>
                 {
-                    policy.AllowAnyOrigin()
+                    policy/*.AllowAnyOrigin()*/
                           .AllowAnyMethod()
                           .AllowAnyHeader()
-                          .WithExposedHeaders("X-User-Id"); // Разрешаем клиенту видеть X-User-Id
+                          .WithExposedHeaders("X-User-Id") // Разрешаем клиенту видеть X-User-Id
+                          .AllowCredentials(); // Cookie
                 });
             });
 

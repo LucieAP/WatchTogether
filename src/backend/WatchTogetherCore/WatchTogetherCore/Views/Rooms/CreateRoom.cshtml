@@ -55,22 +55,14 @@
 
             const result = await response.json();
 
-            // Сохраняем UserId в localStorage
             if (result.user.userId) {
+                // Сохраняем UserId в localStorage
                 localStorage.setItem('userId', result.user.userId);     // Сохранение для будущих запросов
+                // Так же сохраняем в cookie, например, на 1 день:
+                document.cookie = `X-User-Id=${result.user.userId}; path=/; max-age=${24 * 60 * 60}`;
+
                 console.log('Комната создана, UserId сохранен:', result.user.userId);
             }
-
-            const newRoomUrl = result.invitationLink;
-            if (!newRoomUrl) {
-                throw new Error('URL комнаты не найден');
-            }
-            // Передать UserId клиенту при создании комнаты и обеспечить его доступность в заголовке X-User-Id для последующих запросов
-            const roomResponse = await fetch(newRoomUrl, {
-                headers: {
-                    'X-User-Id': result.user.userId // Добавляем заголовок
-                }
-            });
 
             window.location.href = result.invitationLink;
 
