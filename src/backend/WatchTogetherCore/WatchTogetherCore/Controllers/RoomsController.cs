@@ -319,7 +319,7 @@ namespace WatchTogetherCore.Controllers
                 new CookieOptions
                 {
                     Path = "/",                     // cookie будет доступно для всех страниц сайта
-                    MaxAge = TimeSpan.FromDays(1),  // Срок жизни куки
+                    MaxAge = TimeSpan.FromDays(7),  // Срок жизни куки
                     SameSite = SameSiteMode.Lax,    // браузер отправит cookie при переходах с других сайтов, но с ограничениями для защиты от CSRF.
                     HttpOnly = true,                // cookie недоступно из JavaScript, что защищает от XSS-атак
                     Secure = true,                   // cookie передаётся только по HTTPS
