@@ -1,0 +1,25 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\icons\\gear-icon.png",
+      "PackagePath": "staticwebassets\\icons\\gear-icon.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.WatchTogetherAPI.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.WatchTogetherAPI.props",
+      "PackagePath": "build\\WatchTogetherAPI.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.WatchTogetherAPI.props",
+      "PackagePath": "buildMultiTargeting\\WatchTogetherAPI.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.WatchTogetherAPI.props",
+      "PackagePath": "buildTransitive\\WatchTogetherAPI.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

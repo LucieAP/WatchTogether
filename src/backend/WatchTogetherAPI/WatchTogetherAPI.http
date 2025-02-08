@@ -1,0 +1,6 @@
+@WatchTogetherAPU_HostAddress = http://localhost:5044
+
+# GET {{WatchTogetherCore_HostAddress}}/weatherforecast/
+# Accept: application/json
+
+# ###
