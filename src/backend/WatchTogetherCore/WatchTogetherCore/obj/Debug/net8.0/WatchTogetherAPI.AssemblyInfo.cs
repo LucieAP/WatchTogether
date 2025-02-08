@@ -12,12 +12,12 @@ using System;
 using System.Reflection;
 
 [assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("0f311e1a-d070-4897-b7b9-c573709064f3")]
-[assembly: System.Reflection.AssemblyCompanyAttribute("WatchTogetherCore")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("WatchTogetherAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+300be43da5644efe137b03dfbda079a9140a1477")]
-[assembly: System.Reflection.AssemblyProductAttribute("WatchTogetherCore")]
-[assembly: System.Reflection.AssemblyTitleAttribute("WatchTogetherCore")]
+[assembly: System.Reflection.AssemblyProductAttribute("WatchTogetherAPI")]
+[assembly: System.Reflection.AssemblyTitleAttribute("WatchTogetherAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // Создано классом WriteCodeFragment MSBuild.
