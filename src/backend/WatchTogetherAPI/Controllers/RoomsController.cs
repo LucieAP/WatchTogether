@@ -102,8 +102,6 @@ namespace WatchTogetherAPI.Controllers
 
                 var participant = new Participant
                 {
-                    //User = guestUser,
-                    //Room = newRoom,
                     RoomId = newRoom.RoomId, // Use the RoomId from the saved room
                     UserId = guestUser.UserId, // Use the UserId from the saved user
                     Role = ParticipantRole.Creator,

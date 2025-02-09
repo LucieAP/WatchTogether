@@ -12,8 +12,8 @@ export default function GetRooms() {
         const response = await getRooms(); // <- Здесь происходит реальный запрос к API
         console.log("Полученные комнаты:", response); // <- Добавьте это
         setRooms(response);
-      } catch (err) {
-        console.log(err);
+      } catch (error) {
+        throw error;
       }
     };
 

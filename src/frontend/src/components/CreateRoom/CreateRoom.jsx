@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createRoom } from "../../api/rooms";
 
 export default function CreateRoom() {
   const navigate = useNavigate();
@@ -14,24 +15,18 @@ export default function CreateRoom() {
     e.preventDefault();
 
     try {
-      const response = await fetch("/api/Rooms/Create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          roomName: formData.roomName,
-          description: formData.description,
-          status: parseInt(formData.status), // Преобразуем в число
-        }),
+      // Отправляем данные через Axios
+      const createdRoom = await createRoom({
+        roomName: formData.roomName,
+        description: formData.description,
+        status: parseInt(formData.status), // Преобразуем в число
       });
-      if (!response.ok) {
-        throw new Error("Ошибка создания комнаты");
-      }
-      const data = await response.json();
-      navigate(`/room/${data.roomId}`);
+      console.log("Комната создана:", createdRoom);
+
+      // Переходим на страницу комнаты
+      navigate(`/room/${createdRoom.roomId}`); // Предполагая, что сервер возвращает id созданной комнаты
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Ошибка создания комнаты:", error.message);
     }
   };
 
@@ -53,8 +48,9 @@ export default function CreateRoom() {
                   autoCorrect="off"
                   autoCapitalize="none"
                   value={formData.roomName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, roomName: e.target.value })
+                  onChange={
+                    (e) =>
+                      setFormData({ ...formData, roomName: e.target.value }) // Меняем только roomName, не меняем остальные свойства (благодаря ...formData)
                   }
                 />
               </div>
@@ -70,8 +66,9 @@ export default function CreateRoom() {
                   autoCorrect="off"
                   autoCapitalize="none"
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
+                  onChange={
+                    (e) =>
+                      setFormData({ ...formData, description: e.target.value }) // Меняем только description, не меняем остальные свойства (благодаря ...formData)
                   }
                 ></textarea>
               </div>
@@ -83,8 +80,8 @@ export default function CreateRoom() {
                   className="form-control"
                   required
                   value={formData.status}
-                  onChange={(e) =>
-                    setFormData({ ...formData, status: e.target.value })
+                  onChange={
+                    (e) => setFormData({ ...formData, status: e.target.value }) // Меняем только status, не меняем остальные свойства (благодаря ...formData)
                   }
                 >
                   <option value="0">Приватная</option>
@@ -102,53 +99,3 @@ export default function CreateRoom() {
     </div>
   );
 }
-
-// return (
-//   <div className="wrapper">
-//     <div className="container mt-5">
-//       <h2 id="createNewRoom">Создать новую комнату</h2>
-//       <div className="card mt-4">
-//         <div className="card-body">
-//           <div className="form-group">
-//             <label htmlFor="roomName">Название комнаты:</label>
-//             <input
-//               type="text"
-//               id="roomName"
-//               className="form-control"
-//               required
-//               spellCheck="false"
-//               autoCorrect="off"
-//               autoCapitalize="none"
-//             />
-//           </div>
-
-//           <div className="form-group mt-3">
-//             <label htmlFor="description">Описание:</label>
-//             <textarea
-//               id="description"
-//               className="form-control"
-//               rows="3"
-//               required
-//               spellCheck="false"
-//               autoCorrect="off"
-//               autoCapitalize="none"
-//             ></textarea>
-//           </div>
-
-//           <div className="form-group mt-3">
-//             <label htmlFor="roomType">Тип комнаты:</label>
-//             <select id="roomType" className="form-control" required>
-//               <option value="0">Приватная</option>
-//               <option value="1">Публичная</option>
-//             </select>
-//           </div>
-
-//           <button className="btn btn-primary mt-4" id="createRoomBtn">
-//             Создать комнату
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   </div>
-// );
-//}

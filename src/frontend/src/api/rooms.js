@@ -8,3 +8,13 @@ export const getRooms = async () => {
     throw error;
   }
 };
+
+export const createRoom = async (roomData) => {
+  try {
+    const response = await apiClient.post("Rooms/Create", roomData); // Отправляем roomData, которые получаем при вызове
+    return response;
+  } catch (error) {
+    console.error("Error creating room:", error);
+    throw error;
+  }
+};
