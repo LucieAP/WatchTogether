@@ -7,7 +7,7 @@ const HomePage = () => {
 
   // Обработчик перенаправления на страницу с формой создания комнаты
   const handleCreateRoom = () => {
-    navigate("/api/Rooms/Create");
+    navigate("/create-room");
   };
 
   return (

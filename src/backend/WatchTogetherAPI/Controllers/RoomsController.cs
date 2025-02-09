@@ -44,11 +44,14 @@ namespace WatchTogetherAPI.Controllers
 
         // GET: api/Rooms/Create
 
-        [HttpGet("Create")]
-        public IActionResult CreateRoom()
-        {
-            return View();
-        }
+        // [HttpGet("Create")]
+        // public IActionResult CreateRoom()
+        // {
+        //     // return View();
+        //     // Если создание комнаты происходит через API, можно вернуть Ok() или Redirect
+        //     return Redirect("/api/Rooms/Create");
+        // }
+
 
         // POST: api/Rooms/Create
 
@@ -149,7 +152,7 @@ namespace WatchTogetherAPI.Controllers
 
         // GET: api/Rooms/{roomId}
 
-        [HttpGet("{roomId}")]
+        [HttpGet("{roomId:guid}")]      // Добавляем constraint для GUID, чтобы обрабатывался только guid
         public async Task<IActionResult> GetRoom(Guid roomId)
         {
             try
