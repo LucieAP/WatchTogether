@@ -5,6 +5,7 @@ import "./App.css";
 import CreateRoom from "./components/CreateRoom/CreateRoom";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
+import NotFoundPage from "./components/NotFoundPage/NotFoundPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
                 </section>
               }
             />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
         <Footer />

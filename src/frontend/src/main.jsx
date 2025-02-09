@@ -6,6 +6,7 @@ import "./mystyle.css";
 import "./components/CreateRoom/CreateRoom.css";
 import "./components/Header/Header.css";
 import "./components/Footer/Footer.css";
+import "./components/NotFoundPage/NotFoundPage.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
