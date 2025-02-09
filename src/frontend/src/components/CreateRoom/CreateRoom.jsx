@@ -1,12 +1,4 @@
-import { useState } from "react";
-
 export default function CreateRoom() {
-  const [formData, setFormData] = useState({
-    roomName: "",
-    description: "",
-    roomType: "0",
-  });
-
   return (
     <div className="wrapper">
       <div className="container mt-5">
