@@ -1,21 +1,3 @@
-// const API_BASE = "/api";
-
-// export const apiClient = {
-//   get: async (url) => {
-//     const response = await fetch(`${API_BASE}${url}`);
-
-//     if (!response.ok) {
-//       const error = await response.json();
-//       throw new Error(error.title || "Ошибка сервера");
-//     }
-
-//     return response.json();
-//   },
-//   // post: async (url, data) => {
-//   //   /* ... */
-//   // },
-// };
-
 import axios from "axios";
 
 const API_BASE = "/api";
@@ -24,13 +6,14 @@ const API_BASE = "/api";
 const apiClient = axios.create({
   baseURL: API_BASE,
   headers: {
-    "Content-Type": "application/json",
+    "Content-Type": "application/json", // Устанавливает заголовок Content-Type: application/json по умолчанию
   },
 });
 
 // Перехватчик для обработки ошибок
 
-// Если запрос успешен, автоматически возвращаются только response.data (а не весь объект response).
+// Если запрос успешен, автоматически возвращаются только response.data (а не весь объект response)
+// (избавляет от необходимости каждый раз вручную извлекать данные из ответа).
 // Если есть ошибка, создаётся объект Error с текстом ошибки из ответа сервера.
 
 apiClient.interceptors.response.use(
