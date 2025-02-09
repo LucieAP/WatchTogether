@@ -5,8 +5,8 @@ import "./HomePage.css"; // Импортируем файл стилей
 const HomePage = () => {
   const navigate = useNavigate();
 
+  // Обработчик перенаправления на страницу с формой создания комнаты
   const handleCreateRoom = () => {
-    // Перенаправляем на страницу с формой создания комнаты
     navigate("/api/Rooms/Create");
   };
 
