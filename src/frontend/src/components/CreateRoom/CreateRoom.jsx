@@ -2,7 +2,7 @@ export default function CreateRoom() {
   return (
     <div className="wrapper">
       <div className="container mt-5">
-        <h2>Создать новую комнату</h2>
+        <h2 id="createNewRoom">Создать новую комнату</h2>
         <div className="card mt-4">
           <div className="card-body">
             <div className="form-group">
@@ -12,6 +12,9 @@ export default function CreateRoom() {
                 id="roomName"
                 className="form-control"
                 required
+                spellCheck="false"
+                autoCorrect="off"
+                autoCapitalize="none"
               />
             </div>
 
@@ -22,6 +25,9 @@ export default function CreateRoom() {
                 className="form-control"
                 rows="3"
                 required
+                spellCheck="false"
+                autoCorrect="off"
+                autoCapitalize="none"
               ></textarea>
             </div>
 

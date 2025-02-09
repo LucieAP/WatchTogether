@@ -14,10 +14,23 @@
   border-radius: 8px;
   padding: 12px;
 }
+#createNewRoom {
+  text-align: center;
+}
+#description {
+  resize: none;
+}
+#roomType {
+  cursor: pointer;
+}
 
 .btn {
   width: 100%;
   padding: 12px;
   border-radius: 8px;
   font-weight: 600;
+}
+
+.container {
+  max-width: 600px;
 }
