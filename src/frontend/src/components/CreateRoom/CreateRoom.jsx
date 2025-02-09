@@ -2,33 +2,53 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { createRoom } from "../../api/rooms";
 
+// Константа для общих атрибутов полей ввода
+const INPUT_PROPS = {
+  spellCheck: "false",
+  autoCorrect: "off",
+  autoCapitalize: "none",
+};
+
 export default function CreateRoom() {
   const navigate = useNavigate();
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     roomName: "",
     description: "",
     status: 0, // 0 - приватная, 1 - публичная
   });
 
+  // Универсальный обработчик изменений
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "status" ? parseInt(value, 10) : value,
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
 
     try {
-      // Отправляем данные через Axios
-      const createdRoom = await createRoom({
-        roomName: formData.roomName,
-        description: formData.description,
-        status: parseInt(formData.status), // Преобразуем в число
-      });
+      const createdRoom = await createRoom(formData);
       console.log("Комната создана:", createdRoom);
 
       // Переходим на страницу комнаты
-      navigate(`/room/${createdRoom.roomId}`); // Предполагая, что сервер возвращает id созданной комнаты
+      navigate(`/room/${createdRoom.roomId}`);
     } catch (error) {
-      console.error("Ошибка создания комнаты:", error.message);
+      setError(error.message || "Ошибка при создании комнаты");
+      console.error("Ошибка создания комнаты:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  // Деструктуризация для упрощения чтения кода
+  const { roomName, description, status } = formData;
 
   return (
     <div className="wrapper">
@@ -36,22 +56,25 @@ export default function CreateRoom() {
         <h2 id="createNewRoom">Создать новую комнату</h2>
         <div className="card mt-4">
           <div className="card-body">
+            {/*Ошибки отображаются в UI*/}
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="roomName">Название комнаты:</label>
                 <input
                   type="text"
                   id="roomName"
+                  name="roomName"
                   className="form-control"
                   required
-                  spellCheck="false"
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  value={formData.roomName}
-                  onChange={
-                    (e) =>
-                      setFormData({ ...formData, roomName: e.target.value }) // Меняем только roomName, не меняем остальные свойства (благодаря ...formData)
-                  }
+                  {...INPUT_PROPS}
+                  value={roomName}
+                  onChange={handleChange}
                 />
               </div>
 
@@ -59,17 +82,13 @@ export default function CreateRoom() {
                 <label htmlFor="description">Описание:</label>
                 <textarea
                   id="description"
+                  name="description"
                   className="form-control"
                   rows="3"
                   required
-                  spellCheck="false"
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  value={formData.description}
-                  onChange={
-                    (e) =>
-                      setFormData({ ...formData, description: e.target.value }) // Меняем только description, не меняем остальные свойства (благодаря ...formData)
-                  }
+                  {...INPUT_PROPS}
+                  value={description}
+                  onChange={handleChange}
                 ></textarea>
               </div>
 
@@ -77,20 +96,34 @@ export default function CreateRoom() {
                 <label htmlFor="roomType">Тип комнаты:</label>
                 <select
                   id="roomType"
+                  name="status"
                   className="form-control"
                   required
-                  value={formData.status}
-                  onChange={
-                    (e) => setFormData({ ...formData, status: e.target.value }) // Меняем только status, не меняем остальные свойства (благодаря ...formData)
-                  }
+                  value={status}
+                  onChange={handleChange}
                 >
                   <option value="0">Приватная</option>
                   <option value="1">Публичная</option>
                 </select>
               </div>
 
-              <button type="submit" className="btn btn-primary mt-4">
-                Создать комнату
+              <button
+                type="submit"
+                className="btn btn-primary mt-4"
+                disabled={isSubmitting} // Кнопка блокируется во время отправки формы
+              >
+                {isSubmitting ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    Создание...
+                  </>
+                ) : (
+                  "Создать комнату"
+                )}
               </button>
             </form>
           </div>
