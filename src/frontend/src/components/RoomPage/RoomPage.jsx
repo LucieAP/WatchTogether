@@ -1,18 +1,28 @@
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useRoom } from "./RoomContext";
+import axios from "axios";
 
 export default function RoomPage() {
   const { roomId } = useParams();
   const { setRoomData } = useRoom();
-  // Загрузка данных комнаты через API
-  useEffect(() => {
-    fetch(`/api/Rooms/${roomId}`)
-      .then((response) => response.json())
-      .then((data) => setRoomData(data))
-      .catch(console.error);
 
-    return () => setRoomData(null); // Очистка при размонтировании
+  // Загрузка данных комнаты
+  useEffect(() => {
+    // Создаем функцию для загрузки данных
+    const fetchRoomData = async () => {
+      try {
+        const response = await axios.get(`/api/Rooms/${roomId}`);
+        console.log("GET запрос к /api/Rooms/{roomId}: ", response.data);
+        setRoomData(response.data);
+      } catch (error) {
+        console.error("Error fetching room data:", error);
+      }
+    };
+
+    fetchRoomData();
+
+    return () => setRoomData(null);
   }, [roomId, setRoomData]);
 
   return (
