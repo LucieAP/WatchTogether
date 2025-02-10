@@ -1,6 +1,5 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useRef } from "react";
-import { useRoom } from "./RoomContext";
 import { useState } from "react";
 import { updateRoom } from "../../api/rooms";
 import axios from "axios";
@@ -16,7 +15,6 @@ export default function RoomPage() {
   const mouseDownOnContentRef = useRef(false);
 
   const { roomId } = useParams();
-  const { setRoomData } = useRoom();
 
   // Загрузка данных комнаты
   useEffect(() => {
@@ -26,7 +24,6 @@ export default function RoomPage() {
         const response = await axios.get(`/api/Rooms/${roomId}`);
         console.log("GET запрос к /api/Rooms/{roomId}: ", response.data);
         const roomData = response.data.room;
-        setRoomData(roomData);
 
         // Обновляем локальные состояния данными с сервера
         setRoomName(roomData.roomName);
@@ -42,9 +39,7 @@ export default function RoomPage() {
     };
 
     fetchRoomData();
-
-    return () => setRoomData(null);
-  }, [roomId, setRoomData]);
+  }, [roomId]);
 
   // Обработчик копирования ссылки
   const handleCopy = async () => {
@@ -65,27 +60,6 @@ export default function RoomPage() {
     }
     mouseDownOnContentRef.current = false;
   };
-
-  // Обработчик сохранения настроек
-  // const handleSaveSettings = async () => {
-  //   try {
-  //     const response = await updateRoom(roomId, {
-  //       roomName: roomName,
-  //       description: roomDescription,
-  //     });
-  //     console.log("Response from updateRoom:", response);
-  //     // Обновляем состояние новыми значениями с сервера
-  //     setRoomName(response.roomName);
-  //     setRoomDescription(response.roomDescription);
-
-  //     console.log("newRoomName: ", roomData.roomName);
-  //     console.log("newDescription: ", roomData.roomDescription);
-
-  //     setIsSettingsModalOpen(false);
-  //   } catch (error) {
-  //     console.error("Ошибка при сохранении настроек:", error);
-  //   }
-  // };
 
   const handleSaveSettings = async () => {
     try {

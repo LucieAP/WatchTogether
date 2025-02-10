@@ -5,7 +5,7 @@ const API_BASE = "/api";
 // Создаём экземпляр Axios с базовыми настройками
 const apiClient = axios.create({
   baseURL: API_BASE,
-  withCredentials: true, // <-- Ключевая настройка
+  withCredentials: true, // Браузер по умолчанию не отправляет cookies на другике домены. withCredentials: true позволяет их передавать
   headers: {
     "Content-Type": "application/json", // Устанавливает заголовок Content-Type: application/json по умолчанию
   },
