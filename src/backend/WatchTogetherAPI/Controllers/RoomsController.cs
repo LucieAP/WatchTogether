@@ -95,7 +95,7 @@ namespace WatchTogetherAPI.Controllers
                 await _context.SaveChangesAsync();      // Сохранение newRoom, чтобы получить RoomId
 
                 // Формируем полную ссылку
-                newRoom.InvitationLink = $"{baseUrl}/api/Rooms/{newRoom.RoomId}";
+                newRoom.InvitationLink = $"{baseUrl}/room/{newRoom.RoomId}";
                 await _context.SaveChangesAsync();
 
                 // Добавляем участника
@@ -117,7 +117,7 @@ namespace WatchTogetherAPI.Controllers
                 var response = new
                 {
                     newRoom.RoomId,
-                    InvitationLink = $"/api/Rooms/{newRoom.RoomId}",
+                    InvitationLink = $"/room/{newRoom.RoomId}",
                     User = new
                     {
                         guestUser.UserId,
@@ -168,7 +168,7 @@ namespace WatchTogetherAPI.Controllers
                 if (string.IsNullOrEmpty(room.InvitationLink))
                 {
                     var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
-                    room.InvitationLink = $"{baseUrl}/api/Rooms/{room.RoomId}";
+                    room.InvitationLink = $"{baseUrl}/room/{room.RoomId}";
                     await _context.SaveChangesAsync();
                 }
 
