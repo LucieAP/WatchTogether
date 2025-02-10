@@ -29,3 +29,12 @@ export const updateRoom = async (roomId, roomData) => {
     throw error;
   }
 };
+
+export const getRoom = async (roomId) => {
+  try {
+    return await apiClient.get(`/Rooms/${roomId}`);
+  } catch (error) {
+    console.error("Error fetching room:", error);
+    throw error;
+  }
+};
