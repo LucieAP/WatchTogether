@@ -258,7 +258,8 @@ namespace WatchTogetherAPI.Controllers
             // Разрешаем изменять данные только создателю комнаты
             if (room.CreatedByUserId != currentUser.UserId)
             {
-                return Forbid();
+                // return Forbid();
+                throw new Exception("Вы не создатель комнаты и не можете изменять настройки.");
             }
 
             if (request.RoomName != null)

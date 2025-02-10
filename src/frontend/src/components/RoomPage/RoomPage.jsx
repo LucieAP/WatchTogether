@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import { useRoom } from "./RoomContext";
 import { useState } from "react";
+import { updateRoom } from "../../api/rooms";
 import axios from "axios";
 
 export default function RoomPage() {
@@ -11,6 +12,7 @@ export default function RoomPage() {
   const [roomName, setRoomName] = useState("Название комнаты");
   const [roomDescription, setRoomDescription] = useState("");
   const [showNotification, setShowNotification] = useState(false);
+  // Отслеживаем взаимодействие с мышью, чтобы решить проблему закрытия модального окна при копировании текста и выходе курсора за его границы
   const mouseDownOnContentRef = useRef(false);
 
   const { roomId } = useParams();
@@ -65,9 +67,25 @@ export default function RoomPage() {
   };
 
   // Обработчик сохранения настроек
-  const handleSaveSettings = () => {
-    // Здесь можно добавить логику сохранения
-    setIsSettingsModalOpen(false);
+  const handleSaveSettings = async () => {
+    try {
+      const response = await updateRoom(roomId, {
+        roomName: roomName,
+        description: roomDescription,
+      });
+
+      // Обновляем состояние новыми значениями с сервера
+      setRoomName(response.newRoomName);
+      setRoomDescription(response.newDescription);
+
+      // console.log("newRoomName: ", roomData.newRoomName);
+      // console.log("newDescription: ", roomData.newDescription);
+
+      setIsSettingsModalOpen(false);
+    } catch (error) {
+      console.error("Ошибка при сохранении настроек:", error);
+      // Можно добавить уведомление об ошибке
+    }
   };
 
   return (

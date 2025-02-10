@@ -18,3 +18,14 @@ export const createRoom = async (roomData) => {
     throw error;
   }
 };
+
+export const updateRoom = async (roomId, roomData) => {
+  try {
+    const response = await apiClient.put(`/Rooms/${roomId}`, roomData);
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating room:", error);
+    throw error;
+  }
+};
