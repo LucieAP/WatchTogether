@@ -27,10 +27,15 @@ function HeaderSelector() {
 
 // Новый компонент-обертка
 function RoomPageWithHeader() {
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
   return (
     <>
-      <RoomHeader />
-      <RoomPage />
+      <RoomHeader onSettingsClick={() => setIsSettingsModalOpen(true)} />
+      <RoomPage
+        isSettingsModalOpen={isSettingsModalOpen}
+        onSettingsClose={() => setIsSettingsModalOpen(false)}
+      />
     </>
   );
 }

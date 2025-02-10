@@ -4,9 +4,9 @@ import { useState } from "react";
 import { updateRoom } from "../../api/rooms";
 import axios from "axios";
 
-export default function RoomPage() {
+export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  // const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
   const [roomName, setRoomName] = useState("Название комнаты");
   const [roomDescription, setRoomDescription] = useState("");
@@ -56,7 +56,7 @@ export default function RoomPage() {
   const handleCloseModal = (e) => {
     if (e.target === e.currentTarget && !mouseDownOnContentRef.current) {
       setIsInviteModalOpen(false);
-      setIsSettingsModalOpen(false);
+      onSettingsClose();
     }
     mouseDownOnContentRef.current = false;
   };
@@ -77,7 +77,7 @@ export default function RoomPage() {
         desc: response.newDescription,
       });
 
-      setIsSettingsModalOpen(false);
+      onSettingsClose();
     } catch (error) {
       console.error("Ошибка при сохранении настроек:", {
         message: error.message,
@@ -206,7 +206,8 @@ export default function RoomPage() {
                 <button
                   className="btn"
                   id="cancel-settings-btn"
-                  onClick={() => setIsSettingsModalOpen(false)}
+                  // onClick={() => setIsSettingsModalOpen(false)}
+                  onClick={onSettingsClose}
                 >
                   Отмена
                 </button>
@@ -214,15 +215,6 @@ export default function RoomPage() {
             </div>
           </div>
         )}
-
-        {/* Кнопка открытия настроек (добавьте в разметку) */}
-        <button
-          id="gear-icon"
-          className="btn"
-          onClick={() => setIsSettingsModalOpen(true)}
-        >
-          ⚙️
-        </button>
       </section>
     </main>
   );
