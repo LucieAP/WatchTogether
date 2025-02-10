@@ -14,6 +14,7 @@ export default function RoomPage() {
 
     return () => setRoomData(null); // Очистка при размонтировании
   }, [roomId, setRoomData]);
+
   return (
     <main className="main-content2">
       <section className="video-section">
