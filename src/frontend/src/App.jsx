@@ -25,7 +25,6 @@ function HeaderSelector() {
   return isRoomPage ? null : <Header />;
 }
 
-// Новый компонент-обертка
 function RoomPageWithHeader() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 

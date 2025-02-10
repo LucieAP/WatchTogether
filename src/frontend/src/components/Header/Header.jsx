@@ -14,11 +14,6 @@ export default function Header() {
         WatchTogether
       </div>
 
-      {/* <div className="room-info">
-        <h1 className="room-title">{roomData.title}</h1>
-        <img src={gearIcon} alt="Настройки" className="gear-icon" />
-      </div> */}
-
       <div className="user-profile">
         <img src="~/images/user-icon.png" alt="Профиль пользователя" />
       </div>

@@ -6,7 +6,6 @@ import axios from "axios";
 
 export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  // const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
   const [roomName, setRoomName] = useState("Название комнаты");
   const [roomDescription, setRoomDescription] = useState("");
@@ -68,9 +67,8 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
         description: roomDescription,
       });
 
-      // 1. Используем правильные имена полей из ответа сервера
       setRoomName(response.newRoomName);
-      setRoomDescription(response.newDescription); // Исправлено с roomDescription -> newDescription
+      setRoomDescription(response.newDescription);
 
       console.log("Обновленные данные:", {
         name: response.newRoomName,
@@ -83,7 +81,7 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
         message: error.message,
         fullError: error, // Выводим полный объект ошибки
       });
-      // 2. Расширенная диагностика ошибок
+      // Расширенная диагностика ошибок
       if (error.response) {
         console.error("Данные ответа сервера:", error.response.data);
         console.error("HTTP статус:", error.response.status);
@@ -206,7 +204,6 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
                 <button
                   className="btn"
                   id="cancel-settings-btn"
-                  // onClick={() => setIsSettingsModalOpen(false)}
                   onClick={onSettingsClose}
                 >
                   Отмена
