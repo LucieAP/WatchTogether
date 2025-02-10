@@ -207,6 +207,8 @@ namespace WatchTogetherAPI.Controllers
                     {
                         room.RoomId,
                         room.RoomName,
+                        room.Description,
+                        room.InvitationLink,
                         Participants = room.Participants.Select(p => new
                         {
                             p.User.UserId,
