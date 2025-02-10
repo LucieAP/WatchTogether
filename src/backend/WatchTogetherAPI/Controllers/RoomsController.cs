@@ -76,6 +76,21 @@ namespace WatchTogetherAPI.Controllers
                 _context.Users.Add(guestUser);
                 await _context.SaveChangesAsync(); // Сохранение guestUser, чтобы получить UserId
 
+                // После сохранения guestUser в базу добавьте установку куки
+                Response.Cookies.Append(
+                    "X-User-Id",
+                    guestUser.UserId.ToString(),
+                    new CookieOptions
+                    {
+                        Path = "/",
+                        MaxAge = TimeSpan.FromDays(7),
+                        SameSite = SameSiteMode.None, // Для кросс-доменных запросов
+                        Secure = true,
+                        HttpOnly = true,
+                        IsEssential = true
+                    }
+                );
+
                 // Создаем комнату
 
                 var newRoom = new Room
@@ -322,7 +337,7 @@ namespace WatchTogetherAPI.Controllers
                 {
                     Path = "/",                     // cookie будет доступно для всех страниц сайта
                     MaxAge = TimeSpan.FromDays(7),  // Срок жизни куки
-                    SameSite = SameSiteMode.Lax,    // браузер отправит cookie при переходах с других сайтов, но с ограничениями для защиты от CSRF.
+                    SameSite = SameSiteMode.None,   
                     HttpOnly = true,                // cookie недоступно из JavaScript, что защищает от XSS-атак
                     Secure = true,                   // cookie передаётся только по HTTPS
                     IsEssential = true              // Для соблюдения GDPR

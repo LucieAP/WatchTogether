@@ -22,8 +22,8 @@ export const createRoom = async (roomData) => {
 export const updateRoom = async (roomId, roomData) => {
   try {
     const response = await apiClient.put(`/Rooms/${roomId}`, roomData);
-    console.log(response.data);
-    return response.data;
+    console.log("Ответ сервера (room.js):", response); // Логируем напрямую
+    return response;
   } catch (error) {
     console.error("Error updating room:", error);
     throw error;

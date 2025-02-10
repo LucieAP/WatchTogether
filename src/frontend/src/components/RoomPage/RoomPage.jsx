@@ -67,6 +67,26 @@ export default function RoomPage() {
   };
 
   // Обработчик сохранения настроек
+  // const handleSaveSettings = async () => {
+  //   try {
+  //     const response = await updateRoom(roomId, {
+  //       roomName: roomName,
+  //       description: roomDescription,
+  //     });
+  //     console.log("Response from updateRoom:", response);
+  //     // Обновляем состояние новыми значениями с сервера
+  //     setRoomName(response.roomName);
+  //     setRoomDescription(response.roomDescription);
+
+  //     console.log("newRoomName: ", roomData.roomName);
+  //     console.log("newDescription: ", roomData.roomDescription);
+
+  //     setIsSettingsModalOpen(false);
+  //   } catch (error) {
+  //     console.error("Ошибка при сохранении настроек:", error);
+  //   }
+  // };
+
   const handleSaveSettings = async () => {
     try {
       const response = await updateRoom(roomId, {
@@ -74,17 +94,26 @@ export default function RoomPage() {
         description: roomDescription,
       });
 
-      // Обновляем состояние новыми значениями с сервера
+      // 1. Используем правильные имена полей из ответа сервера
       setRoomName(response.newRoomName);
-      setRoomDescription(response.newDescription);
+      setRoomDescription(response.newDescription); // Исправлено с roomDescription -> newDescription
 
-      // console.log("newRoomName: ", roomData.newRoomName);
-      // console.log("newDescription: ", roomData.newDescription);
+      console.log("Обновленные данные:", {
+        name: response.newRoomName,
+        desc: response.newDescription,
+      });
 
       setIsSettingsModalOpen(false);
     } catch (error) {
-      console.error("Ошибка при сохранении настроек:", error);
-      // Можно добавить уведомление об ошибке
+      console.error("Ошибка при сохранении настроек:", {
+        message: error.message,
+        fullError: error, // Выводим полный объект ошибки
+      });
+      // 2. Расширенная диагностика ошибок
+      if (error.response) {
+        console.error("Данные ответа сервера:", error.response.data);
+        console.error("HTTP статус:", error.response.status);
+      }
     }
   };
 
