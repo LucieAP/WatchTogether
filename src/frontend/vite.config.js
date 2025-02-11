@@ -3,13 +3,12 @@ import react from "@vitejs/plugin-react";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 
 export default defineConfig({
-  plugins: [react(), basicSsl()],
+  plugins: [react(), basicSsl()], // basicSsl - для https
   server: {
     proxy: {
       "/api": {
         target: "https://localhost:7143",
-        secure: false,
-        changeOrigin: true,
+        secure: false, // отключить проверку самоподписанного сертификата https
       },
     },
   },
