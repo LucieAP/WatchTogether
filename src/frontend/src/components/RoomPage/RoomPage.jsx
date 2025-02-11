@@ -70,7 +70,7 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   // Обработчик копирования ссылки
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(inviteLink);
+      await navigator.clipboard.writeText(roomData.invitationLink);
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 2000);
     } catch (err) {
@@ -89,18 +89,39 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
 
   const handleSaveSettings = async () => {
     try {
+      // const response = await updateRoom(roomId, {
+      //   roomName: roomName,
+      //   description: roomDescription,
+      // });
+
       const response = await updateRoom(roomId, {
-        roomName: roomName,
-        description: roomDescription,
+        roomName: roomData.roomName,
+        description: roomData.description,
       });
 
-      setRoomName(response.newRoomName);
-      setRoomDescription(response.newDescription);
+      // setRoomName(response.newRoomName);
+      // setRoomDescription(response.newDescription);
+
+      // Получаем обновленные данные с сервера
+      const updatedRoomResponse = await getRoom(roomId);
+
+      console.log("updatedRoomResponse", updatedRoomResponse);
+      // Обновляем состояние с ответом сервера
+      setRoomData((prev) => ({
+        ...prev,
+        roomName: updatedRoomResponse.room.roomName,
+        description: updatedRoomResponse.room.description,
+      }));
 
       console.log("Обновленные данные:", {
-        name: response.newRoomName,
-        desc: response.newDescription,
+        name: updatedRoomResponse.room.roomName,
+        desc: updatedRoomResponse.room.description,
       });
+
+      // console.log("Обновленные данные:", {
+      //   name: response.newRoomName,
+      //   desc: response.newDescription,
+      // });
 
       onSettingsClose();
     } catch (error) {
@@ -223,7 +244,7 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
             >
               <h2>Invite Link</h2>
               <div className="link-container">
-                <span id="inviteLink">{inviteLink}</span>
+                <span id="inviteLink">{roomData.invitationLink}</span>
                 <button id="copy-btn" onClick={handleCopy}>
                   Copy
                 </button>
@@ -281,18 +302,30 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
                 <label htmlFor="room-name-input">Название комнаты:</label>
                 <input
                   id="room-name-input"
-                  value={roomName}
+                  value={roomData.roomName}
                   {...INPUT_PROPS}
-                  onChange={(e) => setRoomName(e.target.value)}
+                  // onChange={(e) => setRoomName(e.target.value)}
+                  onChange={(e) =>
+                    setRoomData((prev) => ({
+                      ...prev,
+                      roomName: e.target.value,
+                    }))
+                  }
                 />
               </div>
               <div className="form-group">
                 <label htmlFor="room-description-input">Описание:</label>
                 <textarea
                   id="room-description-input"
-                  value={roomDescription}
+                  value={roomData.description}
                   {...INPUT_PROPS}
-                  onChange={(e) => setRoomDescription(e.target.value)}
+                  // onChange={(e) => setRoomDescription(e.target.value)}
+                  onChange={(e) =>
+                    setRoomData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                 />
               </div>
               <div className="modal-buttons">
