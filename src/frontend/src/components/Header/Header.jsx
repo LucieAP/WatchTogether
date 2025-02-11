@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router";
-import gearIcon from "../../assets/gear-icon.png";
 
 export default function Header() {
   const navigate = useNavigate();

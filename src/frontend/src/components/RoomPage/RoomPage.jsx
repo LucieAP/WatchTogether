@@ -4,6 +4,12 @@ import { useState } from "react";
 import { updateRoom } from "../../api/rooms";
 import axios from "axios";
 
+const INPUT_PROPS = {
+  spellCheck: "false",
+  autoCorrect: "off",
+  autoCapitalize: "none",
+};
+
 export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
@@ -182,6 +188,7 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
                 <input
                   id="room-name-input"
                   value={roomName}
+                  {...INPUT_PROPS}
                   onChange={(e) => setRoomName(e.target.value)}
                 />
               </div>
@@ -190,6 +197,7 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
                 <textarea
                   id="room-description-input"
                   value={roomDescription}
+                  {...INPUT_PROPS}
                   onChange={(e) => setRoomDescription(e.target.value)}
                 />
               </div>

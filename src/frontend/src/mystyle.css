@@ -20,3 +20,12 @@ body {
   flex: 1;
   padding: 20px; /* Можно настроить по желанию */
 }
+
+.btn {
+  padding: 8px 12px;
+  border: none;
+  background: #007bff;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
