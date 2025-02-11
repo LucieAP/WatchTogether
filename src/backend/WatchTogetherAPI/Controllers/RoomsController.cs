@@ -145,11 +145,17 @@ namespace WatchTogetherAPI.Controllers
                 // Это вернет статус 201 Created и установит заголовок Location с URL новой комнаты.
                 // CreatedAtAction автоматически генерирует URL вида /api/Rooms/{roomId}
 
-                return CreatedAtAction(
-                    nameof(GetRoom),                                    // Имя целевого метода
-                    new { roomId = newRoom.RoomId.ToString() },         // Параметры маршрута
-                    response                                            // Тело ответа
-                );
+                //return CreatedAtAction(
+                //    nameof(GetRoom),                                    // Имя целевого метода
+                //    new { roomId = newRoom.RoomId.ToString() },         // Параметры маршрута
+                //    response                                            // Тело ответа
+                //);
+
+                // Возвращаем статус 201 с телом ответа
+                return new ObjectResult(response)
+                {
+                    StatusCode = StatusCodes.Status201Created
+                };
             }
             catch (Exception ex)
             {
@@ -232,9 +238,10 @@ namespace WatchTogetherAPI.Controllers
                     }
                 };
 
-                return Request.Headers["Accept"].ToString().Contains("text/html")
-                    ? View("Room", room)
-                    : Ok(response);
+                return Ok(response);
+                //return Request.Headers["Accept"].ToString().Contains("text/html")
+                //    ? View("Room", room)
+                //    : Ok(response);
 
             }
             catch (Exception ex)

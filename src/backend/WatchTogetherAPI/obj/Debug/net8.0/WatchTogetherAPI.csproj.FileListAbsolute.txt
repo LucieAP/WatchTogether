@@ -277,3 +277,5 @@ C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\WatchTogetherAPI.pdb
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\WatchTogetherAPI.genruntimeconfig.cache
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\ref\WatchTogetherAPI.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.Extensions.ObjectPool.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Net.WebSockets.WebSocketProtocol.dll

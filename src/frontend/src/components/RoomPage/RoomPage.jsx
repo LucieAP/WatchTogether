@@ -140,7 +140,8 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
 
   const handleParticipantsUpdated = async () => {
     const response = await getRoom(roomId);
-    setParticipants(response.data.Room.Participants);
+    console.log("response: ", response);
+    setParticipants(response.data.room.participants);
   };
 
   const handleSubmit = async (e) => {
