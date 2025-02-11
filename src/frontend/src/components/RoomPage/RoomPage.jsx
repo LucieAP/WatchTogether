@@ -13,9 +13,10 @@ const INPUT_PROPS = {
 
 export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [inviteLink, setInviteLink] = useState("");
-  const [roomName, setRoomName] = useState("Название комнаты");
-  const [roomDescription, setRoomDescription] = useState("");
+  // const [roomName, setRoomName] = useState("Название комнаты");
+  // const [roomDescription, setRoomDescription] = useState("");
+  // const [inviteLink, setInviteLink] = useState("");
+  // const [participants, setParticipants] = useState([]);
   const [showNotification, setShowNotification] = useState(false);
   // Отслеживаем взаимодействие с мышью, чтобы решить проблему закрытия модального окна при копировании текста и выходе курсора за его границы
   const mouseDownOnContentRef = useRef(false);
@@ -23,8 +24,15 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   const { roomId } = useParams();
   const [messages, setMessages] = useState([]);
   const [userInfo, setUserInfo] = useState(null);
-  const [participants, setParticipants] = useState([]);
   const connectionRef = useRef(null);
+
+  // Объединяем данные комнаты в одно состояние
+  const [roomData, setRoomData] = useState({
+    roomName: "Название комнаты",
+    description: "",
+    invitationLink: "",
+    participants: [],
+  });
 
   // Загрузка данных комнаты
   useEffect(() => {
@@ -33,12 +41,20 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
       try {
         const response = await axios.get(`/api/Rooms/${roomId}`);
         console.log("GET запрос к /api/Rooms/{roomId}: ", response.data);
-        const roomData = response.data.room;
+        // const roomData = response.data.room;
+
+        setRoomData((prev) => ({
+          ...prev,
+          roomName: response.data.room.roomName,
+          description: response.data.room.description,
+          invitationLink: response.data.room.invitationLink,
+          participants: response.data.room.participants,
+        }));
 
         // Обновляем локальные состояния данными с сервера
-        setRoomName(roomData.roomName);
-        setRoomDescription(roomData.description);
-        setInviteLink(roomData.invitationLink);
+        // setRoomName(roomData.roomName);
+        // setRoomDescription(roomData.description);
+        // setInviteLink(roomData.invitationLink);
 
         // console.log("roomName: ", roomData.roomName);
         // console.log("description: ", roomData.description);
@@ -104,14 +120,14 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   useEffect(() => {
     const setupChat = async () => {
       try {
-        // Получаем данные комнаты и информацию о пользователе
-        const roomResponse = await getRoom(roomId);
+        // Используем уже полученные данные из roomData
+        // const roomResponse = await getRoom(roomId);
         const joinResponse = await axios.post(`/api/Rooms/${roomId}/join`);
 
-        console.log("roomResponse", roomResponse);
+        // console.log("roomResponse", roomResponse);
         console.log("joinResponse", joinResponse);
         setUserInfo(joinResponse.data);
-        setParticipants(roomResponse.room.participants);
+        // setParticipants(roomResponse.room.participants);
 
         // Подключаемся к SignalR
         const { connection, start, sendMessage } = createConnection(
@@ -139,9 +155,14 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   };
 
   const handleParticipantsUpdated = async () => {
-    const response = await getRoom(roomId);
+    // const response = await getRoom(roomId);
+    const response = await axios.get(`/api/Rooms/${roomId}`);
     console.log("response: ", response);
-    setParticipants(response.data.room.participants);
+    // setParticipants(response.data.room.participants);
+    setRoomData((prev) => ({
+      ...prev,
+      participants: response.data.room.participants,
+    }));
   };
 
   const handleSubmit = async (e) => {
