@@ -1,7 +1,8 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useRef } from "react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { updateRoom } from "../../api/rooms";
+import { getRoom } from "../../api/rooms";
+import { createConnection } from "../../api/chat";
 import axios from "axios";
 
 const INPUT_PROPS = {
@@ -20,6 +21,10 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   const mouseDownOnContentRef = useRef(false);
 
   const { roomId } = useParams();
+  const [messages, setMessages] = useState([]);
+  const [userInfo, setUserInfo] = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const connectionRef = useRef(null);
 
   // Загрузка данных комнаты
   useEffect(() => {
@@ -95,6 +100,65 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
     }
   };
 
+  // Загрузка данных комнаты и подключение к чату
+  useEffect(() => {
+    const setupChat = async () => {
+      try {
+        // Получаем данные комнаты и информацию о пользователе
+        const roomResponse = await getRoom(roomId);
+        const joinResponse = await axios.post(`/api/Rooms/${roomId}/join`);
+
+        console.log("roomResponse", roomResponse);
+        console.log("joinResponse", joinResponse);
+        setUserInfo(joinResponse.data);
+        setParticipants(roomResponse.room.participants);
+
+        // Подключаемся к SignalR
+        const { connection, start, sendMessage } = createConnection(
+          roomId,
+          handleNewMessage,
+          handleParticipantsUpdated
+        );
+
+        connectionRef.current = { connection, sendMessage };
+        await start();
+      } catch (error) {
+        console.error("Chat setup error:", error);
+      }
+    };
+
+    setupChat();
+
+    return () => {
+      connectionRef.current?.connection.stop();
+    };
+  }, [roomId]);
+
+  const handleNewMessage = (message) => {
+    setMessages((prev) => [...prev, message]);
+  };
+
+  const handleParticipantsUpdated = async () => {
+    const response = await getRoom(roomId);
+    setParticipants(response.data.Room.Participants);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const input = e.target.elements.chatInput;
+    const message = input.value.trim();
+
+    if (message && userInfo) {
+      await connectionRef.current.sendMessage(
+        roomId,
+        userInfo.UserId,
+        userInfo.Username,
+        message
+      );
+      input.value = "";
+    }
+  };
+
   return (
     <main className="main-content2">
       {/* Левая колонка: Видео-плеер */}
@@ -151,12 +215,20 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
           </div>
         )}
 
-        <div id="chat-messages">{/* Сообщения чата */}</div>
+        <div id="chat-messages">
+          {/* Сообщения чата */}
+          {messages.map((msg, index) => (
+            <div key={index} className="message">
+              <strong>{msg.userName}:</strong> {msg.message}
+            </div>
+          ))}
+        </div>
 
-        <form id="chat-form">
+        <form id="chat-form" onSubmit={handleSubmit}>
           <input
             type="text"
             id="chat-input"
+            name="chatInput"
             placeholder="Введите сообщение..."
           />
           <button type="submit" className="btn">

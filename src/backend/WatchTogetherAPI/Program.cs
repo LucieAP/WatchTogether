@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using WatchTogetherAPI.Data.AppDbContext;
+using WatchTogetherAPI.Hubs;
 using WatchTogetherAPI.Services;
 
 namespace WatchTogetherAPI
@@ -22,7 +23,7 @@ namespace WatchTogetherAPI
 
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
-                {              // Обработка циклических ссылок   
+                {   // Обработка циклических ссылок   
                     //options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 });
@@ -30,12 +31,14 @@ namespace WatchTogetherAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddRazorPages();
+            builder.Services.AddSignalR();
 
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", policy =>
                 {
                     policy/*.AllowAnyOrigin()*/
+                          .WithOrigins("https://localhost:5173")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .WithExposedHeaders("X-User-Id") // Разрешаем клиенту видеть X-User-Id
@@ -63,6 +66,8 @@ namespace WatchTogetherAPI
 
             app.UseHttpsRedirection();
 
+            app.UseCors("AllowAll");
+
             app.UseSession();
 
             app.UseStaticFiles();           // разрешает отдавать файлы из wwwroot
@@ -77,7 +82,7 @@ namespace WatchTogetherAPI
 
             app.MapFallbackToFile("index.html");
 
-            app.UseCors("AllowAll");
+            app.MapHub<ChatHub>("/chatHub");    // Чат
 
             app.Run();
         }

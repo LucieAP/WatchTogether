@@ -168,17 +168,20 @@
 }
 
 #chat-messages {
-  flex: 1;
+  height: calc(100vh - 120px);
   overflow-y: auto;
-  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
 }
 
 #chat-form {
   display: flex;
+  gap: 10px;
 }
 
 #chat-input {
-  flex: 1;
+  flex-grow: 1;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;

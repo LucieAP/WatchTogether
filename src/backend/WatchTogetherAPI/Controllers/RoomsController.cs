@@ -305,6 +305,34 @@ namespace WatchTogetherAPI.Controllers
             });
         }
 
+        [HttpPost("{roomId}/join")]
+        public async Task<IActionResult> JoinChat(Guid roomId)
+        {
+            var user = await GetOrCreateUserAsync();
+            var room = await _context.Rooms
+                .Include(r => r.Participants)
+                .FirstOrDefaultAsync(r => r.RoomId == roomId);
+
+            if (room == null) return NotFound();
+
+            if (!room.Participants.Any(p => p.UserId == user.UserId))
+            {
+                room.Participants.Add(new Participant
+                {
+                    UserId = user.UserId,
+                    Role = ParticipantRole.Member,
+                    JoinedAt = DateTime.UtcNow
+                });
+                await _context.SaveChangesAsync(); 
+            }
+
+            return Ok(new 
+            { 
+                user.UserId, 
+                user.Username 
+            });
+        }
+
         private async Task<User> GetOrCreateUserAsync()
         {
             // Пробуем получить UserId из Cookie
