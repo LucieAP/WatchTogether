@@ -19,15 +19,20 @@ export default function CreateRoom() {
     status: 0, // 0 - приватная, 1 - публичная
   });
 
-  // Универсальный обработчик изменений
+  // Деструктуризация для упрощения чтения кода
+  const { roomName, description, status } = formData;
+
+  // Обработчик изменения формы (динамически обновляет состояние формы)
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // prev - новый объект на основе предыдущего состояния, поверхностная копия, для поля `name` устанавливается новое значение
     setFormData((prev) => ({
       ...prev,
       [name]: name === "status" ? parseInt(value, 10) : value,
     }));
   };
 
+  // Обработчик отправки
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -47,9 +52,6 @@ export default function CreateRoom() {
     }
   };
 
-  // Деструктуризация для упрощения чтения кода
-  const { roomName, description, status } = formData;
-
   return (
     <div className="wrapper">
       <div className="container mt-5">
@@ -63,6 +65,7 @@ export default function CreateRoom() {
               </div>
             )}
 
+            {/* onSubmit - событие перед отправкой формы после клика по кнопке или нажатия на Enter*/}
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="roomName">Название комнаты:</label>
@@ -77,7 +80,6 @@ export default function CreateRoom() {
                   onChange={handleChange}
                 />
               </div>
-
               <div className="form-group mt-3">
                 <label htmlFor="description">Описание:</label>
                 <textarea
@@ -91,7 +93,6 @@ export default function CreateRoom() {
                   onChange={handleChange}
                 ></textarea>
               </div>
-
               <div className="form-group mt-3">
                 <label htmlFor="roomType">Тип комнаты:</label>
                 <select
@@ -106,7 +107,6 @@ export default function CreateRoom() {
                   <option value="1">Публичная</option>
                 </select>
               </div>
-
               <button
                 type="submit"
                 className="btn btn-primary mt-4"

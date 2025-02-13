@@ -20,13 +20,13 @@ import {
 
 function HeaderSelector() {
   const location = useLocation();
-  const isRoomPage = matchPath({ path: "/room/:roomId" }, location.pathname);
+  const isRoomPage = matchPath({ path: "/room/:roomId" }, location.pathname); // Соответствует ли заданный URL текущему адресу
 
   return isRoomPage ? null : <Header />;
 }
 
 function RoomPageWithHeader() {
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false); // Открытие модального окна при нажатии на шестеренку
 
   return (
     <>
@@ -47,12 +47,9 @@ export default function App() {
         <main className="main-content">
           <Routes>
             <Route path="/rooms" element={<GetRooms />} />
-            <Route path="/" element={<HomePage />} />
+            <Route path="/create-room" element={<CreateRoom />} />
             <Route path="/room/:roomId" element={<RoomPageWithHeader />} />
-            <Route
-              path="/create-room" // http://localhost:5173/create-room
-              element={<CreateRoom />}
-            />
+            <Route path="/" element={<HomePage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>

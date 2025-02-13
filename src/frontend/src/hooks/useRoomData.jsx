@@ -1,6 +1,7 @@
 // hooks/useRoomData.js
 import { useState, useEffect } from "react";
 import { getRoom } from "../api/rooms";
+import axios from "axios";
 
 export const useRoomData = (roomId) => {
   const [roomData, setRoomData] = useState(null);
@@ -13,9 +14,9 @@ export const useRoomData = (roomId) => {
 
       setIsLoading(true);
       try {
-        const data = await getRoom(roomId);
+        const response = await axios.get(`/api/Rooms/${roomId}`);
 
-        setRoomData(data);
+        setRoomData(response);
         setError(null);
       } catch (err) {
         setError(err.message);

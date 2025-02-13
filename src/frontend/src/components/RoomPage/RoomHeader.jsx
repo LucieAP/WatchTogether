@@ -12,7 +12,7 @@ export default function RoomHeader({ onSettingsClick }) {
   //   if (error) return <div>Error: {error}</div>;
   //   if (!roomData?.room) return <div>Room not found!</div>; // Добавьте эту проверку
 
-  // console.log("roomData", roomData);
+  console.log("RoomHeader roomData", roomData);
 
   const HandleHomePage = () => {
     navigate("/");
@@ -25,7 +25,7 @@ export default function RoomHeader({ onSettingsClick }) {
       </div>
 
       <div className="room-info">
-        <h1 className="room-title">{roomData?.room?.roomName}</h1>
+        <h1 className="room-title">{roomData?.data?.room?.roomName}</h1>
         <img
           src={gearIcon}
           alt="Настройки"

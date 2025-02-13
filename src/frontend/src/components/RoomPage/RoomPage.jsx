@@ -13,10 +13,6 @@ const INPUT_PROPS = {
 
 export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  // const [roomName, setRoomName] = useState("Название комнаты");
-  // const [roomDescription, setRoomDescription] = useState("");
-  // const [inviteLink, setInviteLink] = useState("");
-  // const [participants, setParticipants] = useState([]);
   const [showNotification, setShowNotification] = useState(false);
   // Отслеживаем взаимодействие с мышью, чтобы решить проблему закрытия модального окна при копировании текста и выходе курсора за его границы
   const mouseDownOnContentRef = useRef(false);
@@ -36,35 +32,31 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
 
   // Загрузка данных комнаты
   useEffect(() => {
+    const controller = new AbortController(); // отмена запросов при размонтировании
+
     // Создаем функцию для загрузки данных
     const fetchRoomData = async () => {
       try {
         const response = await axios.get(`/api/Rooms/${roomId}`);
         console.log("GET запрос к /api/Rooms/{roomId}: ", response.data);
-        // const roomData = response.data.room;
 
         setRoomData((prev) => ({
           ...prev,
-          roomName: response.data.room.roomName,
-          description: response.data.room.description,
-          invitationLink: response.data.room.invitationLink,
-          participants: response.data.room.participants,
+          roomName: response.data.room.roomName || "Название комнаты",
+          description: response.data.room.description || "",
+          invitationLink: response.data.room.invitationLink || "",
+          participants: response.data.room.participants || [],
         }));
-
-        // Обновляем локальные состояния данными с сервера
-        // setRoomName(roomData.roomName);
-        // setRoomDescription(roomData.description);
-        // setInviteLink(roomData.invitationLink);
-
-        // console.log("roomName: ", roomData.roomName);
-        // console.log("description: ", roomData.description);
-        // console.log("invitationLink: ", roomData.invitationLink);
       } catch (error) {
-        console.error("Error fetching room data:", error);
+        if (!axios.isCancel(error)) {
+          console.error("Ошибка загрузки данных:", error);
+          // Показать уведомление пользователю
+        }
       }
     };
 
     fetchRoomData();
+    return () => controller.abort();
   }, [roomId]);
 
   // Обработчик копирования ссылки
@@ -87,13 +79,9 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
     mouseDownOnContentRef.current = false;
   };
 
+  // Обработка сохранения изменений при настройке комнаты
   const handleSaveSettings = async () => {
     try {
-      // const response = await updateRoom(roomId, {
-      //   roomName: roomName,
-      //   description: roomDescription,
-      // });
-
       const response = await updateRoom(roomId, {
         roomName: roomData.roomName,
         description: roomData.description,
@@ -105,24 +93,18 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
       // Получаем обновленные данные с сервера
       const updatedRoomResponse = await getRoom(roomId);
 
-      console.log("updatedRoomResponse", updatedRoomResponse);
-      // Обновляем состояние с ответом сервера
       setRoomData((prev) => ({
         ...prev,
-        roomName: updatedRoomResponse.room.roomName,
-        description: updatedRoomResponse.room.description,
+        roomName: response.newRoomName,
+        description: response.newRoomName,
       }));
 
+      console.log("updatedRoomResponse", updatedRoomResponse);
+
       console.log("Обновленные данные:", {
-        name: updatedRoomResponse.room.roomName,
-        desc: updatedRoomResponse.room.description,
+        name: response.newRoomName,
+        desc: response.newDescription,
       });
-
-      // console.log("Обновленные данные:", {
-      //   name: response.newRoomName,
-      //   desc: response.newDescription,
-      // });
-
       onSettingsClose();
     } catch (error) {
       console.error("Ошибка при сохранении настроек:", {
@@ -141,14 +123,11 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   useEffect(() => {
     const setupChat = async () => {
       try {
-        // Используем уже полученные данные из roomData
-        // const roomResponse = await getRoom(roomId);
         const joinResponse = await axios.post(`/api/Rooms/${roomId}/join`);
 
         // console.log("roomResponse", roomResponse);
         console.log("joinResponse", joinResponse);
         setUserInfo(joinResponse.data);
-        // setParticipants(roomResponse.room.participants);
 
         // Подключаемся к SignalR
         const { connection, start, sendMessage } = createConnection(
@@ -167,29 +146,32 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
     setupChat();
 
     return () => {
-      connectionRef.current?.connection.stop();
+      if (connectionRef.current?.connection) {
+        connectionRef.current.connection.stop();
+      }
     };
   }, [roomId]);
 
+  // Обработчик нового сообщения
   const handleNewMessage = (message) => {
     setMessages((prev) => [...prev, message]);
   };
 
+  // Обработчик обновления пользователей
   const handleParticipantsUpdated = async () => {
-    // const response = await getRoom(roomId);
     const response = await axios.get(`/api/Rooms/${roomId}`);
     console.log("response: ", response);
-    // setParticipants(response.data.room.participants);
     setRoomData((prev) => ({
       ...prev,
       participants: response.data.room.participants,
     }));
   };
 
+  // Обработчик отправки сообщения
   const handleSubmit = async (e) => {
     e.preventDefault();
     const input = e.target.elements.chatInput;
-    const message = input.value.trim();
+    const message = input.value.trim(); // возвращает строку с вырезанными пробельными символами с её концов
 
     if (message && userInfo) {
       await connectionRef.current.sendMessage(
@@ -244,7 +226,7 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
             >
               <h2>Invite Link</h2>
               <div className="link-container">
-                <span id="inviteLink">{roomData.invitationLink}</span>
+                <span id="inviteLink">{roomData?.invitationLink}</span>
                 <button id="copy-btn" onClick={handleCopy}>
                   Copy
                 </button>
@@ -302,9 +284,8 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
                 <label htmlFor="room-name-input">Название комнаты:</label>
                 <input
                   id="room-name-input"
-                  value={roomData.roomName}
+                  value={roomData?.roomName}
                   {...INPUT_PROPS}
-                  // onChange={(e) => setRoomName(e.target.value)}
                   onChange={(e) =>
                     setRoomData((prev) => ({
                       ...prev,
@@ -317,9 +298,8 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
                 <label htmlFor="room-description-input">Описание:</label>
                 <textarea
                   id="room-description-input"
-                  value={roomData.description}
+                  value={roomData?.description}
                   {...INPUT_PROPS}
-                  // onChange={(e) => setRoomDescription(e.target.value)}
                   onChange={(e) =>
                     setRoomData((prev) => ({
                       ...prev,
