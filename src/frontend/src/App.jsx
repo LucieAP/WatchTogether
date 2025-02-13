@@ -1,6 +1,4 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
 import CreateRoom from "./components/CreateRoom/CreateRoom";
 import Header from "./components/Header/Header";
@@ -10,7 +8,8 @@ import HomePage from "./components/HomePage/HomePage";
 import RoomPage from "./components/RoomPage/RoomPage";
 import RoomHeader from "./components/RoomPage/RoomHeader";
 import GetRooms from "./components/GetRooms";
-import { matchPath } from "react-router";
+import { matchPath, useParams } from "react-router";
+import { useRoomData } from "./hooks/useRoomData";
 import {
   BrowserRouter as Router,
   Routes,
@@ -28,12 +27,20 @@ function HeaderSelector() {
 function RoomPageWithHeader() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false); // Открытие модального окна при нажатии на шестеренку
 
+  const { roomId } = useParams();
+  const { roomData, isLoading, error, refetch } = useRoomData(roomId);
+
   return (
     <>
-      <RoomHeader onSettingsClick={() => setIsSettingsModalOpen(true)} />
+      <RoomHeader
+        onSettingsClick={() => setIsSettingsModalOpen(true)}
+        roomName={roomData?.room?.roomName}
+      />
       <RoomPage
         isSettingsModalOpen={isSettingsModalOpen}
         onSettingsClose={() => setIsSettingsModalOpen(false)}
+        roomData={roomData}
+        refetchRoomData={refetch}
       />
     </>
   );

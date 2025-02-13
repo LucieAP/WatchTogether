@@ -2,17 +2,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useRoomData } from "../../hooks/useRoomData"; // Хук для получения данных комнаты
 import gearIcon from "../../assets/gear-icon.png";
 
-export default function RoomHeader({ onSettingsClick }) {
-  const { roomId } = useParams();
+export default function RoomHeader({ onSettingsClick, roomName }) {
   const navigate = useNavigate();
-
-  const { roomData, isLoading, error } = useRoomData(roomId);
-
-  //   if (isLoading) return <div>Loading room data...</div>;
-  //   if (error) return <div>Error: {error}</div>;
-  //   if (!roomData?.room) return <div>Room not found!</div>; // Добавьте эту проверку
-
-  console.log("RoomHeader roomData", roomData);
 
   const HandleHomePage = () => {
     navigate("/");
@@ -25,7 +16,7 @@ export default function RoomHeader({ onSettingsClick }) {
       </div>
 
       <div className="room-info">
-        <h1 className="room-title">{roomData?.data?.room?.roomName}</h1>
+        <h1 className="room-title">{roomName}</h1>
         <img
           src={gearIcon}
           alt="Настройки"

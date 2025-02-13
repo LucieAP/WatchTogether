@@ -11,7 +11,12 @@ const INPUT_PROPS = {
   autoCapitalize: "none",
 };
 
-export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
+export default function RoomPage({
+  isSettingsModalOpen,
+  onSettingsClose,
+  roomData: initialRoomData,
+  refetchRoomData,
+}) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   // Отслеживаем взаимодействие с мышью, чтобы решить проблему закрытия модального окна при копировании текста и выходе курсора за его границы
@@ -22,13 +27,36 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
   const [userInfo, setUserInfo] = useState(null);
   const connectionRef = useRef(null);
 
+  // // Объединяем данные комнаты в одно состояние
+  // const [roomData, setRoomData] = useState({
+  //   roomName: "Название комнаты",
+  //   description: "",
+  //   invitationLink: "",
+  //   participants: [],
+  // });
+
   // Объединяем данные комнаты в одно состояние
   const [roomData, setRoomData] = useState({
     roomName: "Название комнаты",
     description: "",
     invitationLink: "",
     participants: [],
+    ...initialRoomData, // Добавляем начальные значения
   });
+
+  // console.log("RoomPage roomData", roomData);
+  // console.log("RoomPage initialRoomData", initialRoomData);
+
+  // Синхронизируем только при изменении initialRoomData
+  useEffect(() => {
+    if (initialRoomData) {
+      setRoomData((prev) => ({
+        ...prev,
+        roomName: initialRoomData.room.roomName || "",
+        description: initialRoomData.room.description || "",
+      }));
+    }
+  }, [initialRoomData]);
 
   // Загрузка данных комнаты
   useEffect(() => {
@@ -87,9 +115,6 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
         description: roomData.description,
       });
 
-      // setRoomName(response.newRoomName);
-      // setRoomDescription(response.newDescription);
-
       // Получаем обновленные данные с сервера
       const updatedRoomResponse = await getRoom(roomId);
 
@@ -105,6 +130,10 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
         name: response.newRoomName,
         desc: response.newDescription,
       });
+
+      // Принудительно обновляем данные
+      await refetchRoomData();
+
       onSettingsClose();
     } catch (error) {
       console.error("Ошибка при сохранении настроек:", {
@@ -125,7 +154,6 @@ export default function RoomPage({ isSettingsModalOpen, onSettingsClose }) {
       try {
         const joinResponse = await axios.post(`/api/Rooms/${roomId}/join`);
 
-        // console.log("roomResponse", roomResponse);
         console.log("joinResponse", joinResponse);
         setUserInfo(joinResponse.data);
 
