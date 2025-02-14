@@ -24,7 +24,10 @@ export default function RoomPage({
 
   const { roomId } = useParams();
   const [messages, setMessages] = useState([]);
-  const [userInfo, setUserInfo] = useState(null);
+  const [userInfo, setUserInfo] = useState({
+    userId: "",
+    username: "",
+  });
   const connectionRef = useRef(null);
 
   // Объединяем данные комнаты в одно состояние
@@ -47,35 +50,6 @@ export default function RoomPage({
       }));
     }
   }, [initialRoomData]);
-
-  // // Загрузка данных комнаты
-  // useEffect(() => {
-  //   const controller = new AbortController(); // отмена запросов при размонтировании
-
-  //   // Создаем функцию для загрузки данных
-  //   const fetchRoomData = async () => {
-  //     try {
-  //       const response = await axios.get(`/api/Rooms/${roomId}`);
-  //       console.log("GET запрос к /api/Rooms/{roomId}: ", response.data);
-
-  //       setRoomData((prev) => ({
-  //         ...prev,
-  //         roomName: response.data.room.roomName || "Название комнаты",
-  //         description: response.data.room.description || "",
-  //         invitationLink: response.data.room.invitationLink || "",
-  //         participants: response.data.room.participants || [],
-  //       }));
-  //     } catch (error) {
-  //       if (!axios.isCancel(error)) {
-  //         console.error("Ошибка загрузки данных:", error);
-  //         // Показать уведомление пользователю
-  //       }
-  //     }
-  //   };
-
-  //   fetchRoomData();
-  //   return () => controller.abort();
-  // }, [roomId]);
 
   // Обработчик копирования ссылки
   const handleCopy = async () => {
@@ -142,8 +116,14 @@ export default function RoomPage({
       try {
         const joinResponse = await axios.post(`/api/Rooms/${roomId}/join`);
 
-        console.log("joinResponse", joinResponse);
-        setUserInfo(joinResponse.data);
+        console.log("Join response data:", joinResponse.data);
+        console.log("userInfo 1", userInfo);
+        setUserInfo({
+          userId: joinResponse.data.userId,
+          username: joinResponse.data.username,
+        });
+
+        console.log("userInfo 2", userInfo);
 
         // Подключаемся к SignalR
         const { connection, start, sendMessage } = createConnection(
@@ -171,6 +151,7 @@ export default function RoomPage({
   // Обработчик нового сообщения
   const handleNewMessage = (message) => {
     setMessages((prev) => [...prev, message]);
+    console.log(message);
   };
 
   // Обработчик обновления пользователей
@@ -192,8 +173,8 @@ export default function RoomPage({
     if (message && userInfo) {
       await connectionRef.current.sendMessage(
         roomId,
-        userInfo.UserId,
-        userInfo.Username,
+        userInfo.userId,
+        userInfo.username,
         message
       );
       input.value = "";
