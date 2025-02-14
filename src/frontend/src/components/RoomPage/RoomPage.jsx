@@ -27,14 +27,6 @@ export default function RoomPage({
   const [userInfo, setUserInfo] = useState(null);
   const connectionRef = useRef(null);
 
-  // // Объединяем данные комнаты в одно состояние
-  // const [roomData, setRoomData] = useState({
-  //   roomName: "Название комнаты",
-  //   description: "",
-  //   invitationLink: "",
-  //   participants: [],
-  // });
-
   // Объединяем данные комнаты в одно состояние
   const [roomData, setRoomData] = useState({
     roomName: "Название комнаты",
@@ -44,9 +36,6 @@ export default function RoomPage({
     ...initialRoomData, // Добавляем начальные значения
   });
 
-  // console.log("RoomPage roomData", roomData);
-  // console.log("RoomPage initialRoomData", initialRoomData);
-
   // Синхронизируем только при изменении initialRoomData
   useEffect(() => {
     if (initialRoomData) {
@@ -54,38 +43,39 @@ export default function RoomPage({
         ...prev,
         roomName: initialRoomData.room.roomName || "",
         description: initialRoomData.room.description || "",
+        invitationLink: initialRoomData.room.invitationLink || "",
       }));
     }
   }, [initialRoomData]);
 
-  // Загрузка данных комнаты
-  useEffect(() => {
-    const controller = new AbortController(); // отмена запросов при размонтировании
+  // // Загрузка данных комнаты
+  // useEffect(() => {
+  //   const controller = new AbortController(); // отмена запросов при размонтировании
 
-    // Создаем функцию для загрузки данных
-    const fetchRoomData = async () => {
-      try {
-        const response = await axios.get(`/api/Rooms/${roomId}`);
-        console.log("GET запрос к /api/Rooms/{roomId}: ", response.data);
+  //   // Создаем функцию для загрузки данных
+  //   const fetchRoomData = async () => {
+  //     try {
+  //       const response = await axios.get(`/api/Rooms/${roomId}`);
+  //       console.log("GET запрос к /api/Rooms/{roomId}: ", response.data);
 
-        setRoomData((prev) => ({
-          ...prev,
-          roomName: response.data.room.roomName || "Название комнаты",
-          description: response.data.room.description || "",
-          invitationLink: response.data.room.invitationLink || "",
-          participants: response.data.room.participants || [],
-        }));
-      } catch (error) {
-        if (!axios.isCancel(error)) {
-          console.error("Ошибка загрузки данных:", error);
-          // Показать уведомление пользователю
-        }
-      }
-    };
+  //       setRoomData((prev) => ({
+  //         ...prev,
+  //         roomName: response.data.room.roomName || "Название комнаты",
+  //         description: response.data.room.description || "",
+  //         invitationLink: response.data.room.invitationLink || "",
+  //         participants: response.data.room.participants || [],
+  //       }));
+  //     } catch (error) {
+  //       if (!axios.isCancel(error)) {
+  //         console.error("Ошибка загрузки данных:", error);
+  //         // Показать уведомление пользователю
+  //       }
+  //     }
+  //   };
 
-    fetchRoomData();
-    return () => controller.abort();
-  }, [roomId]);
+  //   fetchRoomData();
+  //   return () => controller.abort();
+  // }, [roomId]);
 
   // Обработчик копирования ссылки
   const handleCopy = async () => {
@@ -123,8 +113,6 @@ export default function RoomPage({
         roomName: response.newRoomName,
         description: response.newRoomName,
       }));
-
-      console.log("updatedRoomResponse", updatedRoomResponse);
 
       console.log("Обновленные данные:", {
         name: response.newRoomName,

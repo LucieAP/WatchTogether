@@ -13,8 +13,8 @@ export const useRoomData = (roomId) => {
     setIsLoading(true);
     try {
       const response = await axios.get(`/api/Rooms/${roomId}`);
-
       setRoomData(response.data);
+
       setError(null);
     } catch (err) {
       setError(err.message);

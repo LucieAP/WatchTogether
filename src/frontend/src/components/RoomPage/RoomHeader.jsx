@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useRoomData } from "../../hooks/useRoomData"; // Хук для получения данных комнаты
 import gearIcon from "../../assets/gear-icon.png";
 
 export default function RoomHeader({ onSettingsClick, roomName }) {
