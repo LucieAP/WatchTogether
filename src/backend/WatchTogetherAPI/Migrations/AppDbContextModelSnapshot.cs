@@ -119,8 +119,7 @@ namespace WatchTogetherAPI.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.HasIndex("CurrentVideoId")
-                        .IsUnique();
+                    b.HasIndex("CurrentVideoId");
 
                     b.HasIndex("RoomName");
 
@@ -173,10 +172,6 @@ namespace WatchTogetherAPI.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("VideoId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("VideoUrl")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -234,8 +229,8 @@ namespace WatchTogetherAPI.Migrations
                         .IsRequired();
 
                     b.HasOne("WatchTogetherAPI.Models.Video", "CurrentVideo")
-                        .WithOne()
-                        .HasForeignKey("WatchTogetherAPI.Models.Room", "CurrentVideoId")
+                        .WithMany()
+                        .HasForeignKey("CurrentVideoId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("CreatedByUser");

@@ -15,6 +15,8 @@ export const useRoomData = (roomId) => {
       const response = await axios.get(`/api/Rooms/${roomId}`);
       setRoomData(response.data);
 
+      console.log("GET запрос к /api/Rooms/${roomId}: ", response.data);
+
       setError(null);
     } catch (err) {
       setError(err.message);

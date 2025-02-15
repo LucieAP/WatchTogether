@@ -11,9 +11,15 @@ const INPUT_PROPS = {
   autoCapitalize: "none",
 };
 
-// Регулярное выражение для извлечения YouTube video ID
+/* Регулярное выражение для всех форматов YouTube
+  https://youtube.com/watch?v=ID
+  https://www.youtube.com/watch?v=ID
+  https://youtu.be/ID
+  youtube.com/shorts/ID
+*/
+
 const YOUTUBE_REGEX =
-  /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
 
 export default function RoomPage({
   isSettingsModalOpen,
@@ -191,17 +197,29 @@ export default function RoomPage({
   // Обработчик добавления видео
   const handleAddVideo = async () => {
     const match = videoUrl.match(YOUTUBE_REGEX);
-    if (match && match[2].length === 11) {
-      const videoId = match[2];
+    if (match && match[1].length === 11) {
+      const videoId = match[1]; // id видео ютуба (11 цифр)
 
       try {
-        // // Обновляем видео в комнате на бэкенде
-        // await axios.post(`/api/rooms/${roomId}/video`, { videoId });
-        // // Обновляем состояние и инициализируем плеер
-        // setRoomData(prev => ({ ...prev, currentVideoId: videoId }));
-        // initializePlayer(videoId);
-        // setIsAddVideoModalOpen(false);
-        // setVideoUrl("");
+        // Получаем метаданные видео через YouTube API
+        const metadata = await fetchYouTubeMetadata(videoId); // Ваша реализация
+        // Обновляем видео в комнате на бэкенде
+        const response = await axios.put(`/api/rooms/${roomId}/video`, {
+          videoId,
+          title: metadata.title,
+          duration: metadata.duration,
+        });
+
+        console.log("Update Video and Room: ", response);
+
+        // Используем данные из ответа сервера
+        const updatedRoom = response.data.room;
+        setRoomData(updatedRoom);
+
+        initializePlayer(updatedRoom.currentVideo.videoId);
+
+        setIsAddVideoModalOpen(false);
+        setVideoUrl("");
       } catch (error) {
         console.error("Ошибка при обновлении видео:", error);
       }
@@ -243,13 +261,11 @@ export default function RoomPage({
                 placeholder="Вставьте ссылку YouTube"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-              />
-              <div
-                className="modal-buttons"
                 onMouseDown={() => {
                   mouseDownOnContentRef.current = true;
                 }}
-              >
+              />
+              <div className="modal-buttons">
                 <button className="btn" onClick={handleAddVideo}>
                   Добавить
                 </button>

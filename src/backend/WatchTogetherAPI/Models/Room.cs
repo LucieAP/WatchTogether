@@ -63,7 +63,8 @@ namespace WatchTogetherAPI.Models
 
         public virtual User CreatedByUser { get; set; }
         public virtual ICollection<Participant> Participants { get; set; }
-
+        
+        [ForeignKey("CurrentVideoId")]
         public virtual Video CurrentVideo { get; set; }
     }
 }

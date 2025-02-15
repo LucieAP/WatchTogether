@@ -38,3 +38,11 @@ export const getRoom = async (roomId) => {
     throw error;
   }
 };
+
+// export const updateVideo = async (roomId) => {
+//   try {
+//     return await apiClient.post(`/Rooms/${roomId}/video`, videoId);
+//   } catch (error) {
+//     throw error;
+//   }
+// };

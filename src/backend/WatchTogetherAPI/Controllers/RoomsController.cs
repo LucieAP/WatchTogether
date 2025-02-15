@@ -229,6 +229,10 @@ namespace WatchTogetherAPI.Controllers
                         room.RoomName,
                         room.Description,
                         room.InvitationLink,
+                        // room.CurrentVideo,
+                        // room.CurrentVideoId,
+                        // room.IsPaused,
+                        // room.CurrentTime,
                         Participants = room.Participants.Select(p => new
                         {
                             p.User.UserId,
@@ -253,7 +257,7 @@ namespace WatchTogetherAPI.Controllers
 
         // PUT: api/Rooms/{id}
 
-        [HttpPut("{roomId}")]
+        [HttpPut("{roomId:guid}")]
         public async Task<IActionResult> UpdateRoom(Guid roomId, [FromBody] UpdateRoomRequest request)
         {
             if (request.RoomName == null && request.Description == null)
@@ -311,7 +315,7 @@ namespace WatchTogetherAPI.Controllers
             });
         }
 
-        [HttpPost("{roomId}/join")]
+        [HttpPost("{roomId:guid}/join")]
         public async Task<IActionResult> JoinChat(Guid roomId)
         {
             var user = await GetOrCreateUserAsync();
@@ -337,6 +341,63 @@ namespace WatchTogetherAPI.Controllers
                 user.UserId, 
                 user.Username 
             });
+        }
+
+        [HttpPut("{roomId:guid}/video")]
+        public async Task<IActionResult> UpdateVideo(Guid roomId, [FromBody] UpdateVideoRequest request)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var room = await _context.Rooms
+                    .Include(r => r.Participants)
+                    .Include(r => r.CurrentVideo) // Загружаем связанное видео
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                
+                if (room == null) return NotFound("Комната не найдена");
+
+                // Проверяем существование видео в базе
+                var video = await _context.Videos
+                    .FirstOrDefaultAsync(v => v.VideoId == request.VideoId);
+
+                if (video == null)
+                {
+                    // Создаем новый экземпляр видео
+                    video = new Video 
+                    {
+                        VideoId = request.VideoId,
+                        Title = request.Title,
+                        Duration = request.Duration,
+                    };
+                    _context.Videos.Add(video);
+                }
+
+                var currentUser = await GetOrCreateUserAsync();
+
+                if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
+                {
+                    return Forbid("Вы не являетесь участником комнаты.");
+                };
+                
+                // // Обновляем состояние комнаты
+                room.CurrentVideo = video;
+                room.CurrentTime = TimeSpan.Zero;
+                room.LastUpdated = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new{ 
+                    room,
+                    video
+                });
+            }
+            catch (Exception error)
+            {
+                _logger.LogError(error, "Ошибка добавления видео");
+                await transaction.RollbackAsync();
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
         }
 
         private async Task<User> GetOrCreateUserAsync()
