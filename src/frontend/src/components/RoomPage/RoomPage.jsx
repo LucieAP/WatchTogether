@@ -11,6 +11,10 @@ const INPUT_PROPS = {
   autoCapitalize: "none",
 };
 
+// Регулярное выражение для извлечения YouTube video ID
+const YOUTUBE_REGEX =
+  /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+
 export default function RoomPage({
   isSettingsModalOpen,
   onSettingsClose,
@@ -21,6 +25,9 @@ export default function RoomPage({
   const [showNotification, setShowNotification] = useState(false);
   // Отслеживаем взаимодействие с мышью, чтобы решить проблему закрытия модального окна при копировании текста и выходе курсора за его границы
   const mouseDownOnContentRef = useRef(false);
+
+  const [isAddVideoModalOpen, setIsAddVideoModalOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
 
   const { roomId } = useParams();
   const [messages, setMessages] = useState([]);
@@ -181,6 +188,28 @@ export default function RoomPage({
     }
   };
 
+  // Обработчик добавления видео
+  const handleAddVideo = async () => {
+    const match = videoUrl.match(YOUTUBE_REGEX);
+    if (match && match[2].length === 11) {
+      const videoId = match[2];
+
+      try {
+        // // Обновляем видео в комнате на бэкенде
+        // await axios.post(`/api/rooms/${roomId}/video`, { videoId });
+        // // Обновляем состояние и инициализируем плеер
+        // setRoomData(prev => ({ ...prev, currentVideoId: videoId }));
+        // initializePlayer(videoId);
+        // setIsAddVideoModalOpen(false);
+        // setVideoUrl("");
+      } catch (error) {
+        console.error("Ошибка при обновлении видео:", error);
+      }
+    } else {
+      alert("Пожалуйста, введите корректную ссылку YouTube");
+    }
+  };
+
   return (
     <main className="main-content2">
       {/* Левая колонка: Видео-плеер */}
@@ -188,9 +217,52 @@ export default function RoomPage({
         <div id="video-player">
           {/* Здесь будет интеграция YouTube плеера */}
         </div>
-        <button id="add-video-btn" className="btn">
+        <button
+          id="add-video-btn"
+          className="btn"
+          onClick={() => setIsAddVideoModalOpen(true)}
+        >
           +
         </button>
+
+        {/* Модалка добавления видео */}
+        {isAddVideoModalOpen && (
+          <div
+            className="modal"
+            onClick={handleCloseModal}
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) {
+                mouseDownOnContentRef.current = false;
+              }
+            }}
+          >
+            <div className="modal-content">
+              <h2>Добавить видео</h2>
+              <input
+                type="text"
+                placeholder="Вставьте ссылку YouTube"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+              />
+              <div
+                className="modal-buttons"
+                onMouseDown={() => {
+                  mouseDownOnContentRef.current = true;
+                }}
+              >
+                <button className="btn" onClick={handleAddVideo}>
+                  Добавить
+                </button>
+                <button
+                  className="btn"
+                  onClick={() => setIsAddVideoModalOpen(false)}
+                >
+                  Отмена
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
       {/* Правая колонка: Чат */}
       <section className="chat-section">
