@@ -102,7 +102,6 @@ namespace WatchTogetherAPI.Controllers
                     CreatedAt = DateTime.UtcNow,
                     ExpiresAt = DateTime.UtcNow.AddHours(24),
                     InvitationLink = "",
-                    VideoUrl = "tempVideoUrl",
                     CreatedByUser = guestUser
                 };
 

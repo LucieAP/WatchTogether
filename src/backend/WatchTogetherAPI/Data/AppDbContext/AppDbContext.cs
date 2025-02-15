@@ -12,6 +12,8 @@ namespace WatchTogetherAPI.Data.AppDbContext
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Participant> Participants { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<Video> Videos { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -49,6 +51,27 @@ namespace WatchTogetherAPI.Data.AppDbContext
 
             modelBuilder.Entity<Room>()     // Неуникальный индекс для Room.RoomName(ускорение поиска по имени комнаты).
                 .HasIndex(r => r.RoomName);
+
+            // Настройка связи Video → Room (многие к одному)
+
+            modelBuilder.Entity<Video>()
+                .HasOne(v => v.Room)
+                .WithMany()
+                .HasForeignKey("RoomId")
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Настройка связи Room.CurrentVideo (один к одному)
+
+            modelBuilder.Entity<Room>()
+                .HasOne(r => r.CurrentVideo)
+                .WithOne()
+                .HasForeignKey<Room>(r => r.CurrentVideoId)
+                .OnDelete(DeleteBehavior.SetNull);      // Устанавливает null при удалении видео
+
+            // Индекс для RoomId в Video для оптимизации запросов
+
+            modelBuilder.Entity<Video>()
+                .HasIndex(v => v.RoomId);
         }
     }
 }

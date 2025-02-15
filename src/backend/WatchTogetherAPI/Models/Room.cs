@@ -45,9 +45,18 @@ namespace WatchTogetherAPI.Models
 
         public DateTime ExpiresAt { get; set; }
 
-        public string VideoUrl { get; set; }
-
         public string InvitationLink { get; set; }
+
+
+        // Текущее видео
+
+        public Guid? CurrentVideoId { get; set; }
+
+        public bool IsPaused { get; set; } = true;
+
+        public TimeSpan CurrentTime { get; set; }
+
+        public DateTime LastUpdated { get; set; } // Время последнего изменения состояния
 
 
         // Навигационные свойства с внешними сущностями
@@ -55,5 +64,6 @@ namespace WatchTogetherAPI.Models
         public virtual User CreatedByUser { get; set; }
         public virtual ICollection<Participant> Participants { get; set; }
 
+        public virtual Video CurrentVideo { get; set; }
     }
 }

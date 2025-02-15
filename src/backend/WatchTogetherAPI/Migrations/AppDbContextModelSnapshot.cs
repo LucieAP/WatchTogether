@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WatchTogetherAPI.Data.AppDbContext;
 
-
 #nullable disable
 
 namespace WatchTogetherAPI.Migrations
@@ -84,6 +83,12 @@ namespace WatchTogetherAPI.Migrations
                     b.Property<Guid>("CreatedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<TimeSpan>("CurrentTime")
+                        .HasColumnType("interval");
+
+                    b.Property<Guid?>("CurrentVideoId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -96,6 +101,12 @@ namespace WatchTogetherAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsPaused")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("RoomName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -104,13 +115,12 @@ namespace WatchTogetherAPI.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<string>("VideoUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("RoomId");
 
                     b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("CurrentVideoId")
+                        .IsUnique();
 
                     b.HasIndex("RoomName");
 
@@ -144,6 +154,37 @@ namespace WatchTogetherAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("WatchTogetherAPI.Models.Video", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeSpan>("Duration")
+                        .HasColumnType("interval");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("VideoId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("VideoUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId");
+
+                    b.ToTable("Videos");
                 });
 
             modelBuilder.Entity("WatchTogetherAPI.Models.Message", b =>
@@ -192,7 +233,25 @@ namespace WatchTogetherAPI.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("WatchTogetherAPI.Models.Video", "CurrentVideo")
+                        .WithOne()
+                        .HasForeignKey("WatchTogetherAPI.Models.Room", "CurrentVideoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("CreatedByUser");
+
+                    b.Navigation("CurrentVideo");
+                });
+
+            modelBuilder.Entity("WatchTogetherAPI.Models.Video", b =>
+                {
+                    b.HasOne("WatchTogetherAPI.Models.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("WatchTogetherAPI.Models.Room", b =>
