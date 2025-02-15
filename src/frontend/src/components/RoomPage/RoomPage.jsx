@@ -4,6 +4,8 @@ import { updateRoom } from "../../api/rooms";
 import { getRoom } from "../../api/rooms";
 import { createConnection } from "../../api/chat";
 import axios from "axios";
+import ReactPlayer from "react-player";
+import { useDebouncedCallback } from "use-debounce";
 
 const INPUT_PROPS = {
   spellCheck: "false",
@@ -17,7 +19,6 @@ const INPUT_PROPS = {
   https://youtu.be/ID
   youtube.com/shorts/ID
 */
-
 const YOUTUBE_REGEX =
   /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
 
@@ -51,6 +52,33 @@ export default function RoomPage({
     participants: [],
     ...initialRoomData, // Добавляем начальные значения
   });
+
+  // Cостояния для управления плеером
+  const [playerState, setPlayerState] = useState({
+    playing: !roomData.isPaused,
+    playedSeconds: 0,
+  });
+
+  // Добавляем состояния для метаданных
+  const [videoMetadata, setVideoMetadata] = useState({
+    title: "",
+    duration: 0,
+  });
+
+  const playerRef = useRef(null);
+
+  // Эффект для синхронизации времени плеера
+  useEffect(() => {
+    if (
+      roomData.currentTime &&
+      roomData.currentTime !== playerState.playedSeconds
+    ) {
+      setPlayerState((prev) => ({
+        ...prev,
+        playedSeconds: roomData.currentTime,
+      }));
+    }
+  }, [roomData.currentTime]);
 
   // Синхронизируем только при изменении initialRoomData
   useEffect(() => {
@@ -201,22 +229,33 @@ export default function RoomPage({
       const videoId = match[1]; // id видео ютуба (11 цифр)
 
       try {
-        // Получаем метаданные видео через YouTube API
-        const metadata = await fetchYouTubeMetadata(videoId); // Ваша реализация
+        // Получаем метаданные видео
+        // const metadata = await fetchYouTubeMetadata(videoId);
+
         // Обновляем видео в комнате на бэкенде
         const response = await axios.put(`/api/rooms/${roomId}/video`, {
           videoId,
-          title: metadata.title,
-          duration: metadata.duration,
+          title: videoMetadata.title,
+          duration: videoMetadata.duration,
         });
 
         console.log("Update Video and Room: ", response);
 
-        // Используем данные из ответа сервера
-        const updatedRoom = response.data.room;
-        setRoomData(updatedRoom);
+        // // Используем данные из ответа сервера
+        // const updatedRoom = response.data.room;
+        // setRoomData(updatedRoom);
 
-        initializePlayer(updatedRoom.currentVideo.videoId);
+        // initializePlayer(updatedRoom.currentVideo.videoId);
+
+        setRoomData((prev) => ({
+          ...prev,
+          currentVideoId: videoId,
+          currentVideo: {
+            videoId,
+            title: videoMetadata.title,
+            duration: videoMetadata.duration,
+          },
+        }));
 
         setIsAddVideoModalOpen(false);
         setVideoUrl("");
@@ -228,13 +267,82 @@ export default function RoomPage({
     }
   };
 
+  // Обработчик управления плеером
+  const handlePlayerAction = async (action) => {
+    try {
+      await axios.patch(`/api/rooms/${roomId}/player`, {
+        isPaused: action === "pause",
+      });
+      setRoomData((prev) => ({ ...prev, isPaused: action === "pause" }));
+    } catch (error) {
+      console.error("Ошибка синхронизации:", error);
+    }
+  };
+
+  const handleTimeUpdate = useDebouncedCallback(async (seconds) => {
+    try {
+      await axios.patch(`/api/rooms/${roomId}/player`, {
+        currentTime: Math.floor(seconds),
+      });
+    } catch (error) {
+      console.error("Ошибка обновления времени:", error);
+    }
+  }, 1000);
+
+  // Обработчик ReactPlayer
+  const handlePlayerReady = () => {
+    const internalPlayer = playerRef.current?.getInternalPlayer();
+    if (internalPlayer && internalPlayer.getVideoData) {
+      const data = internalPlayer.getVideoData();
+      setVideoMetadata((prev) => ({
+        ...prev,
+        title: data.title || "Неизвестное название",
+      }));
+    }
+  };
+
+  // Обработчик ReactPlayer
+  const handleDuration = (duration) => {
+    setVideoMetadata((prev) => ({
+      ...prev,
+      duration: Math.round(duration),
+    }));
+  };
+
   return (
     <main className="main-content2">
       {/* Левая колонка: Видео-плеер */}
       <section className="video-section">
-        <div id="video-player">
-          {/* Здесь будет интеграция YouTube плеера */}
-        </div>
+        {roomData.currentVideoId && (
+          <div className="player-wrapper">
+            <ReactPlayer
+              ref={playerRef}
+              key={roomData.currentVideoId} // Важно для перезагрузки плеера
+              url={`https://www.youtube.com/watch?v=${roomData.currentVideoId}`}
+              playing={!roomData.isPaused}
+              controls
+              width="100%"
+              height="100%"
+              onReady={handlePlayerReady}
+              onDuration={handleDuration}
+              style={{ position: "absolute", top: 0, left: 0 }}
+              onPlay={() => handlePlayerAction("play")}
+              onPause={() => handlePlayerAction("pause")}
+              onProgress={({ playedSeconds }) =>
+                handleTimeUpdate(playedSeconds)
+              }
+              onError={(e) => console.error("Ошибка плеера:", e)}
+              config={{
+                youtube: {
+                  playerVars: {
+                    modestbranding: 1,
+                    rel: 0,
+                  },
+                },
+              }}
+            />
+          </div>
+        )}
         <button
           id="add-video-btn"
           className="btn"
