@@ -49,7 +49,7 @@ namespace WatchTogetherAPI.Models
 
         // Текущее видео
 
-        public Guid? CurrentVideoId { get; set; }
+        //public Guid? CurrentVideoId { get; set; }
 
         public bool IsPaused { get; set; } = true;
 
@@ -63,7 +63,7 @@ namespace WatchTogetherAPI.Models
         public virtual User CreatedByUser { get; set; }
         public virtual ICollection<Participant> Participants { get; set; }
 
-        [ForeignKey("CurrentVideoId")]
+        //[ForeignKey("CurrentVideoId")]
         public virtual Video CurrentVideo { get; set; }
     }
 }

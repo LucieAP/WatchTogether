@@ -40,17 +40,6 @@ namespace WatchTogetherAPI.Controllers
                 .ToListAsync();
         }
 
-        // GET: api/Rooms/Create
-
-        // [HttpGet("Create")]
-        // public IActionResult CreateRoom()
-        // {
-        //     // return View();
-        //     // Если создание комнаты происходит через API, можно вернуть Ok() или Redirect
-        //     return Redirect("/api/Rooms/Create");
-        // }
-
-
         // POST: api/Rooms/Create
 
         [HttpPost("Create")]
@@ -367,18 +356,18 @@ namespace WatchTogetherAPI.Controllers
                     {
                         VideoId = request.VideoId,
                         Title = request.Title,
-                        Duration = request.Duration,
+                        DurationInSeconds = request.DurationInSeconds,
                     };
                     _context.Videos.Add(video);
                 }
 
                 var currentUser = await GetOrCreateUserAsync();
 
-                if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
-                {
-                    return Forbid("Вы не являетесь участником комнаты.");
-                };
-                
+                //if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
+                //{
+                //    return Forbid("Вы не являетесь участником комнаты.");
+                //};
+
                 // // Обновляем состояние комнаты
                 room.CurrentVideo = video;
                 room.CurrentTime = TimeSpan.Zero;
@@ -400,7 +389,44 @@ namespace WatchTogetherAPI.Controllers
             }
         }
 
-        private async Task<User> GetOrCreateUserAsync()
+        [HttpPatch("{roomId:guid}/player")]
+        public async Task<IActionResult> UpdateVideoState(Guid roomId, [FromBody] UpdateVideoStateRequest request)
+        {
+            try
+            {
+                var room = await _context.Rooms
+                    .Include(p => p.Participants)
+                    .Include(r => r.CurrentVideo) // Загружаем связанное видео
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                
+                if (room == null) return NotFound("Комната не найдена");
+
+                var currentUser = await GetOrCreateUserAsync();
+
+                if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
+                {
+                    return Forbid();
+                }
+                
+                room.IsPaused = request.IsPaused;
+                room.CurrentTime = request.CurrentTime;
+                room.LastUpdated = DateTime.UtcNow;
+                
+                return Ok(new {
+                    room.IsPaused,
+                    room.CurrentTime,
+                    room.LastUpdated
+                }); 
+            }
+            catch (Exception error)
+            {
+                
+                _logger.LogError(error, "Ошибка обновления состояния плеера");
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
+        }
+
+                private async Task<User> GetOrCreateUserAsync()
         {
             // Пробуем получить UserId из Cookie
             if (Request.Cookies.TryGetValue("X-User-Id", out var userIdCookie) &&
@@ -441,7 +467,7 @@ namespace WatchTogetherAPI.Controllers
 
             return newUser;
         }
-
+    
         // Генератор никнеймов
         private string GenerateRandomUsername(int length = 8)
         {

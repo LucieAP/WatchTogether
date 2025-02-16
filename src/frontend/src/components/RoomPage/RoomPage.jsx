@@ -222,6 +222,31 @@ export default function RoomPage({
     }
   };
 
+  // Cостояние для временных метаданных
+  const [tempMetadata, setTempMetadata] = useState({
+    title: "",
+    duration: 0,
+  });
+
+  // Обработчики для скрытого плеера
+  const handleTempPlayerReady = (player) => {
+    const internalPlayer = player.getInternalPlayer();
+    if (internalPlayer?.getVideoData) {
+      const data = internalPlayer.getVideoData();
+      setTempMetadata((prev) => ({
+        ...prev,
+        title: data.title || "Без названия",
+      }));
+    }
+  };
+
+  const handleTempDuration = (duration) => {
+    setTempMetadata((prev) => ({
+      ...prev,
+      duration: Math.round(duration),
+    }));
+  };
+
   // Обработчик добавления видео
   const handleAddVideo = async () => {
     const match = videoUrl.match(YOUTUBE_REGEX);
@@ -229,36 +254,36 @@ export default function RoomPage({
       const videoId = match[1]; // id видео ютуба (11 цифр)
 
       try {
-        // Получаем метаданные видео
-        // const metadata = await fetchYouTubeMetadata(videoId);
+        // Используем данные из tempMetadata
+        const { title, duration } = tempMetadata;
+        if (duration <= 0) {
+          alert("Данные видео еще загружаются...");
+          return;
+        }
+
+        console.log("videoId", videoId);
+        console.log("duration", duration);
+        console.log("title", title);
 
         // Обновляем видео в комнате на бэкенде
-        const response = await axios.put(`/api/rooms/${roomId}/video`, {
-          videoId,
-          title: videoMetadata.title,
-          duration: videoMetadata.duration,
+        const response = await axios.put(`/api/Rooms/${roomId}/video`, {
+          videoId: match[1],
+          title,
+          duration,
         });
 
         console.log("Update Video and Room: ", response);
 
-        // // Используем данные из ответа сервера
-        // const updatedRoom = response.data.room;
-        // setRoomData(updatedRoom);
-
-        // initializePlayer(updatedRoom.currentVideo.videoId);
-
+        // Обновляем состояние на основе ответа сервера
         setRoomData((prev) => ({
           ...prev,
           currentVideoId: videoId,
-          currentVideo: {
-            videoId,
-            title: videoMetadata.title,
-            duration: videoMetadata.duration,
-          },
+          currentVideo: { videoId: match[1], title, duration },
         }));
 
         setIsAddVideoModalOpen(false);
         setVideoUrl("");
+        setTempMetadata({ title: "", duration: 0 }); // Сброс метаданных
       } catch (error) {
         console.error("Ошибка при обновлении видео:", error);
       }
@@ -307,6 +332,13 @@ export default function RoomPage({
       ...prev,
       duration: Math.round(duration),
     }));
+  };
+
+  // Сброс метаданных при закрытии модалки
+  const closeAddVideoModal = () => {
+    setIsAddVideoModalOpen(false);
+    setVideoUrl("");
+    setTempMetadata({ title: "", duration: 0 });
   };
 
   return (
@@ -362,6 +394,14 @@ export default function RoomPage({
               }
             }}
           >
+            {/* Добавим скрытый плеер */}
+            <ReactPlayer
+              url={videoUrl}
+              onReady={handleTempPlayerReady}
+              onDuration={handleTempDuration}
+              style={{ display: "none" }} // не отображается
+            />
+
             <div className="modal-content">
               <h2>Добавить видео</h2>
               <input
@@ -374,12 +414,17 @@ export default function RoomPage({
                 }}
               />
               <div className="modal-buttons">
-                <button className="btn" onClick={handleAddVideo}>
+                <button
+                  className="btn"
+                  onClick={handleAddVideo}
+                  disabled={!tempMetadata.duration} // Проверка загрузки данных в кнопке
+                >
                   Добавить
                 </button>
                 <button
                   className="btn"
-                  onClick={() => setIsAddVideoModalOpen(false)}
+                  //onClick={() => setIsAddVideoModalOpen(false)}
+                  onClick={closeAddVideoModal}
                 >
                   Отмена
                 </button>

@@ -54,19 +54,19 @@ namespace WatchTogetherAPI.Data.AppDbContext
 
             // Настройка связи Video → Room (многие к одному)
 
-            modelBuilder.Entity<Video>()
-                .HasOne(v => v.Room)
-                .WithMany()
-                .HasForeignKey("RoomId")
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<Video>()
+            //    .HasOne(v => v.Room)
+            //    .WithMany()
+            //    .HasForeignKey("RoomId")
+            //    .OnDelete(DeleteBehavior.Cascade);
 
             // Настройка связи Room.CurrentVideo (один ко многим)
 
             modelBuilder.Entity<Room>()
                 .HasOne(r => r.CurrentVideo)
-                .WithMany()     // Видео может быть в нескольких комнатах
-                .HasForeignKey(r => r.CurrentVideoId)
-                .OnDelete(DeleteBehavior.SetNull);      // Устанавливает null при удалении видео
+                 .WithOne(v => v.Room)      // Указываем навигационное свойство в Video
+                .HasForeignKey<Video>(v => v.RoomId) // Внешний ключ в Video
+                .OnDelete(DeleteBehavior.SetNull); ;      // Устанавливает null при удалении видео
         }
     }
 }
