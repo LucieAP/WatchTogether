@@ -107,6 +107,7 @@ export default function RoomPage({
   const handleCloseModal = (e) => {
     if (e.target === e.currentTarget && !mouseDownOnContentRef.current) {
       setIsInviteModalOpen(false);
+      setIsAddVideoModalOpen(false);
       onSettingsClose();
     }
     mouseDownOnContentRef.current = false;
@@ -507,6 +508,7 @@ export default function RoomPage({
             className="modal"
             id="settings-modal"
             onClick={handleCloseModal}
+            // onClick = {()=> setIsAddVideoModalOpen(false)}
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) {
                 mouseDownOnContentRef.current = false;
