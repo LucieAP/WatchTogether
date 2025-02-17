@@ -4,23 +4,16 @@ import { updateRoom } from "../../api/rooms";
 import { getRoom } from "../../api/rooms";
 import { createConnection } from "../../api/chat";
 import axios from "axios";
-import ReactPlayer from "react-player";
+import VideoPlayer from "../VideoPlayer";
 import { useDebouncedCallback } from "use-debounce";
+import { AddVideoModal } from "../AddVideoModal";
 
+// Парамтеры для текста
 const INPUT_PROPS = {
   spellCheck: "false",
   autoCorrect: "off",
   autoCapitalize: "none",
 };
-
-/* Регулярное выражение для всех форматов YouTube
-  https://youtube.com/watch?v=ID
-  https://www.youtube.com/watch?v=ID
-  https://youtu.be/ID
-  youtube.com/shorts/ID
-*/
-const YOUTUBE_REGEX =
-  /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
 
 export default function RoomPage({
   isSettingsModalOpen,
@@ -32,9 +25,6 @@ export default function RoomPage({
   const [showNotification, setShowNotification] = useState(false);
   // Отслеживаем взаимодействие с мышью, чтобы решить проблему закрытия модального окна при копировании текста и выходе курсора за его границы
   const mouseDownOnContentRef = useRef(false);
-
-  const [isAddVideoModalOpen, setIsAddVideoModalOpen] = useState(false);
-  const [videoUrl, setVideoUrl] = useState("");
 
   const { roomId } = useParams();
   const [messages, setMessages] = useState([]);
@@ -50,35 +40,103 @@ export default function RoomPage({
     description: "",
     invitationLink: "",
     participants: [],
+    currentVideoId: null,
+    isPaused: true,
+    currentTime: 0,
+
     ...initialRoomData, // Добавляем начальные значения
   });
 
-  // Cостояния для управления плеером
-  const [playerState, setPlayerState] = useState({
-    playing: !roomData.isPaused,
-    playedSeconds: 0,
-  });
+  // console.log("roomData", roomData);
 
-  // Добавляем состояния для метаданных
-  const [videoMetadata, setVideoMetadata] = useState({
-    title: "",
-    duration: 0,
-  });
+  /* Работа с видео */
 
-  const playerRef = useRef(null);
+  /* Регулярное выражение для всех форматов YouTube
+  https://youtube.com/watch?v=ID
+  https://www.youtube.com/watch?v=ID
+  https://youtu.be/ID
+  youtube.com/shorts/ID
+  */
+  const YOUTUBE_REGEX =
+    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
 
-  // Эффект для синхронизации времени плеера
-  useEffect(() => {
-    if (
-      roomData.currentTime &&
-      roomData.currentTime !== playerState.playedSeconds
-    ) {
-      setPlayerState((prev) => ({
-        ...prev,
-        playedSeconds: roomData.currentTime,
-      }));
+  const [isAddVideoModalOpen, setIsAddVideoModalOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [tempMetadata, setTempMetadata] = useState({ title: "", duration: 0 });
+
+  // Обработчик добавления видео
+  const handleAddVideoModal = async () => {
+    const match = videoUrl.match(YOUTUBE_REGEX);
+    if (match && match[1].length === 11) {
+      const videoId = match[1]; // id видео ютуба (11 цифр)
+
+      try {
+        // Используем данные из tempMetadata
+        const { title, duration } = tempMetadata;
+
+        console.log("videoId: ", videoId);
+        console.log("duration: ", duration);
+        console.log("title: ", title);
+
+        // Обновляем видео в комнате на бэкенде
+        const response = await axios.put(`/api/Rooms/${roomId}/video`, {
+          videoId: match[1],
+          title,
+          duration,
+        });
+
+        console.log("Update Video and Room: ", response);
+
+        // Обновляем состояние на основе ответа сервера
+        setRoomData((prev) => ({
+          ...prev,
+          currentVideoId: videoId,
+          currentVideo: { videoId: match[1], title, duration },
+        }));
+
+        setIsAddVideoModalOpen(false);
+        setVideoUrl("");
+        setTempMetadata({ title: "", duration: 0 }); // Сброс метаданных
+      } catch (error) {
+        console.error("Ошибка при обновлении видео:", error);
+      }
+    } else {
+      alert("Пожалуйста, введите корректную ссылку YouTube");
     }
-  }, [roomData.currentTime]);
+  };
+
+  // Сброс метаданных при закрытии модалки
+  const closeAddVideoModal = () => {
+    setIsAddVideoModalOpen(false);
+    setVideoUrl("");
+    setTempMetadata({ title: "", duration: 0 });
+  };
+
+  // Обработчик управления плеером
+  const handlePlayPause = async (action) => {
+    try {
+      const response = await axios.patch(`/api/rooms/${roomId}/player`, {
+        isPaused: action === "pause",
+      });
+      console.log("IsPaused: ", response.data.isPaused);
+      setRoomData((prev) => ({ ...prev, isPaused: action === "pause" }));
+    } catch (error) {
+      console.error("Ошибка синхронизации:", error);
+    }
+  };
+
+  const handleTimeUpdate = useDebouncedCallback(async (seconds) => {
+    try {
+      const response = await axios.patch(`/api/rooms/${roomId}/player`, {
+        currentTimeInSeconds: Math.floor(seconds),
+      });
+      console.log("CurrentTime: ", response.data.currentTimeInSeconds);
+    } catch (error) {
+      console.error("Ошибка обновления времени:", error);
+    }
+  }, 1000);
+
+  /* Конец работы с видео*/
 
   // Синхронизируем только при изменении initialRoomData
   useEffect(() => {
@@ -223,160 +281,20 @@ export default function RoomPage({
     }
   };
 
-  // Cостояние для временных метаданных
-  const [tempMetadata, setTempMetadata] = useState({
-    title: "",
-    duration: 0,
-  });
-
-  // Обработчики для скрытого плеера
-  const handleTempPlayerReady = (player) => {
-    const internalPlayer = player.getInternalPlayer();
-    if (internalPlayer?.getVideoData) {
-      const data = internalPlayer.getVideoData();
-      setTempMetadata((prev) => ({
-        ...prev,
-        title: data.title || "Без названия",
-      }));
-    }
-  };
-
-  const handleTempDuration = (duration) => {
-    setTempMetadata((prev) => ({
-      ...prev,
-      duration: Math.round(duration),
-    }));
-  };
-
-  // Обработчик добавления видео
-  const handleAddVideo = async () => {
-    const match = videoUrl.match(YOUTUBE_REGEX);
-    if (match && match[1].length === 11) {
-      const videoId = match[1]; // id видео ютуба (11 цифр)
-
-      try {
-        // Используем данные из tempMetadata
-        const { title, duration } = tempMetadata;
-        if (duration <= 0) {
-          alert("Данные видео еще загружаются...");
-          return;
-        }
-
-        console.log("videoId", videoId);
-        console.log("duration", duration);
-        console.log("title", title);
-
-        // Обновляем видео в комнате на бэкенде
-        const response = await axios.put(`/api/Rooms/${roomId}/video`, {
-          videoId: match[1],
-          title,
-          duration,
-        });
-
-        console.log("Update Video and Room: ", response);
-
-        // Обновляем состояние на основе ответа сервера
-        setRoomData((prev) => ({
-          ...prev,
-          currentVideoId: videoId,
-          currentVideo: { videoId: match[1], title, duration },
-        }));
-
-        setIsAddVideoModalOpen(false);
-        setVideoUrl("");
-        setTempMetadata({ title: "", duration: 0 }); // Сброс метаданных
-      } catch (error) {
-        console.error("Ошибка при обновлении видео:", error);
-      }
-    } else {
-      alert("Пожалуйста, введите корректную ссылку YouTube");
-    }
-  };
-
-  // Обработчик управления плеером
-  const handlePlayerAction = async (action) => {
-    try {
-      const response = await axios.patch(`/api/rooms/${roomId}/player`, {
-        isPaused: action === "pause",
-      });
-      console.log("IsPaused: ", response.data.isPaused);
-      setRoomData((prev) => ({ ...prev, isPaused: action === "pause" }));
-    } catch (error) {
-      console.error("Ошибка синхронизации:", error);
-    }
-  };
-
-  const handleTimeUpdate = useDebouncedCallback(async (seconds) => {
-    try {
-      const response = await axios.patch(`/api/rooms/${roomId}/player`, {
-        currentTimeInSeconds: Math.floor(seconds),
-      });
-      console.log("CurrentTime: ", response.data.currentTimeInSeconds);
-    } catch (error) {
-      console.error("Ошибка обновления времени:", error);
-    }
-  }, 1000);
-
-  // Обработчик ReactPlayer
-  const handlePlayerReady = () => {
-    const internalPlayer = playerRef.current?.getInternalPlayer();
-    if (internalPlayer && internalPlayer.getVideoData) {
-      const data = internalPlayer.getVideoData();
-      setVideoMetadata((prev) => ({
-        ...prev,
-        title: data.title || "Неизвестное название",
-      }));
-    }
-  };
-
-  // Обработчик ReactPlayer
-  const handleDuration = (duration) => {
-    setVideoMetadata((prev) => ({
-      ...prev,
-      duration: Math.round(duration),
-    }));
-  };
-
-  // Сброс метаданных при закрытии модалки
-  const closeAddVideoModal = () => {
-    setIsAddVideoModalOpen(false);
-    setVideoUrl("");
-    setTempMetadata({ title: "", duration: 0 });
-  };
-
   return (
     <main className="main-content2">
       {/* Левая колонка: Видео-плеер */}
       <section className="video-section">
         {roomData.currentVideoId ? (
-          <div className="player-wrapper">
-            <ReactPlayer
-              ref={playerRef}
-              key={roomData.currentVideoId} // Важно для перезагрузки плеера
-              url={`https://www.youtube.com/watch?v=${roomData.currentVideoId}`}
-              playing={!roomData.isPaused}
-              controls
-              width="100%"
-              height="100%"
-              onReady={handlePlayerReady}
-              onDuration={handleDuration}
-              style={{ position: "absolute", top: 0, left: 0 }}
-              onPlay={() => handlePlayerAction("play")}
-              onPause={() => handlePlayerAction("pause")}
-              onProgress={({ playedSeconds }) =>
-                handleTimeUpdate(playedSeconds)
-              }
-              onError={(e) => console.error("Ошибка плеера:", e)}
-              config={{
-                youtube: {
-                  playerVars: {
-                    modestbranding: 1,
-                    rel: 0,
-                  },
-                },
-              }}
-            />
-          </div>
+          <VideoPlayer
+            roomId={roomId}
+            currentVideoId={roomData.currentVideoId}
+            isPaused={roomData.isPaused}
+            currentTime={roomData.currentTime}
+            onVideoAdded={() => setIsAddVideoModalOpen(true)}
+            onPlayPause={handlePlayPause}
+            onTimeUpdate={handleTimeUpdate}
+          />
         ) : (
           <button
             id="add-video-btn"
@@ -388,52 +306,14 @@ export default function RoomPage({
         )}
         {/* Модалка добавления видео */}
         {isAddVideoModalOpen && (
-          <div
-            className="modal"
-            onClick={handleCloseModal}
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) {
-                mouseDownOnContentRef.current = false;
-              }
-            }}
-          >
-            {/* Добавим скрытый плеер */}
-            <ReactPlayer
-              url={videoUrl}
-              onReady={handleTempPlayerReady}
-              onDuration={handleTempDuration}
-              style={{ display: "none" }} // не отображается
-            />
-
-            <div className="modal-content">
-              <h2>Добавить видео</h2>
-              <input
-                type="text"
-                placeholder="Вставьте ссылку YouTube"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                onMouseDown={() => {
-                  mouseDownOnContentRef.current = true;
-                }}
-              />
-              <div className="modal-buttons">
-                <button
-                  className="btn"
-                  onClick={handleAddVideo}
-                  disabled={!tempMetadata.duration} // Проверка загрузки данных в кнопке
-                >
-                  Добавить
-                </button>
-                <button
-                  className="btn"
-                  //onClick={() => setIsAddVideoModalOpen(false)}
-                  onClick={closeAddVideoModal}
-                >
-                  Отмена
-                </button>
-              </div>
-            </div>
-          </div>
+          <AddVideoModal
+            videoUrl={videoUrl}
+            tempMetadata={tempMetadata}
+            onUrlChange={setVideoUrl}
+            onMetadataChange={setTempMetadata}
+            onClose={closeAddVideoModal}
+            onSubmit={handleAddVideoModal}
+          />
         )}
       </section>
       {/* Правая колонка: Чат */}
@@ -508,7 +388,6 @@ export default function RoomPage({
             className="modal"
             id="settings-modal"
             onClick={handleCloseModal}
-            // onClick = {()=> setIsAddVideoModalOpen(false)}
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) {
                 mouseDownOnContentRef.current = false;

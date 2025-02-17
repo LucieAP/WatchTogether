@@ -218,10 +218,9 @@ namespace WatchTogetherAPI.Controllers
                         room.RoomName,
                         room.Description,
                         room.InvitationLink,
-                        // room.CurrentVideo,
-                        // room.CurrentVideoId,
-                        // room.IsPaused,
-                        // room.CurrentTime,
+                        room.CurrentVideo,
+                        room.IsPaused,
+                        room.CurrentTime,
                         Participants = room.Participants.Select(p => new
                         {
                             p.User.UserId,
