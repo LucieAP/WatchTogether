@@ -295,9 +295,10 @@ export default function RoomPage({
   // Обработчик управления плеером
   const handlePlayerAction = async (action) => {
     try {
-      await axios.patch(`/api/rooms/${roomId}/player`, {
+      const response = await axios.patch(`/api/rooms/${roomId}/player`, {
         isPaused: action === "pause",
       });
+      console.log("IsPaused: ", response.data.isPaused);
       setRoomData((prev) => ({ ...prev, isPaused: action === "pause" }));
     } catch (error) {
       console.error("Ошибка синхронизации:", error);
@@ -306,9 +307,10 @@ export default function RoomPage({
 
   const handleTimeUpdate = useDebouncedCallback(async (seconds) => {
     try {
-      await axios.patch(`/api/rooms/${roomId}/player`, {
-        currentTime: Math.floor(seconds),
+      const response = await axios.patch(`/api/rooms/${roomId}/player`, {
+        currentTimeInSeconds: Math.floor(seconds),
       });
+      console.log("CurrentTime: ", response.data.currentTimeInSeconds);
     } catch (error) {
       console.error("Ошибка обновления времени:", error);
     }

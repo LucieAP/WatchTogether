@@ -403,18 +403,18 @@ namespace WatchTogetherAPI.Controllers
 
                 var currentUser = await GetOrCreateUserAsync();
 
-                if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
-                {
-                    return Forbid();
-                }
+                // if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
+                // {
+                //     return Forbid();
+                // }
                 
                 room.IsPaused = request.IsPaused;
-                room.CurrentTime = request.CurrentTime;
+                room.CurrentTime = TimeSpan.FromSeconds(request.CurrentTimeInSeconds);  // Конвертация времени в секундах в формат 00:00
                 room.LastUpdated = DateTime.UtcNow;
                 
                 return Ok(new {
                     room.IsPaused,
-                    room.CurrentTime,
+                    CurrentTimeInSeconds = room.CurrentTime.TotalSeconds,               // Возвращаем секунды
                     room.LastUpdated
                 }); 
             }
@@ -426,7 +426,7 @@ namespace WatchTogetherAPI.Controllers
             }
         }
 
-                private async Task<User> GetOrCreateUserAsync()
+        private async Task<User> GetOrCreateUserAsync()
         {
             // Пробуем получить UserId из Cookie
             if (Request.Cookies.TryGetValue("X-User-Id", out var userIdCookie) &&
