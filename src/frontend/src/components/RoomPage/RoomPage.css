@@ -158,6 +158,13 @@
   justify-content: center;
 }
 
+#close-video-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+}
+
 /* Чат */
 .chat-section {
   flex: 2;

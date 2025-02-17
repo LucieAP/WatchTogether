@@ -64,6 +64,9 @@ export default function RoomPage({
   const [videoUrl, setVideoUrl] = useState("");
   const [tempMetadata, setTempMetadata] = useState({ title: "", duration: 0 });
 
+  // Состояния закрытия плеера
+  const [isPlayerVisible, setPlayerVisible] = useState(true);
+
   // Обработчик добавления видео
   const handleAddVideoModal = async () => {
     const match = videoUrl.match(YOUTUBE_REGEX);
@@ -285,16 +288,26 @@ export default function RoomPage({
     <main className="main-content2">
       {/* Левая колонка: Видео-плеер */}
       <section className="video-section">
-        {roomData.currentVideoId ? (
-          <VideoPlayer
-            roomId={roomId}
-            currentVideoId={roomData.currentVideoId}
-            isPaused={roomData.isPaused}
-            currentTime={roomData.currentTime}
-            onVideoAdded={() => setIsAddVideoModalOpen(true)}
-            onPlayPause={handlePlayPause}
-            onTimeUpdate={handleTimeUpdate}
-          />
+        {roomData.currentVideoId && isPlayerVisible ? (
+          <>
+            <VideoPlayer
+              roomId={roomId}
+              currentVideoId={roomData.currentVideoId}
+              isPaused={roomData.isPaused}
+              currentTime={roomData.currentTime}
+              onVideoAdded={() => setIsAddVideoModalOpen(true)}
+              onPlayPause={handlePlayPause}
+              onTimeUpdate={handleTimeUpdate}
+            />
+            {/* Кнопка закрытия плеера */}
+            <button
+              id="close-video-btn"
+              className="btn"
+              onClick={() => setPlayerVisible(false)}
+            >
+              Закрыть
+            </button>
+          </>
         ) : (
           <button
             id="add-video-btn"
@@ -312,7 +325,11 @@ export default function RoomPage({
             onUrlChange={setVideoUrl}
             onMetadataChange={setTempMetadata}
             onClose={closeAddVideoModal}
-            onSubmit={handleAddVideoModal}
+            onSubmit={(videoId) => {
+              // Обновляем состояние плеера при успешном добавлении
+              setPlayerVisible(true); // Показываем плеер
+              handleAddVideoModal(videoId); // Обновляем текущее видео
+            }}
           />
         )}
       </section>
