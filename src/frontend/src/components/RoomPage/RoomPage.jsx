@@ -347,7 +347,7 @@ export default function RoomPage({
     <main className="main-content2">
       {/* Левая колонка: Видео-плеер */}
       <section className="video-section">
-        {roomData.currentVideoId && (
+        {roomData.currentVideoId ? (
           <div className="player-wrapper">
             <ReactPlayer
               ref={playerRef}
@@ -376,15 +376,15 @@ export default function RoomPage({
               }}
             />
           </div>
+        ) : (
+          <button
+            id="add-video-btn"
+            className="btn"
+            onClick={() => setIsAddVideoModalOpen(true)}
+          >
+            +
+          </button>
         )}
-        <button
-          id="add-video-btn"
-          className="btn"
-          onClick={() => setIsAddVideoModalOpen(true)}
-        >
-          +
-        </button>
-
         {/* Модалка добавления видео */}
         {isAddVideoModalOpen && (
           <div
