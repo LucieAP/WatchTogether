@@ -407,9 +407,19 @@ namespace WatchTogetherAPI.Controllers
                 //     return Forbid();
                 // }
                 
-                room.IsPaused = request.IsPaused;
-                room.CurrentTime = TimeSpan.FromSeconds(request.CurrentTimeInSeconds);  // Конвертация времени в секундах в формат 00:00
+                if (request.IsPaused.HasValue) 
+                {
+                    room.IsPaused = request.IsPaused.Value;
+                }
+
+                if (request.CurrentTimeInSeconds.HasValue)
+                {
+                    room.CurrentTime = TimeSpan.FromSeconds(request.CurrentTimeInSeconds.Value);  // Конвертация времени в секундах в формат 00:00
+                }
+                
                 room.LastUpdated = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
                 
                 return Ok(new {
                     room.IsPaused,

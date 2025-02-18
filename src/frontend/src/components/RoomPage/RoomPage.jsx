@@ -122,6 +122,7 @@ export default function RoomPage({
         isPaused: action === "pause",
       });
       console.log("IsPaused: ", response.data.isPaused);
+      // console.log("response.data after Pause: ", response.data);
       setRoomData((prev) => ({ ...prev, isPaused: action === "pause" }));
     } catch (error) {
       console.error("Ошибка синхронизации:", error);
@@ -134,6 +135,7 @@ export default function RoomPage({
         currentTimeInSeconds: Math.floor(seconds),
       });
       console.log("CurrentTime: ", response.data.currentTimeInSeconds);
+      // console.log("response.data after CurrentTime: ", response.data);
     } catch (error) {
       console.error("Ошибка обновления времени:", error);
     }
