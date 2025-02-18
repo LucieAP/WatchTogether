@@ -13,7 +13,7 @@ export const useRoomData = (roomId) => {
     setIsLoading(true);
     try {
       const response = await axios.get(`/api/Rooms/${roomId}`);
-      setRoomData(response.data);
+      setRoomData(response.data.room);
 
       console.log("GET запрос к /api/Rooms/${roomId}: ", response.data);
 
@@ -29,6 +29,8 @@ export const useRoomData = (roomId) => {
   useEffect(() => {
     fetchRoomData();
   }, [roomId]);
+
+  console.log("useRoomData roomData: ", roomData);
 
   return { roomData, isLoading, error, refetch: fetchRoomData };
 };

@@ -41,13 +41,14 @@ export default function RoomPage({
     invitationLink: "",
     participants: [],
     currentVideoId: null,
+    currentVideo: [],
     isPaused: true,
     currentTime: 0,
 
     ...initialRoomData, // Добавляем начальные значения
   });
 
-  // console.log("roomData", roomData);
+  console.log("roomData RoomPage: ", roomData);
 
   /* Работа с видео */
 
@@ -65,7 +66,7 @@ export default function RoomPage({
   const [tempMetadata, setTempMetadata] = useState({ title: "", duration: 0 });
 
   // Состояния закрытия плеера
-  const [isPlayerVisible, setPlayerVisible] = useState(true);
+  // const [isPlayerVisible, setPlayerVisible] = useState(true);
 
   // Обработчик добавления видео
   const handleAddVideoModal = async () => {
@@ -108,6 +109,10 @@ export default function RoomPage({
     }
   };
 
+  useEffect(() => {
+    console.log("Текущее видео изменилось:", roomData);
+  }, [roomData.currentVideoId]);
+
   // Сброс метаданных при закрытии модалки
   const closeAddVideoModal = () => {
     setIsAddVideoModalOpen(false);
@@ -148,9 +153,10 @@ export default function RoomPage({
     if (initialRoomData) {
       setRoomData((prev) => ({
         ...prev,
-        roomName: initialRoomData.room.roomName || "",
-        description: initialRoomData.room.description || "",
-        invitationLink: initialRoomData.room.invitationLink || "",
+        ...initialRoomData,
+        // roomName: initialRoomData.room.roomName || "",
+        // description: initialRoomData.room.description || "",
+        // invitationLink: initialRoomData.room.invitationLink || "",
       }));
     }
   }, [initialRoomData]);
@@ -290,11 +296,11 @@ export default function RoomPage({
     <main className="main-content2">
       {/* Левая колонка: Видео-плеер */}
       <section className="video-section">
-        {roomData.currentVideoId && isPlayerVisible ? (
+        {roomData?.currentVideo?.videoId ? (
           <>
             <VideoPlayer
               roomId={roomId}
-              currentVideoId={roomData.currentVideoId}
+              currentVideoId={roomData.currentVideo.videoId}
               isPaused={roomData.isPaused}
               currentTime={roomData.currentTime}
               onVideoAdded={() => setIsAddVideoModalOpen(true)}
@@ -305,7 +311,7 @@ export default function RoomPage({
             <button
               id="close-video-btn"
               className="btn"
-              onClick={() => setPlayerVisible(false)}
+              // onClick={() => setPlayerVisible(false)}
             >
               Закрыть
             </button>
@@ -329,7 +335,7 @@ export default function RoomPage({
             onClose={closeAddVideoModal}
             onSubmit={(videoId) => {
               // Обновляем состояние плеера при успешном добавлении
-              setPlayerVisible(true); // Показываем плеер
+              // setPlayerVisible(true); // Показываем плеер
               handleAddVideoModal(videoId); // Обновляем текущее видео
             }}
           />

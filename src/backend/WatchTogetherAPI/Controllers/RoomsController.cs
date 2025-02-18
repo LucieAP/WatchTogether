@@ -37,6 +37,7 @@ namespace WatchTogetherAPI.Controllers
                     .ThenInclude(u => u.CreatedRooms)
                 .Include(r => r.Participants)
                     .ThenInclude(p => p.User)
+                .Include(r => r.CurrentVideo)
                 .ToListAsync();
         }
 
@@ -129,16 +130,6 @@ namespace WatchTogetherAPI.Controllers
                     }
                 };
 
-                // CreatedAtAction - перенаправление после создания комнаты
-                // Это вернет статус 201 Created и установит заголовок Location с URL новой комнаты.
-                // CreatedAtAction автоматически генерирует URL вида /api/Rooms/{roomId}
-
-                //return CreatedAtAction(
-                //    nameof(GetRoom),                                    // Имя целевого метода
-                //    new { roomId = newRoom.RoomId.ToString() },         // Параметры маршрута
-                //    response                                            // Тело ответа
-                //);
-
                 // Возвращаем статус 201 с телом ответа
                 return new ObjectResult(response)
                 {
@@ -166,6 +157,7 @@ namespace WatchTogetherAPI.Controllers
                     .Include(r => r.Participants)
                         .ThenInclude(p => p.User)
                     .Include(r => r.CreatedByUser)
+                    .Include(r => r.CurrentVideo) // Загружаем связанное видео
                     .FirstOrDefaultAsync(r => r.RoomId == roomId);
 
                 if (room == null)
@@ -180,7 +172,6 @@ namespace WatchTogetherAPI.Controllers
                     room.InvitationLink = $"{baseUrl}/room/{room.RoomId}";
                     await _context.SaveChangesAsync();
                 }
-
 
                 // Получаем или создаем пользователя через Cookie
                 var currentUser = await GetOrCreateUserAsync();
@@ -230,10 +221,6 @@ namespace WatchTogetherAPI.Controllers
                 };
 
                 return Ok(response);
-                //return Request.Headers["Accept"].ToString().Contains("text/html")
-                //    ? View("Room", room)
-                //    : Ok(response);
-
             }
             catch (Exception ex)
             {
@@ -309,6 +296,7 @@ namespace WatchTogetherAPI.Controllers
             var user = await GetOrCreateUserAsync();
             var room = await _context.Rooms
                 .Include(r => r.Participants)
+                .Include(r => r.CurrentVideo)
                 .FirstOrDefaultAsync(r => r.RoomId == roomId);
 
             if (room == null) return NotFound();
