@@ -146,6 +146,21 @@ export default function RoomPage({
     }
   }, 1000);
 
+  const handleCloseVideo = async () => {
+    try {
+      await axios.delete(`/api/Rooms/${roomId}/video`, { roomId });
+
+      // Обновляем локальное состояние
+      setRoomData((prev) => ({
+        ...prev,
+        currentVideoId: null,
+        currentVideo: null,
+      }));
+    } catch (error) {
+      console.error("Ошибка при удалении видео:", error);
+    }
+  };
+
   /* Конец работы с видео*/
 
   // Синхронизируем только при изменении initialRoomData
@@ -311,7 +326,7 @@ export default function RoomPage({
             <button
               id="close-video-btn"
               className="btn"
-              // onClick={() => setPlayerVisible(false)}
+              onClick={handleCloseVideo}
             >
               Закрыть
             </button>
@@ -334,13 +349,12 @@ export default function RoomPage({
             onMetadataChange={setTempMetadata}
             onClose={closeAddVideoModal}
             onSubmit={(videoId) => {
-              // Обновляем состояние плеера при успешном добавлении
-              // setPlayerVisible(true); // Показываем плеер
               handleAddVideoModal(videoId); // Обновляем текущее видео
             }}
           />
         )}
       </section>
+
       {/* Правая колонка: Чат */}
       <section className="chat-section">
         {/* Ссылка-приглашение */}

@@ -423,6 +423,42 @@ namespace WatchTogetherAPI.Controllers
             }
         }
 
+        [HttpDelete("{roomId:guid}/video")]
+        public async Task<IActionResult> DeleteCurrentVideo(Guid roomId)
+        {
+            var room = await _context.Rooms
+                .Include(r => r.CurrentVideo)
+                .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                    
+            if (room == null) return NotFound();
+
+            if (room.CurrentVideo == null)
+            {
+                return BadRequest("Room has no current video");
+            }
+
+            try
+            {
+                // Удаляем видео из БД:
+                _context.Videos.Remove(room.CurrentVideo);
+
+                // Сбрасываем состояния плеера
+                room.IsPaused = true;
+                room.CurrentTime = TimeSpan.Zero;
+                room.LastUpdated = DateTime.UtcNow;
+                room.CurrentVideo = null;
+
+                await _context.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (Exception error)
+            {
+                _logger.LogError(error, "Ошибка удаления видео из комнаты {RoomId}", roomId);
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
+        }
+
         private async Task<User> GetOrCreateUserAsync()
         {
             // Пробуем получить UserId из Cookie
@@ -464,6 +500,7 @@ namespace WatchTogetherAPI.Controllers
 
             return newUser;
         }
+
     
         // Генератор никнеймов
         private string GenerateRandomUsername(int length = 8)
