@@ -34,7 +34,7 @@ function RoomPageWithHeader() {
     <>
       <RoomHeader
         onSettingsClick={() => setIsSettingsModalOpen(true)}
-        roomName={roomData?.room?.roomName}
+        roomName={roomData?.roomName}
       />
       <RoomPage
         isSettingsModalOpen={isSettingsModalOpen}
