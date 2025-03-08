@@ -169,9 +169,6 @@ export default function RoomPage({
       setRoomData((prev) => ({
         ...prev,
         ...initialRoomData,
-        // roomName: initialRoomData.room.roomName || "",
-        // description: initialRoomData.room.description || "",
-        // invitationLink: initialRoomData.room.invitationLink || "",
       }));
     }
   }, [initialRoomData]);
