@@ -65,9 +65,6 @@ export default function RoomPage({
   const [videoUrl, setVideoUrl] = useState("");
   const [tempMetadata, setTempMetadata] = useState({ title: "", duration: 0 });
 
-  // Состояния закрытия плеера
-  // const [isPlayerVisible, setPlayerVisible] = useState(true);
-
   // Обработчик добавления видео
   const handleAddVideoModal = async () => {
     const match = videoUrl.match(YOUTUBE_REGEX);
@@ -127,7 +124,7 @@ export default function RoomPage({
         isPaused: action === "pause",
       });
       console.log("IsPaused: ", response.data.isPaused);
-      // console.log("response.data after Pause: ", response.data);
+      console.log("response.data after Pause: ", response.data);
       setRoomData((prev) => ({ ...prev, isPaused: action === "pause" }));
     } catch (error) {
       console.error("Ошибка синхронизации:", error);
