@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherAPI\\WatchTogetherAPI.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogetherapi\\models\\dto\\updatevideorequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherAPI\\WatchTogetherAPI.csproj|solutionrelative:watchtogetherapi\\models\\dto\\updatevideorequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherAPI\\WatchTogetherAPI.csproj|c:\\users\\zzz\\desktop\\diplom\\watchtogether\\src\\backend\\watchtogetherapi\\controllers\\roomscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{5F20B87F-550C-4418-8D65-C6877763803E}|WatchTogetherAPI\\WatchTogetherAPI.csproj|solutionrelative:watchtogetherapi\\controllers\\roomscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -38,11 +42,24 @@
       "DocumentGroups": [
         {
           "DockedWidth": 283,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 0,
+              "Title": "UpdateVideoRequest.cs",
+              "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\Models\\DTO\\UpdateVideoRequest.cs",
+              "RelativeDocumentMoniker": "WatchTogetherAPI\\Models\\DTO\\UpdateVideoRequest.cs",
+              "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\Models\\DTO\\UpdateVideoRequest.cs",
+              "RelativeToolTip": "WatchTogetherAPI\\Models\\DTO\\UpdateVideoRequest.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAZAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-08T22:28:46.55Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "UpdateVideoStateRequest.cs",
               "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\Models\\DTO\\UpdateVideoStateRequest.cs",
               "RelativeDocumentMoniker": "WatchTogetherAPI\\Models\\DTO\\UpdateVideoStateRequest.cs",
@@ -54,20 +71,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "RoomsController.cs",
               "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\Controllers\\RoomsController.cs",
               "RelativeDocumentMoniker": "WatchTogetherAPI\\Controllers\\RoomsController.cs",
               "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\Controllers\\RoomsController.cs",
               "RelativeToolTip": "WatchTogetherAPI\\Controllers\\RoomsController.cs",
-              "ViewState": "AQIAALYBAAAAAAAAAAAcwMgBAAAwAAAA",
+              "ViewState": "AQIAABgBAAAAAAAAAAAewCgBAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-11T16:03:51.966Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "AppDbContext.cs",
               "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\Data\\AppDbContext\\AppDbContext.cs",
               "RelativeDocumentMoniker": "WatchTogetherAPI\\Data\\AppDbContext\\AppDbContext.cs",
@@ -79,7 +96,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "Video.cs",
               "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\Models\\Video.cs",
               "RelativeDocumentMoniker": "WatchTogetherAPI\\Models\\Video.cs",
@@ -91,7 +108,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\Program.cs",
               "RelativeDocumentMoniker": "WatchTogetherAPI\\Program.cs",
@@ -103,7 +120,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "ChatHub.cs",
               "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\Hubs\\ChatHub.cs",
               "RelativeDocumentMoniker": "WatchTogetherAPI\\Hubs\\ChatHub.cs",
@@ -121,13 +138,13 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Room.cs",
               "DocumentMoniker": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\Models\\Room.cs",
               "RelativeDocumentMoniker": "WatchTogetherAPI\\Models\\Room.cs",
               "ToolTip": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\Models\\Room.cs",
               "RelativeToolTip": "WatchTogetherAPI\\Models\\Room.cs",
-              "ViewState": "AQIAAAYAAAAAAAAAAAAqwDUAAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAADUAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-15T12:38:52.86Z",
               "EditorCaption": ""

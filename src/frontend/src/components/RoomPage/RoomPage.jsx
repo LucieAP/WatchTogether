@@ -4,7 +4,7 @@ import { updateRoom } from "../../api/rooms";
 import { getRoom } from "../../api/rooms";
 import { createConnection } from "../../api/chat";
 import axios from "axios";
-import VideoPlayer from "../VideoPlayer";
+import VideoPlayer from "../VideoPlayer/VideoPlayer";
 import { useDebouncedCallback } from "use-debounce";
 import { AddVideoModal } from "../AddVideoModal";
 
@@ -313,7 +313,7 @@ export default function RoomPage({
             <VideoPlayer
               roomId={roomId}
               currentVideoId={roomData.currentVideo.videoId}
-              isPaused={roomData.isPaused}
+              playing={!roomData.isPaused}
               currentTime={roomData.currentTime}
               onVideoAdded={() => setIsAddVideoModalOpen(true)}
               onPlayPause={handlePlayPause}

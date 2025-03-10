@@ -9,6 +9,8 @@ import "./components/Footer/Footer.css";
 import "./components/NotFoundPage/NotFoundPage.css";
 import "./components/HomePage/HomePage.css";
 import "./components/RoomPage/RoomPage.css";
+import "./components/VideoPlayer/VideoPlayer.css";
+
 import App from "./App.jsx";
 
 createRoot(document.getElementById("root")).render(
