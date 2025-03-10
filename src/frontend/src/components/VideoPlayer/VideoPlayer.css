@@ -1,0 +1,493 @@
+/*App.css*/
+:root {
+  /* Основные размеры */
+  /* --column-width: min(960px, 100%); */
+  --column-width: 100%;
+  --gutter-width: clamp(10px, 2vw, 20px);
+
+  /* Цветовая схема */
+  --primary-color: #3a86ff;
+  --background-color: #121212;
+  --text-color: #ffffff;
+  --text-color-black: #000000;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --control-background: rgba(0, 0, 0, 0.6);
+  --hover-background: rgba(58, 134, 255, 0.2);
+
+  /* Анимации */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+
+  /* Управление и кнопки */
+  --control-size: clamp(36px, 5vw, 44px);
+  --border-radius: 8px;
+  --center-button-size: clamp(3rem, 8vw, 4rem);
+
+  /* Z-индексы для правильного наложения элементов */
+  --z-video: 2;
+  --z-center-controls: 3;
+  --z-bottom-controls: 4;
+  --z-settings: 5;
+}
+
+.app {
+  margin: auto;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 300;
+  text-align: center;
+  /*background-color: var(--background-color);*/
+  /* color: var(--text-color); */
+  color: var(--text-color-black);
+}
+
+.section {
+  max-width: var(--column-width);
+  margin: 0 auto;
+  padding: var(--gutter-width);
+  text-align: left;
+  vertical-align: top;
+}
+
+h1 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Контейнер плеера с адаптивной высотой */
+.player-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: var(--column-width);
+  height: 0;
+  padding-top: 56.25%; /*16:9 соотношение*/
+  background-color: var(--background-color);
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  margin: 0 auto;
+}
+
+.video-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-video);
+}
+
+.react-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: var(--z-video);
+}
+
+/* Центральная кнопка воспроизведения/паузы */
+.play-pause-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--control-background);
+  border-radius: 50%;
+  transition: opacity var(--transition-normal), transform var(--transition-fast),
+    background-color var(--transition-fast);
+  opacity: 0;
+  z-index: var(--z-center-controls);
+}
+
+/* .video-container:hover .play-pause-container,
+    .video-container:focus-within .play-pause-container {
+      opacity: 1;
+    }  */
+
+.play-pause-btn {
+  width: var(--center-button-size);
+  height: var(--center-button-size);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform var(--transition-fast);
+}
+
+.play-pause-btn:hover {
+  transform: scale(1.1);
+  background-color: var(--hover-background);
+}
+
+.play-pause-btn svg {
+  width: calc(var(--center-button-size) * 0.5);
+  height: calc(var(--center-button-size) * 0.5);
+}
+
+/* .play-pause-btn:focus,
+    .play-pause-btn:active {
+      outline: none;
+      background-color: transparent;
+      box-shadow: none;
+      -webkit-tap-highlight-color: transparent;
+    } */
+
+/* Контейнер для кнопок нижней панели */
+.player-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: calc(var(--gutter-width) * 0.5);
+  background: linear-gradient(
+    to top,
+    var(--control-background) 0%,
+    rgba(0, 0, 0, 0.3) 70%,
+    transparent 100%
+  );
+  opacity: 1;
+  pointer-events: all;
+  z-index: var(--z-bottom-controls);
+  transition: opacity var(--transition-normal);
+}
+
+/* Кнопки управления */
+.play-button,
+.volume-btn,
+.settings-button,
+.fullscreen-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-size);
+  height: var(--control-size);
+  color: var(--text-color);
+  background-color: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color var(--transition-fast);
+}
+
+.play-button:hover,
+.volume-btn:hover,
+.settings-button:hover,
+.fullscreen-button:hover {
+  background-color: var(--hover-background);
+}
+
+.play-button svg,
+.volume-btn svg,
+.settings-button svg,
+.fullscreen-button svg {
+  width: calc(var(--control-size) * 0.5);
+  height: calc(var(--control-size) * 0.5);
+}
+
+/* Контейнер для полоски видео */
+.player-progress-bar-container {
+  position: relative;
+  width: 100%;
+  flex: 1; /* занимает оставшееся пространство */
+  margin: 0 10px; /* отступы между кнопками */
+}
+
+/* Полоска видео */
+.player-progress-bar {
+  width: 100%;
+  height: 6px;
+  margin: 0;
+  padding: 0;
+  /* appearance: none;
+      -webkit-appearance: none; */
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  transition: height var(--transition-fast);
+}
+
+.player-progress-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.player-progress-bar::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--primary-color);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+/* .player-progress-bar:hover,
+    .player-progress-bar:focus {
+      height: 8px;
+    }
+    
+    .player-progress-bar:hover::-webkit-slider-thumb,
+    .player-progress-bar:focus::-webkit-slider-thumb {
+      transform: scale(1.2);
+    }
+    
+    .player-progress-bar:hover::-moz-range-thumb,
+    .player-progress-bar:focus::-moz-range-thumb {
+      transform: scale(1.2);
+    } */
+
+/* Отображение времени при наведении на полоску видео */
+.seek-preview {
+  position: absolute;
+  bottom: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  transition: opacity 0.2s;
+  user-select: none;
+}
+
+/* Отображение времени */
+.time-display {
+  font-family: monospace;
+  font-size: clamp(12px, 2vw, 14px);
+  color: var(--text-secondary);
+  margin: 0 8px;
+  white-space: nowrap;
+}
+
+.volume-container {
+  display: flex;
+  position: relative;
+  align-items: center;
+  margin: 0 4px;
+}
+
+.volume-change-bar {
+  /* width: 0; */
+  height: 6px;
+  /* appearance: none;
+      -webkit-appearance: none; */
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: width var(--transition-normal), height var(--transition-fast);
+  /* overflow: hidden; */
+}
+
+/* .settings-button:hover,
+    .fullscreen-button:hover {
+      opacity: 1;
+    } */
+
+/*Убрать круги вокруг кнопок*/
+.play-pause-btn:hover,
+.play-pause-btn:focus {
+  outline: none;
+  background-color: transparent;
+}
+
+.play-button:hover,
+.play-button:focus {
+  outline: none;
+  background-color: transparent;
+}
+
+.volume-btn:hover,
+.volume-btn:focus {
+  outline: none;
+  background-color: transparent;
+}
+
+.settings-button:hover,
+.settings-button:focus {
+  outline: none;
+  background-color: transparent;
+}
+
+.fullscreen-button:hover,
+.fullscreen-button:focus {
+  outline: none;
+  background-color: transparent;
+}
+
+/* Настройки и меню скорости */
+.settings-list,
+.speed-settings-values {
+  position: absolute;
+  background: var(--control-background);
+  border-radius: var(--border-radius);
+  padding: 8px;
+  z-index: var(--z-settings);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 120px;
+}
+
+.settings-list {
+  right: 8px;
+  bottom: 50px;
+}
+
+.speed-settings-values {
+  right: 136px;
+  bottom: 50px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.speed-settings-btn,
+.speed-value {
+  background: transparent;
+  color: var(--text-color);
+  border: none;
+  padding: 8px 12px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color var(--transition-fast);
+  width: 100%;
+}
+
+.speed-settings-btn span {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.speed-settings-btn:hover,
+.speed-value:hover {
+  background-color: var(--hover-background);
+}
+
+/* Кнопка блокировки элементов управления */
+.lock-button {
+  position: absolute;
+  /* bottom: 100px; */
+  top: 100px;
+  right: 16px;
+  z-index: var(--z-settings);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-size);
+  height: var(--control-size);
+  color: var(--text-color);
+  background-color: var(--control-background);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.8;
+  transition: opacity var(--transition-normal),
+    background-color var(--transition-fast);
+}
+
+.lock-button:hover,
+.lock-button:focus {
+  outline: none;
+  background-color: var(--hover-background);
+  opacity: 1 !important;
+}
+
+.lock-button svg {
+  width: calc(var(--control-size) * 0.5);
+  height: calc(var(--control-size) * 0.5);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .player-controls {
+    padding: 8px;
+  }
+
+  .time-display {
+    font-size: 11px;
+  }
+
+  .player-progress-bar-container {
+    margin: 0 6px;
+  }
+
+  .volume-container:hover .volume-change-bar,
+  .volume-container:focus-within .volume-change-bar {
+    width: 40px;
+  }
+
+  .speed-settings-values {
+    right: 8px;
+    top: -80px;
+    bottom: auto;
+  }
+
+  .settings-list {
+    right: 8px;
+    top: -50px;
+    bottom: auto;
+  }
+}
+
+/* Стили для вспомогательных компонентов */
+.faded {
+  opacity: 0.7;
+}
+
+.footer {
+  margin: var(--gutter-width);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Оптимизация для различных устройств ввода */
+@media (hover: none) {
+  .player-controls,
+  .play-pause-container,
+  .lock-button {
+    opacity: 1;
+  }
+
+  .player-controls {
+    background: var(--control-background);
+  }
+}
+
+/* Поддержка темной темы */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-color: #60a5fa;
+    --background-color: #0f0f0f;
+    --hover-background: rgba(96, 165, 250, 0.2);
+  }
+}
+
+/* Поддержка уменьшенного движения для доступности */
+@media (prefers-reduced-motion) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
