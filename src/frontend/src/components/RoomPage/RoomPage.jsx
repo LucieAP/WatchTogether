@@ -251,7 +251,8 @@ export default function RoomPage({
           roomId,
           handleNewMessage,
           handleParticipantsUpdated,
-          joinResponse.data.username
+          joinResponse.data.username,
+          joinResponse.data.userId
         );
 
         connectionRef.current = { connection, sendMessage };

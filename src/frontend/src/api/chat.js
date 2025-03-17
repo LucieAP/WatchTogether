@@ -4,7 +4,8 @@ export const createConnection = (
   roomId,
   onMessageReceived,
   onParticipantsUpdated,
-  username
+  username,
+  userId
 ) => {
   const connection = new signalR.HubConnectionBuilder()
     .withUrl("https://localhost:7143/chatHub", {
@@ -34,7 +35,7 @@ export const createConnection = (
   const start = async () => {
     try {
       await connection.start();
-      await connection.invoke("JoinRoom", roomId, username);
+      await connection.invoke("JoinRoom", roomId, username, userId);
     } catch (err) {
       console.error("SignalR Connection Error:", err);
     }
