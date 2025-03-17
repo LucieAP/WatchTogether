@@ -136,6 +136,7 @@ export default function RoomPage({
       const response = await axios.patch(`/api/rooms/${roomId}/player`, {
         currentTimeInSeconds: Math.floor(seconds),
       });
+
       console.log("CurrentTime: ", response.data.currentTimeInSeconds);
       // console.log("response.data after CurrentTime: ", response.data);
     } catch (error) {
@@ -249,7 +250,8 @@ export default function RoomPage({
         const { connection, start, sendMessage } = createConnection(
           roomId,
           handleNewMessage,
-          handleParticipantsUpdated
+          handleParticipantsUpdated,
+          joinResponse.data.username
         );
 
         connectionRef.current = { connection, sendMessage };
@@ -270,18 +272,29 @@ export default function RoomPage({
 
   // Обработчик нового сообщения
   const handleNewMessage = (message) => {
-    setMessages((prev) => [...prev, message]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        ...message,
+        // Генерируем уникальный ID для ключа в списке
+        id: Date.now() + Math.random().toString(36).substr(2),
+      },
+    ]);
     console.log(message);
   };
 
   // Обработчик обновления пользователей
   const handleParticipantsUpdated = async () => {
-    const response = await axios.get(`/api/Rooms/${roomId}`);
-    console.log("response: ", response);
-    setRoomData((prev) => ({
-      ...prev,
-      participants: response.data.room.participants,
-    }));
+    try {
+      const response = await axios.get(`/api/Rooms/${roomId}`);
+      console.log("response: ", response);
+      setRoomData((prev) => ({
+        ...prev,
+        participants: response.data.room.participants,
+      }));
+    } catch (error) {
+      console.error("Error updating participants:", error);
+    }
   };
 
   // Обработчик отправки сообщения

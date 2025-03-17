@@ -3,7 +3,8 @@ import * as signalR from "@microsoft/signalr";
 export const createConnection = (
   roomId,
   onMessageReceived,
-  onParticipantsUpdated
+  onParticipantsUpdated,
+  username
 ) => {
   const connection = new signalR.HubConnectionBuilder()
     .withUrl("https://localhost:7143/chatHub", {
@@ -15,7 +16,15 @@ export const createConnection = (
     .build();
 
   connection.on("ReceiveMessage", (userId, userName, message) => {
-    onMessageReceived({ userId, userName, message });
+    // Обрабатываем системные сообщения
+    const isSystemMessage = userId === "System";
+
+    onMessageReceived({
+      userId: isSystemMessage ? null : userId,
+      userName,
+      message,
+      isSystem: isSystemMessage,
+    });
   });
 
   connection.on("ParticipantsUpdated", () => {
@@ -25,7 +34,7 @@ export const createConnection = (
   const start = async () => {
     try {
       await connection.start();
-      await connection.invoke("JoinRoom", roomId);
+      await connection.invoke("JoinRoom", roomId, username);
     } catch (err) {
       console.error("SignalR Connection Error:", err);
     }
