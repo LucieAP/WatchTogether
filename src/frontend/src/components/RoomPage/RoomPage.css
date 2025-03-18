@@ -194,6 +194,63 @@
   border-radius: 4px;
 }
 
+/* Стиль для контейнера сообщения */
+.message {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+/* Эффект при наведении на сообщение */
+.message:hover {
+  background-color: rgba(0, 0, 0, 0.05); /* Светло-серый цвет при наведении */
+}
+
+/* Заголовок сообщения с именем пользователя и временем */
+.message-header {
+  display: flex;
+  justify-content: space-between; /* Распределяет элементы по краям */
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+/* Стиль для имени пользователя */
+.message-username {
+  flex-grow: 0; /* Не растягивается */
+}
+
+/* Стиль для временной метки */
+.message-timestamp {
+  color: #888;
+  font-size: 0.8em;
+  margin-left: auto; /* Прижимает метку времени к правому краю */
+}
+
+/* Стиль для содержимого сообщения */
+.message-content {
+  word-break: break-word; /* Предотвращает выход длинных слов за границы */
+}
+
+/* Дополнительные стили для системных и собственных сообщений */
+.system-message {
+  background-color: rgba(0, 0, 0, 0.03);
+  font-style: italic;
+}
+
+.own-message {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* При наведении на системные и собственные сообщения */
+.system-message:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.own-message:hover {
+  background-color: rgba(0, 123, 255, 0.15);
+}
+
 /* Плеер */
 .player-wrapper {
   position: relative;

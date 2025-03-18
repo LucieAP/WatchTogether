@@ -452,7 +452,9 @@ export default function RoomPage({
             >
               {/*<strong>{msg.userName}:</strong> {msg.message}*/}
               <div className="message-header">
-                <span className="message-username">{msg.userName}</span>
+                <span className="message-username">
+                  <strong>{msg.userName}:</strong>
+                </span>
                 {msg.timestamp && (
                   <span className="message-timestamp">
                     {formatMessageTime(msg.timestamp)}
@@ -478,7 +480,7 @@ export default function RoomPage({
           </button>
         </form>
 
-        <div className="participants-container">
+        {/* <div className="participants-container">
           Участники ({roomData.participants.length})
           <ul>
             {roomData.participants.map((participant) => (
@@ -493,7 +495,7 @@ export default function RoomPage({
               </li>
             ))}
           </ul>
-        </div>
+        </div> */}
 
         {/* Модалка настроек комнаты, при нажатии на шестеренку */}
         {isSettingsModalOpen && (
