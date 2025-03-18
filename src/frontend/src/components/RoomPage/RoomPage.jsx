@@ -312,7 +312,7 @@ export default function RoomPage({
   const handleParticipantsUpdated = async () => {
     try {
       const response = await axios.get(`/api/Rooms/${roomId}`);
-      console.log("response: ", response);
+      // console.log("response: ", response);
       setRoomData((prev) => ({
         ...prev,
         participants: response.data.room.participants,
@@ -441,10 +441,15 @@ export default function RoomPage({
           </div>
         )}
 
-        <div id="chat-messages">
+        <div id="chat-messages" className="messages-container">
           {/* Сообщения чата */}
           {messages.map((msg, index) => (
-            <div key={index} className="message">
+            <div
+              key={index}
+              className={`message ${msg.isSystem ? "system-message" : ""} ${
+                msg.userId === userInfo?.userId ? "own-message" : ""
+              }`}
+            >
               {/*<strong>{msg.userName}:</strong> {msg.message}*/}
               <div className="message-header">
                 <span className="message-username">{msg.userName}</span>
@@ -466,11 +471,29 @@ export default function RoomPage({
             id="chat-input"
             name="chatInput"
             placeholder="Введите сообщение..."
+            autoComplete="off" // отключить автозаполнение (логины, пароли и т.д.)
           />
           <button type="submit" className="btn">
             Отправить
           </button>
         </form>
+
+        <div className="participants-container">
+          Участники ({roomData.participants.length})
+          <ul>
+            {roomData.participants.map((participant) => (
+              <li
+                key={participant.userId}
+                className={
+                  participant.userId === userInfo?.userId ? "current-user" : ""
+                }
+              >
+                {participant.username}
+                {participant.userId === userInfo?.userId && " (вы)"}
+              </li>
+            ))}
+          </ul>
+        </div>
 
         {/* Модалка настроек комнаты, при нажатии на шестеренку */}
         {isSettingsModalOpen && (

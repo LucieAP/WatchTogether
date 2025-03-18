@@ -17,11 +17,12 @@ export const createConnection = (
     .withAutomaticReconnect()
     .build();
 
-  // Обработчик получения сообщения
+  // Обработчик получения сообщения от сервера
   connection.on("ReceiveMessage", (userId, userName, message) => {
     // Обрабатываем системные сообщения
     const isSystemMessage = userId === "System";
 
+    // Передает полученное сообщение в функцию onMessageReceived
     onMessageReceived({
       userId: isSystemMessage ? null : userId,
       userName,
