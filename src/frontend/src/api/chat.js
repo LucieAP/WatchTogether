@@ -5,7 +5,6 @@ export const createConnection = (
   onMessageReceived,
   onParticipantsUpdated,
   onHistoryReceived,
-  onHistoryCleared,
   username,
   userId
 ) => {
@@ -37,11 +36,6 @@ export const createConnection = (
     onHistoryReceived(history);
   });
 
-  // Обработчик очистки истории чата
-  connection.on("ChatHistoryCleared", () => {
-    onHistoryCleared();
-  });
-
   // Обработчик обновления списка участников
   connection.on("ParticipantsUpdated", () => {
     onParticipantsUpdated();
@@ -66,14 +60,5 @@ export const createConnection = (
     }
   };
 
-  // Функция для очистки истории чата (опционально, для администраторов)
-  const clearChatHistory = async (roomId, userId) => {
-    try {
-      await connection.invoke("ClearChatHistory", roomId, userId);
-    } catch (err) {
-      console.error("Error clearing chat history:", err);
-    }
-  };
-
-  return { connection, start, sendMessage, clearChatHistory };
+  return { connection, start, sendMessage };
 };

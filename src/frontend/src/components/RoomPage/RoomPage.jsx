@@ -239,27 +239,23 @@ export default function RoomPage({
         const joinResponse = await axios.post(`/api/Rooms/${roomId}/join`);
 
         console.log("Join response data:", joinResponse.data);
-        // console.log("userInfo 1", userInfo);
+
         setUserInfo({
           userId: joinResponse.data.userId,
           username: joinResponse.data.username,
         });
 
-        // console.log("userInfo 2", userInfo);
-
         // Подключаемся к SignalR
-        const { connection, start, sendMessage, clearChatHistory } =
-          createConnection(
-            roomId,
-            handleNewMessage,
-            handleParticipantsUpdated,
-            handleChatHistory,
-            handleChatHistoryCleared,
-            joinResponse.data.username,
-            joinResponse.data.userId
-          );
+        const { connection, start, sendMessage } = createConnection(
+          roomId,
+          handleNewMessage,
+          handleParticipantsUpdated,
+          handleChatHistory,
+          joinResponse.data.username,
+          joinResponse.data.userId
+        );
 
-        connectionRef.current = { connection, sendMessage, clearChatHistory };
+        connectionRef.current = { connection, sendMessage };
         await start();
       } catch (error) {
         console.error("Chat setup error:", error);
@@ -288,8 +284,6 @@ export default function RoomPage({
       ...prev,
       {
         ...message,
-        // // Генерируем уникальный ID для ключа в списке
-        // id: Date.now() + Math.random().toString(36).substr(2),
         // Используем ID сообщения, если есть, или генерируем уникальный
         id:
           message.messageId ||
@@ -312,11 +306,6 @@ export default function RoomPage({
     }));
 
     setMessages(formattedHistory);
-  };
-
-  // Обработчик очистки истории чата
-  const handleChatHistoryCleared = () => {
-    setMessages([]);
   };
 
   // Обработчик обновления пользователей

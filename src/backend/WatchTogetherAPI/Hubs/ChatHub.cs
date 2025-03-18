@@ -6,14 +6,14 @@ namespace WatchTogetherAPI.Hubs
 {
     public class ChatHub : Hub
     {
-        // Храним информацию о подключенных пользователях
+        // Храним информацию о подключенных комнатах (connectionId → roomId) 
         // Создаем словарь
         private static readonly ConcurrentDictionary<string, string> _connectionRooms  = new();
 
         // Храним уникальных пользователей в комнате (userId -> roomId)
         private static readonly ConcurrentDictionary<string, string> _userRooms = new();
 
-        // Храним историю сообщений по комнатам
+        // Храним историю сообщений по комнатам (roomId -> msg[])
         private static readonly ConcurrentDictionary<string, List<ChatMessage>> _chatHistory = new();
 
         // Максимальное количество сообщений для хранения в истории комнаты
@@ -33,6 +33,7 @@ namespace WatchTogetherAPI.Hubs
             
             bool isNewUser = false;
 
+            // TryGetValue - пытается получить значение по ключу. Возвращает `true`, если ключ существует.
             if (!_userRooms.TryGetValue(userId, out var existingRoomId) || existingRoomId!= roomId)
             {
                 _userRooms[userId] = roomId;
@@ -62,7 +63,6 @@ namespace WatchTogetherAPI.Hubs
 
         public async Task SendMessage(string roomId, string userId, string userName, string message)
         {
-
             // Создаем объект сообщения
             var chatMessage = new ChatMessage
             {
@@ -73,7 +73,7 @@ namespace WatchTogetherAPI.Hubs
             };
             
             // Сохраняем сообщение в истории
-            _chatHistory.AddOrUpdate(
+            _chatHistory.AddOrUpdate(   // Добавляет или обновляет значение для указанного ключа
                 roomId,
                 new List<ChatMessage> { chatMessage },
                 (key, list) => {
@@ -88,20 +88,6 @@ namespace WatchTogetherAPI.Hubs
             );
 
             await Clients.Group(roomId).SendAsync("ReceiveMessage", userId, userName, message);
-        }
-
-        // Метод для очистки истории чата комнаты (опционально)
-        public async Task ClearChatHistory(string roomId, string userId)
-        {
-            // Проверяем полномочия (например, админ комнаты)
-            // Здесь можно добавить логику проверки прав
-            
-            if (_chatHistory.TryGetValue(roomId, out _))
-            {
-                _chatHistory[roomId] = new List<ChatMessage>();
-                await Clients.Group(roomId).SendAsync("ChatHistoryCleared");
-                await SendMessage(roomId, "System", "System", "История чата была очищена.");
-            }
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
