@@ -33,6 +33,7 @@ export default function RoomPage({
     username: "",
   });
   const connectionRef = useRef(null);
+  const messagesEndRef = useRef(null); // Ref для автопрокрутки чата
 
   // Объединяем данные комнаты в одно состояние
   const [roomData, setRoomData] = useState({
@@ -238,24 +239,27 @@ export default function RoomPage({
         const joinResponse = await axios.post(`/api/Rooms/${roomId}/join`);
 
         console.log("Join response data:", joinResponse.data);
-        console.log("userInfo 1", userInfo);
+        // console.log("userInfo 1", userInfo);
         setUserInfo({
           userId: joinResponse.data.userId,
           username: joinResponse.data.username,
         });
 
-        console.log("userInfo 2", userInfo);
+        // console.log("userInfo 2", userInfo);
 
         // Подключаемся к SignalR
-        const { connection, start, sendMessage } = createConnection(
-          roomId,
-          handleNewMessage,
-          handleParticipantsUpdated,
-          joinResponse.data.username,
-          joinResponse.data.userId
-        );
+        const { connection, start, sendMessage, clearChatHistory } =
+          createConnection(
+            roomId,
+            handleNewMessage,
+            handleParticipantsUpdated,
+            handleChatHistory,
+            handleChatHistoryCleared,
+            joinResponse.data.username,
+            joinResponse.data.userId
+          );
 
-        connectionRef.current = { connection, sendMessage };
+        connectionRef.current = { connection, sendMessage, clearChatHistory };
         await start();
       } catch (error) {
         console.error("Chat setup error:", error);
@@ -271,17 +275,48 @@ export default function RoomPage({
     };
   }, [roomId]);
 
+  // Автопрокрутка к последнему сообщению
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   // Обработчик нового сообщения
   const handleNewMessage = (message) => {
     setMessages((prev) => [
       ...prev,
       {
         ...message,
-        // Генерируем уникальный ID для ключа в списке
-        id: Date.now() + Math.random().toString(36).substr(2),
+        // // Генерируем уникальный ID для ключа в списке
+        // id: Date.now() + Math.random().toString(36).substr(2),
+        // Используем ID сообщения, если есть, или генерируем уникальный
+        id:
+          message.messageId ||
+          Date.now() + Math.random().toString(36).substr(2),
       },
     ]);
     console.log(message);
+  };
+
+  // Обработчик получения истории чата
+  const handleChatHistory = (history) => {
+    // Преобразуем историю в формат, используемый в компоненте
+    const formattedHistory = history.map((msg) => ({
+      id: msg.messageId || msg.timestamp + Math.random().toString(36).substr(2),
+      userId: msg.userId === "System" ? null : msg.userId,
+      userName: msg.userName,
+      message: msg.message,
+      isSystem: msg.userId === "System",
+      timestamp: new Date(msg.timestamp),
+    }));
+
+    setMessages(formattedHistory);
+  };
+
+  // Обработчик очистки истории чата
+  const handleChatHistoryCleared = () => {
+    setMessages([]);
   };
 
   // Обработчик обновления пользователей
@@ -313,6 +348,15 @@ export default function RoomPage({
       );
       input.value = "";
     }
+  };
+
+  // Функция для форматирования времени сообщения
+  const formatMessageTime = (timestamp) => {
+    if (!timestamp) return "";
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
@@ -412,9 +456,19 @@ export default function RoomPage({
           {/* Сообщения чата */}
           {messages.map((msg, index) => (
             <div key={index} className="message">
-              <strong>{msg.userName}:</strong> {msg.message}
+              {/*<strong>{msg.userName}:</strong> {msg.message}*/}
+              <div className="message-header">
+                <span className="message-username">{msg.userName}</span>
+                {msg.timestamp && (
+                  <span className="message-timestamp">
+                    {formatMessageTime(msg.timestamp)}
+                  </span>
+                )}
+              </div>
+              <div className="message-content">{msg.message}</div>
             </div>
           ))}
+          <div ref={messagesEndRef} /> {/* Элемент для автопрокрутки */}
         </div>
 
         <form id="chat-form" onSubmit={handleSubmit}>

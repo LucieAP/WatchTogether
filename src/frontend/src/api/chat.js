@@ -4,6 +4,8 @@ export const createConnection = (
   roomId,
   onMessageReceived,
   onParticipantsUpdated,
+  onHistoryReceived,
+  onHistoryCleared,
   username,
   userId
 ) => {
@@ -16,6 +18,7 @@ export const createConnection = (
     .withAutomaticReconnect()
     .build();
 
+  // Обработчик получения сообщения
   connection.on("ReceiveMessage", (userId, userName, message) => {
     // Обрабатываем системные сообщения
     const isSystemMessage = userId === "System";
@@ -25,9 +28,21 @@ export const createConnection = (
       userName,
       message,
       isSystem: isSystemMessage,
+      timestamp: new Date(), // Текущее время для новых сообщений
     });
   });
 
+  // Обработчик получения истории сообщений
+  connection.on("ReceiveChatHistory", (history) => {
+    onHistoryReceived(history);
+  });
+
+  // Обработчик очистки истории чата
+  connection.on("ChatHistoryCleared", () => {
+    onHistoryCleared();
+  });
+
+  // Обработчик обновления списка участников
   connection.on("ParticipantsUpdated", () => {
     onParticipantsUpdated();
   });
@@ -38,6 +53,8 @@ export const createConnection = (
       await connection.invoke("JoinRoom", roomId, username, userId);
     } catch (err) {
       console.error("SignalR Connection Error:", err);
+      // Добавим автоматическую попытку переподключения через 5 секунд
+      setTimeout(start, 5000);
     }
   };
 
@@ -49,5 +66,14 @@ export const createConnection = (
     }
   };
 
-  return { connection, start, sendMessage };
+  // Функция для очистки истории чата (опционально, для администраторов)
+  const clearChatHistory = async (roomId, userId) => {
+    try {
+      await connection.invoke("ClearChatHistory", roomId, userId);
+    } catch (err) {
+      console.error("Error clearing chat history:", err);
+    }
+  };
+
+  return { connection, start, sendMessage, clearChatHistory };
 };
