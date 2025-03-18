@@ -23,6 +23,7 @@ export default function RoomPage({
 }) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
+  const [showParticipants, setShowParticipants] = useState(false);
   // Отслеживаем взаимодействие с мышью, чтобы решить проблему закрытия модального окна при копировании текста и выходе курсора за его границы
   const mouseDownOnContentRef = useRef(false);
 
@@ -398,14 +399,47 @@ export default function RoomPage({
 
       {/* Правая колонка: Чат */}
       <section className="chat-section">
-        {/* Ссылка-приглашение */}
-        <button
-          className="btn"
-          id="invite-btn"
-          onClick={() => setIsInviteModalOpen(true)}
-        >
-          Invite
-        </button>
+        <div className="chat-toolbar">
+          {/* Ссылка-приглашение */}
+          <button
+            className="btn"
+            id="invite-btn"
+            onClick={() => setIsInviteModalOpen(true)}
+          >
+            Invite
+          </button>
+
+          {/* Список участников */}
+          <div className="participants-container">
+            <div
+              className="participants-header"
+              onClick={() => setShowParticipants(!showParticipants)}
+            >
+              Участники ({roomData?.participants?.length || 0})
+              <span className="toggle-participants">
+                {showParticipants ? "▲" : "▼"}
+              </span>
+            </div>
+
+            {showParticipants && (
+              <ul className="participants-list">
+                {roomData?.participants?.map((participant) => (
+                  <li
+                    key={participant.userId}
+                    className={
+                      participant.userId === userInfo?.userId
+                        ? "current-user"
+                        : ""
+                    }
+                  >
+                    {participant.username}
+                    {participant.userId === userInfo?.userId && " (вы)"}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
 
         {/* Модалка приглашения */}
         {isInviteModalOpen && (
@@ -450,7 +484,6 @@ export default function RoomPage({
                 msg.userId === userInfo?.userId ? "own-message" : ""
               }`}
             >
-              {/*<strong>{msg.userName}:</strong> {msg.message}*/}
               <div className="message-header">
                 <span className="message-username">
                   <strong>{msg.userName}:</strong>

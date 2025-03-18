@@ -59,8 +59,13 @@
 
 /* Ссылка-приглашение*/
 
+.chat-toolbar {
+  display: flex;
+  margin-bottom: 10px;
+}
+
 #invite-btn {
-  padding: 15px 30px;
+  padding: 6px 12px;
   font-size: 18px;
   cursor: pointer;
   background-color: #4caf50;
@@ -139,6 +144,92 @@
   /* display: none; */
 }
 
+/* Текущие участники комнаты */
+
+/* Стили для заголовка чата */
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  padding: 10px 0;
+  flex-direction: column;
+  border-bottom: 1px solid #eee;
+}
+
+/* Стили для контейнера участников */
+.participants-container {
+  position: relative;
+  flex-grow: 1;
+  margin-left: 0;
+  width: 100%;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  /* overflow: hidden; */
+  overflow: visible; /* Меняем на visible, чтобы выпадающий список мог выходить за пределы */
+}
+
+/* Заголовок списка участников */
+.participants-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #e9ecef;
+  font-size: 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.participants-header:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Стрелка для сворачивания/разворачивания списка */
+.toggle-participants {
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+/* Список участников */
+.participants-list {
+  position: absolute; /* Абсолютное позиционирование */
+  top: 100%; /* Размещаем под заголовком */
+  left: 0;
+  right: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+
+  background-color: #f8f9fa; /* Добавляем фоновый цвет */
+  border-radius: 0 0 6px 6px; /* Закругляем нижние углы */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Добавляем тень */
+  z-index: 1000; /* Высокий z-index, чтобы быть поверх других элементов */
+}
+
+/* Элемент списка участников */
+.participants-list li {
+  padding: 6px 12px;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 0.9em;
+}
+
+.participants-list li:last-child {
+  border-bottom: none;
+}
+
+/* Стиль для текущего пользователя */
+.participants-list .current-user {
+  font-weight: bold;
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
 /* Центрирование круглой кнопки внутри видеоплеера */
 #add-video-btn {
   position: absolute;
@@ -177,7 +268,6 @@
 #chat-messages {
   height: calc(100vh - 57px);
   overflow-y: auto;
-  padding: 10px;
   border: 1px solid #ccc;
   margin-bottom: 10px;
 }
@@ -196,7 +286,7 @@
 
 /* Стиль для контейнера сообщения */
 .message {
-  padding: 8px 12px;
+  padding: 2px 6px;
   margin-bottom: 8px;
   border-radius: 8px;
   transition: background-color 0.2s ease;
@@ -255,4 +345,29 @@
 .player-wrapper {
   position: relative;
   padding-top: 56.25%; /* 16:9 соотношение */
+}
+
+/* Скролл-бар */
+
+/* Основной контейнер скроллбара */
+::-webkit-scrollbar {
+  width: 0.4rem; /* Ширина вертикального скроллбара */
+  min-height: 0.5rem; /* Высота горизонтального скроллбара */
+}
+
+/* Дорожка скроллбара */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Цвет фона дорожки */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  clip-path: polygon(
+    50% 0,
+    100% 0.15em,
+    100% calc(100% - 0.15em),
+    50% 100%,
+    0 calc(100% - 0.15em),
+    0 0.15em
+  );
 }
