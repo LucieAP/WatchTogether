@@ -26,9 +26,7 @@ namespace WatchTogetherAPI.Controllers
             _logger = logger;
         }
 
-
         // GET: api/Rooms
-
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Room>>> GetRooms()
         {
@@ -37,12 +35,12 @@ namespace WatchTogetherAPI.Controllers
                     .ThenInclude(u => u.CreatedRooms)
                 .Include(r => r.Participants)
                     .ThenInclude(p => p.User)
-                .Include(r => r.CurrentVideo)
+                .Include(r => r.VideoState)
+                    .ThenInclude(vs => vs.CurrentVideo)
                 .ToListAsync();
         }
 
         // POST: api/Rooms/Create
-
         [HttpPost("Create")]
         public async Task<IActionResult> CreateRoom([FromBody] CreateRoomRequest request)
         {
@@ -82,7 +80,6 @@ namespace WatchTogetherAPI.Controllers
                 );
 
                 // Создаем комнату
-
                 var newRoom = new Room
                 {
                     RoomName = request.RoomName,
@@ -147,7 +144,6 @@ namespace WatchTogetherAPI.Controllers
         }
 
         // GET: api/Rooms/{roomId}
-
         [HttpGet("{roomId:guid}")]      // Добавляем constraint для GUID, чтобы обрабатывался только guid
         public async Task<IActionResult> GetRoom(Guid roomId)
         {
@@ -157,7 +153,8 @@ namespace WatchTogetherAPI.Controllers
                     .Include(r => r.Participants)
                         .ThenInclude(p => p.User)
                     .Include(r => r.CreatedByUser)
-                    .Include(r => r.CurrentVideo) // Загружаем связанное видео
+                    .Include(r => r.VideoState) 
+                        .ThenInclude(vs => vs.CurrentVideo) // Загружаем связанное видео
                     .FirstOrDefaultAsync(r => r.RoomId == roomId);
 
                 if (room == null)
@@ -209,9 +206,9 @@ namespace WatchTogetherAPI.Controllers
                         room.RoomName,
                         room.Description,
                         room.InvitationLink,
-                        room.CurrentVideo,
-                        room.IsPaused,
-                        room.CurrentTime,
+                        room.VideoState.CurrentVideo,
+                        room.VideoState.IsPaused,
+                        room.VideoState.CurrentTime,
                         Participants = room.Participants.Select(p => new
                         {
                             p.User.UserId,
@@ -229,9 +226,7 @@ namespace WatchTogetherAPI.Controllers
             }
         }
 
-
         // PUT: api/Rooms/{id}
-
         [HttpPut("{roomId:guid}")]
         public async Task<IActionResult> UpdateRoom(Guid roomId, [FromBody] UpdateRoomRequest request)
         {
@@ -296,7 +291,8 @@ namespace WatchTogetherAPI.Controllers
             var user = await GetOrCreateUserAsync();
             var room = await _context.Rooms
                 .Include(r => r.Participants)
-                .Include(r => r.CurrentVideo)
+                .Include(r => r.VideoState)
+                    .ThenInclude(vs => vs.CurrentVideo)
                 .FirstOrDefaultAsync(r => r.RoomId == roomId);
 
             if (room == null) return NotFound();
@@ -327,7 +323,8 @@ namespace WatchTogetherAPI.Controllers
             {
                 var room = await _context.Rooms
                     .Include(r => r.Participants)
-                    .Include(r => r.CurrentVideo) // Загружаем связанное видео
+                    .Include(r => r.VideoState)
+                        .ThenInclude(vs => vs.CurrentVideo) // Загружаем связанное видео
                     .FirstOrDefaultAsync(r => r.RoomId == roomId);
                 
                 if (room == null) return NotFound("Комната не найдена");
@@ -355,10 +352,10 @@ namespace WatchTogetherAPI.Controllers
                 //    return Forbid("Вы не являетесь участником комнаты.");
                 //};
 
-                // // Обновляем состояние комнаты
-                room.CurrentVideo = video;
-                room.CurrentTime = TimeSpan.Zero;
-                room.LastUpdated = DateTime.UtcNow;
+                // Обновляем состояние комнаты
+                room.VideoState.CurrentVideo = video;
+                room.VideoState.CurrentTime = TimeSpan.Zero;
+                room.VideoState.LastUpdated = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -383,7 +380,8 @@ namespace WatchTogetherAPI.Controllers
             {
                 var room = await _context.Rooms
                     .Include(p => p.Participants)
-                    .Include(r => r.CurrentVideo) // Загружаем связанное видео
+                    .Include(r => r.VideoState)
+                        .ThenInclude(vs => vs.CurrentVideo) // Загружаем связанное видео 
                     .FirstOrDefaultAsync(r => r.RoomId == roomId);
                 
                 if (room == null) return NotFound("Комната не найдена");
@@ -397,27 +395,26 @@ namespace WatchTogetherAPI.Controllers
                 
                 if (request.IsPaused.HasValue) 
                 {
-                    room.IsPaused = request.IsPaused.Value;
+                    room.VideoState.IsPaused = request.IsPaused.Value;
                 }
 
                 if (request.CurrentTimeInSeconds.HasValue)
                 {
-                    room.CurrentTime = TimeSpan.FromSeconds(request.CurrentTimeInSeconds.Value);  // Конвертация времени в секундах в формат 00:00
+                    room.VideoState.CurrentTime = TimeSpan.FromSeconds(request.CurrentTimeInSeconds.Value);  // Конвертация времени в секундах в формат 00:00
                 }
                 
-                room.LastUpdated = DateTime.UtcNow;
+                room.VideoState.LastUpdated = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
                 
                 return Ok(new {
-                    room.IsPaused,
-                    CurrentTimeInSeconds = room.CurrentTime.TotalSeconds,               // Возвращаем секунды
-                    room.LastUpdated
+                    room.VideoState.IsPaused,
+                    CurrentTimeInSeconds = room.VideoState.CurrentTime.TotalSeconds,               // Возвращаем секунды
+                    room.VideoState.LastUpdated
                 }); 
             }
             catch (Exception error)
             {
-                
                 _logger.LogError(error, "Ошибка обновления состояния плеера");
                 return StatusCode(500, "Внутренняя ошибка сервера");
             }
@@ -427,12 +424,13 @@ namespace WatchTogetherAPI.Controllers
         public async Task<IActionResult> DeleteCurrentVideo(Guid roomId)
         {
             var room = await _context.Rooms
-                .Include(r => r.CurrentVideo)
+                .Include(r => r.VideoState)
+                    .ThenInclude(vs => vs.CurrentVideo)
                 .FirstOrDefaultAsync(r => r.RoomId == roomId);
                     
             if (room == null) return NotFound();
 
-            if (room.CurrentVideo == null)
+            if (room.VideoState.CurrentVideo == null)
             {
                 return BadRequest("Room has no current video");
             }
@@ -440,13 +438,13 @@ namespace WatchTogetherAPI.Controllers
             try
             {
                 // Удаляем видео из БД:
-                _context.Videos.Remove(room.CurrentVideo);
+                _context.Videos.Remove(room.VideoState.CurrentVideo);
 
                 // Сбрасываем состояния плеера
-                room.IsPaused = true;
-                room.CurrentTime = TimeSpan.Zero;
-                room.LastUpdated = DateTime.UtcNow;
-                room.CurrentVideo = null;
+                room.VideoState.IsPaused = true;
+                room.VideoState.CurrentTime = TimeSpan.Zero;
+                room.VideoState.LastUpdated = DateTime.UtcNow;
+                room.VideoState.CurrentVideo = null;
 
                 await _context.SaveChangesAsync();
 

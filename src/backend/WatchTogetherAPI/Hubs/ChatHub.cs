@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace WatchTogetherAPI.Hubs
 {
-    public class ChatHub : Hub
+    public class MediaHub : Hub
     {
         // Храним информацию о подключенных комнатах (connectionId → roomId) 
         // Создаем словарь
@@ -15,6 +15,9 @@ namespace WatchTogetherAPI.Hubs
 
         // Храним историю сообщений по комнатам (roomId -> msg[])
         private static readonly ConcurrentDictionary<string, List<ChatMessage>> _chatHistory = new();
+
+        // Храним данные видео для синхронизацит (roomId -> class VideoState)
+        // private static readonly ConcurrentDictionary<string, VideoState> _roomVideoState = new();
 
         // Максимальное количество сообщений для хранения в истории комнаты
         private const int MaxHistorySize = 100;

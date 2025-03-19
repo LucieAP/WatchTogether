@@ -82,7 +82,7 @@ namespace WatchTogetherAPI
 
             app.MapFallbackToFile("index.html");
 
-            app.MapHub<ChatHub>("/chatHub");    // Чат
+            app.MapHub<MediaHub>("mediaHub");    // Чат+Видео
 
             app.Run();
         }

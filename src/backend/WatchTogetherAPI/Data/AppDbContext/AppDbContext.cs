@@ -35,7 +35,6 @@ namespace WatchTogetherAPI.Data.AppDbContext
                 .HasForeignKey(r => r.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-
             // Добавляем каскадное удаление для участников комнаты
             modelBuilder.Entity<Room>()
                 .HasMany(r => r.Participants)
@@ -50,21 +49,51 @@ namespace WatchTogetherAPI.Data.AppDbContext
             modelBuilder.Entity<Room>()     // Неуникальный индекс для Room.RoomName(ускорение поиска по имени комнаты).
                 .HasIndex(r => r.RoomName);
 
-            // Настройка связи Video → Room (многие к одному)
+            // Настройка связи Room → Video (одна комната много видео)
+            modelBuilder.Entity<Video>()
+                .HasOne(v => v.Room)
+                .WithMany(r => r.Videos)
+                .HasForeignKey(v => v.RoomId)
+                .OnDelete(DeleteBehavior.Cascade); // или Restrict в зависимости от требований
 
-            //modelBuilder.Entity<Video>()
-            //    .HasOne(v => v.Room)
-            //    .WithMany()
-            //    .HasForeignKey("RoomId")
-            //    .OnDelete(DeleteBehavior.Cascade);
+            // Конфигурация для VideoState
+            modelBuilder.Entity<Room>(entity =>
+            {
+                // Настройка VideoState как owned entity
+                entity.OwnsOne(r => r.VideoState, vs => // VideoState не существует отдельно от `Room` и будет храниться в той же таблице, что и `Room`, в базе данных.
+                {
+                    vs.Property(v => v.IsPaused)
+                        .HasColumnName("IsPaused")          // Столбец IsPaused
+                        .HasDefaultValue(true);             // Значение по умолчанию IsPaused = true
+                    
+                    vs.Property(v => v.CurrentTime)
+                        .HasColumnName("CurrentTime")       // Столбец CurrentTime
+                        // .HasConversion(                     // Преобразование  
+                        //     v => v.Ticks,                   // Хранение времени в виде количества тиков (Ticks)
+                        //     v => TimeSpan.FromTicks(v))     // Преобразования обратно в TimeSpan
+                        .HasDefaultValue(TimeSpan.Zero);    // Значение по умолчанию CurrentTime = TimeSpan.Zero.
+                    
+                    vs.Property(v => v.LastUpdated)     
+                        .HasColumnName("LastUpdated")       // Столбец CurrentTime LastUpdated
+                        .HasDefaultValueSql("NOW() AT TIME ZONE 'UTC'");       // SQL-функция PostrgeSQL NOW(), возвращает текущую дату и время в формате UTC
+                    
+                    // Связь с Video
+                    vs.HasOne(v => v.CurrentVideo)
+                        .WithMany()
+                        .HasForeignKey(vs => vs.CurrentVideoId)    // Внешний ключ CurrentVideoId для связи с таблицей Video.
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
 
-            // Настройка связи Room.CurrentVideo (один ко многим)
+                // Остальные настройки для Room
+                entity.HasOne(r => r.CreatedByUser)
+                    .WithMany(u => u.CreatedRooms)
+                    .HasForeignKey(r => r.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Room>()
-                .HasOne(r => r.CurrentVideo)
-                 .WithOne(v => v.Room)      // Указываем навигационное свойство в Video
-                .HasForeignKey<Video>(v => v.RoomId) // Внешний ключ в Video
-                .OnDelete(DeleteBehavior.SetNull); ;      // Устанавливает null при удалении видео
+                entity.HasMany(r => r.Participants)
+                    .WithOne(p => p.Room)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }

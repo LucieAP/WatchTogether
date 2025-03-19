@@ -9,7 +9,7 @@ export const createConnection = (
   userId
 ) => {
   const connection = new signalR.HubConnectionBuilder()
-    .withUrl("https://localhost:7143/chatHub", {
+    .withUrl("https://localhost:7143/mediaHub", {
       skipNegotiation: true,
       transport: signalR.HttpTransportType.WebSockets,
     })

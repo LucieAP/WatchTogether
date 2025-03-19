@@ -4,14 +4,13 @@ namespace WatchTogetherAPI.Models
 {
     public class Video
     {
-
         public Guid Id { get; set; } = Guid.NewGuid();
         
-        public string VideoId { get; set; }     // YouTube ID (например, "dQw4w9WgXcQ")
+        public string? VideoId { get; set; }     // YouTube ID (например, "dQw4w9WgXcQ")
 
         public int DurationInSeconds { get; set; }
 
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         // Внешний ключ
         public Guid? RoomId { get; set; }

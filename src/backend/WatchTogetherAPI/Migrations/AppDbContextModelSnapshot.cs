@@ -55,9 +55,6 @@ namespace WatchTogetherAPI.Migrations
                     b.Property<Guid>("CreatedByUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<TimeSpan>("CurrentTime")
-                        .HasColumnType("interval");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -69,12 +66,6 @@ namespace WatchTogetherAPI.Migrations
                     b.Property<string>("InvitationLink")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("IsPaused")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("RoomName")
                         .IsRequired()
@@ -135,17 +126,14 @@ namespace WatchTogetherAPI.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("VideoId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoomId")
-                        .IsUnique();
+                    b.HasIndex("RoomId");
 
                     b.ToTable("Videos");
                 });
@@ -177,25 +165,70 @@ namespace WatchTogetherAPI.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.OwnsOne("WatchTogetherAPI.Models.VideoState", "VideoState", b1 =>
+                        {
+                            b1.Property<Guid>("RoomId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<TimeSpan>("CurrentTime")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("interval")
+                                .HasDefaultValue(new TimeSpan(0, 0, 0, 0, 0))
+                                .HasColumnName("CurrentTime");
+
+                            b1.Property<Guid?>("CurrentVideoId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<bool>("IsPaused")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("boolean")
+                                .HasDefaultValue(true)
+                                .HasColumnName("IsPaused");
+
+                            b1.Property<DateTime>("LastUpdated")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("LastUpdated")
+                                .HasDefaultValueSql("NOW() AT TIME ZONE 'UTC'");
+
+                            b1.HasKey("RoomId");
+
+                            b1.HasIndex("CurrentVideoId");
+
+                            b1.ToTable("Rooms");
+
+                            b1.HasOne("WatchTogetherAPI.Models.Video", "CurrentVideo")
+                                .WithMany()
+                                .HasForeignKey("CurrentVideoId")
+                                .OnDelete(DeleteBehavior.SetNull);
+
+                            b1.WithOwner()
+                                .HasForeignKey("RoomId");
+
+                            b1.Navigation("CurrentVideo");
+                        });
+
                     b.Navigation("CreatedByUser");
+
+                    b.Navigation("VideoState")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("WatchTogetherAPI.Models.Video", b =>
                 {
                     b.HasOne("WatchTogetherAPI.Models.Room", "Room")
-                        .WithOne("CurrentVideo")
-                        .HasForeignKey("WatchTogetherAPI.Models.Video", "RoomId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany("Videos")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Room");
                 });
 
             modelBuilder.Entity("WatchTogetherAPI.Models.Room", b =>
                 {
-                    b.Navigation("CurrentVideo")
-                        .IsRequired();
-
                     b.Navigation("Participants");
+
+                    b.Navigation("Videos");
                 });
 
             modelBuilder.Entity("WatchTogetherAPI.Models.User", b =>

@@ -18,6 +18,8 @@ namespace WatchTogetherAPI.Models
         public Room()
         {
             Participants = new List<Participant>();
+            VideoState = new VideoState();
+            Videos = new List<Video>();
         }
 
         [Key]
@@ -41,25 +43,17 @@ namespace WatchTogetherAPI.Models
         public Guid CreatedByUserId { get; set; }
 
         [Required]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime ExpiresAt { get; set; }
 
         public string InvitationLink { get; set; }
 
-        // Текущее видео
-        public bool IsPaused { get; set; } = true;
-
-        public TimeSpan CurrentTime { get; set; }
-
-        public DateTime LastUpdated { get; set; } // Время последнего изменения состояния
-
 
         // Навигационные свойства с внешними сущностями
-
+        public virtual VideoState VideoState {get; set;}
         public virtual User CreatedByUser { get; set; }
         public virtual ICollection<Participant> Participants { get; set; }
-
-        public virtual Video CurrentVideo { get; set; }
+        public virtual ICollection<Video> Videos { get; set; }
     }
 }
