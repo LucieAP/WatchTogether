@@ -253,7 +253,8 @@ export default function RoomPage({
           handleParticipantsUpdated,
           handleChatHistory,
           joinResponse.data.username,
-          joinResponse.data.userId
+          joinResponse.data.userId,
+          handleVideoStateUpdated
         );
 
         connectionRef.current = { connection, sendMessage };
@@ -291,7 +292,7 @@ export default function RoomPage({
           Date.now() + Math.random().toString(36).substr(2),
       },
     ]);
-    console.log(message);
+    console.log("Получено новое сообщение:", message);
   };
 
   // Обработчик получения истории чата
@@ -307,20 +308,38 @@ export default function RoomPage({
     }));
 
     setMessages(formattedHistory);
+    console.log("Получена история сообщений:", formattedHistory);
   };
 
   // Обработчик обновления пользователей
   const handleParticipantsUpdated = async () => {
     try {
       const response = await axios.get(`/api/Rooms/${roomId}`);
-      // console.log("response: ", response);
       setRoomData((prev) => ({
         ...prev,
         participants: response.data.room.participants,
       }));
+      console.log(
+        "Список участников обновлен:",
+        response.data.room.participants
+      );
     } catch (error) {
-      console.error("Error updating participants:", error);
+      console.error("Ошибка при обновлении списка участников:", error);
     }
+  };
+
+  // Обработчик обновления состояния видео пользователей
+  const handleVideoStateUpdated = (videoState) => {
+    console.log("Получено обновление состояния видео:", videoState);
+    // if (videoState) {
+    //   setRoomData((prev) => ({
+    //     ...prev,
+    //     currentVideoId: videoState.currentVideoId,
+    //     isPaused: videoState.isPaused,
+    //     // currentVideo: videoState.currentVideo,
+    //     currentTime: videoState.currentTime,
+    //   }));
+    // }
   };
 
   // Обработчик отправки сообщения
@@ -330,13 +349,18 @@ export default function RoomPage({
     const message = input.value.trim(); // возвращает строку с вырезанными пробельными символами с её концов
 
     if (message && userInfo) {
-      await connectionRef.current.sendMessage(
-        roomId,
-        userInfo.userId,
-        userInfo.username,
-        message
-      );
-      input.value = "";
+      try {
+        await connectionRef.current.sendMessage(
+          roomId,
+          userInfo.userId,
+          userInfo.username,
+          message
+        );
+        input.value = "";
+        input.focus();
+      } catch (error) {
+        console.error("Ошибка при отправке сообщения:", error);
+      }
     }
   };
 

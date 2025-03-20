@@ -6,7 +6,8 @@ export const createConnection = (
   onParticipantsUpdated,
   onHistoryReceived,
   username,
-  userId
+  userId,
+  onVideoStateUpdated
 ) => {
   const connection = new signalR.HubConnectionBuilder()
     .withUrl("https://localhost:7143/mediaHub", {
@@ -40,6 +41,11 @@ export const createConnection = (
   // Обработчик обновления списка участников
   connection.on("ParticipantsUpdated", () => {
     onParticipantsUpdated();
+  });
+
+  // Обработчик получения начального состояния видео
+  connection.on("InitialVideoState", (videoState) => {
+    onVideoStateUpdated(videoState);
   });
 
   const start = async () => {

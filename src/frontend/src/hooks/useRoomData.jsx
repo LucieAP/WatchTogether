@@ -30,7 +30,7 @@ export const useRoomData = (roomId) => {
     fetchRoomData();
   }, [roomId]);
 
-  console.log("useRoomData roomData: ", roomData);
+  // console.log("useRoomData roomData: ", roomData);
 
   return { roomData, isLoading, error, refetch: fetchRoomData };
 };

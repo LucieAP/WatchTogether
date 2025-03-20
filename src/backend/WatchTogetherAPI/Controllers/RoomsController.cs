@@ -288,31 +288,38 @@ namespace WatchTogetherAPI.Controllers
         [HttpPost("{roomId:guid}/join")]
         public async Task<IActionResult> JoinChat(Guid roomId)
         {
-            var user = await GetOrCreateUserAsync();
-            var room = await _context.Rooms
-                .Include(r => r.Participants)
-                .Include(r => r.VideoState)
-                    .ThenInclude(vs => vs.CurrentVideo)
-                .FirstOrDefaultAsync(r => r.RoomId == roomId);
-
-            if (room == null) return NotFound();
-
-            if (!room.Participants.Any(p => p.UserId == user.UserId))
+            try
             {
-                room.Participants.Add(new Participant
-                {
-                    UserId = user.UserId,
-                    Role = ParticipantRole.Member,
-                    JoinedAt = DateTime.UtcNow
-                });
-                await _context.SaveChangesAsync(); 
-            }
+                var user = await GetOrCreateUserAsync();
+                var room = await _context.Rooms
+                    .Include(r => r.Participants)
+                    .Include(r => r.VideoState)
+                        .ThenInclude(vs => vs.CurrentVideo)
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
 
-            return Ok(new 
-            { 
-                user.UserId, 
-                user.Username 
-            });
+                if (room == null) return NotFound();
+
+                if (!room.Participants.Any(p => p.UserId == user.UserId))
+                {
+                    room.Participants.Add(new Participant
+                    {
+                        UserId = user.UserId,
+                        Role = ParticipantRole.Member,
+                        JoinedAt = DateTime.UtcNow
+                    });
+                    await _context.SaveChangesAsync(); 
+                }
+
+                return Ok(new 
+                { 
+                    user.UserId, 
+                    user.Username 
+                });
+            } catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error joining room {RoomId}", roomId);
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         [HttpPut("{roomId:guid}/video")]
