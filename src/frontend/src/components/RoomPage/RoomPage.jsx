@@ -138,13 +138,11 @@ export default function RoomPage({
       const response = await axios.patch(`/api/rooms/${roomId}/player`, {
         currentTimeInSeconds: Math.floor(seconds),
       });
-
       console.log("CurrentTime: ", response.data.currentTimeInSeconds);
-      // console.log("response.data after CurrentTime: ", response.data);
     } catch (error) {
       console.error("Ошибка обновления времени:", error);
     }
-  }, 1000);
+  }, 1000); // Увеличиваем задержку до 1 секунды
 
   const handleCloseVideo = async () => {
     try {
@@ -331,15 +329,21 @@ export default function RoomPage({
   // Обработчик обновления состояния видео пользователей
   const handleVideoStateUpdated = (videoState) => {
     console.log("Получено обновление состояния видео:", videoState);
-    // if (videoState) {
-    //   setRoomData((prev) => ({
-    //     ...prev,
-    //     currentVideoId: videoState.currentVideoId,
-    //     isPaused: videoState.isPaused,
-    //     // currentVideo: videoState.currentVideo,
-    //     currentTime: videoState.currentTime,
-    //   }));
-    // }
+
+    // Если изменение инициировано сервером
+    setRoomData((prev) => ({
+      ...prev,
+      currentVideoId: videoState?.currentVideoId || null,
+      isPaused: videoState?.isPaused ?? true,
+      currentTime: videoState?.currentTime || 0,
+      currentVideo: videoState?.currentVideo
+        ? {
+            videoId: videoState.currentVideo.videoId,
+            title: videoState.currentVideo.title,
+            duration: videoState.currentVideo.durationInSeconds,
+          }
+        : null,
+    }));
   };
 
   // Обработчик отправки сообщения

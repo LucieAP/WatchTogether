@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using WatchTogetherAPI.Data.AppDbContext;
+using WatchTogetherAPI.Hubs;
 using WatchTogetherAPI.Models;
 using WatchTogetherAPI.Models.DTO;
 
@@ -19,11 +21,13 @@ namespace WatchTogetherAPI.Controllers
         private readonly AppDbContext _context;
         private readonly ILogger<RoomsController> _logger;
         private readonly Random _random = new();
+        private readonly IHubContext<MediaHub> _hubContext;
 
-        public RoomsController(AppDbContext context, ILogger<RoomsController> logger)
+        public RoomsController(AppDbContext context, ILogger<RoomsController> logger, IHubContext<MediaHub> hubContext)
         {
             _context = context;
             _logger = logger;
+            _hubContext = hubContext;
         }
 
         // GET: api/Rooms
@@ -367,6 +371,15 @@ namespace WatchTogetherAPI.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                await _hubContext.Clients.Group(roomId.ToString())
+                    .SendAsync("VideoStateUpdated", new 
+                    {
+                        CurrentVideoId = room.VideoState?.CurrentVideo?.VideoId,
+                        IsPaused = room.VideoState?.IsPaused ?? true,
+                        CurrentTime = room.VideoState?.CurrentTime.TotalSeconds ?? 0,
+                        CurrentVideo = room.VideoState?.CurrentVideo
+                    });
+
                 return Ok(new{ 
                     room,
                     video
@@ -413,10 +426,19 @@ namespace WatchTogetherAPI.Controllers
                 room.VideoState.LastUpdated = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
+
+                await _hubContext.Clients.Group(roomId.ToString())
+                    .SendAsync("VideoStateUpdated", new 
+                    {
+                        CurrentVideoId = room.VideoState?.CurrentVideo?.VideoId,
+                        IsPaused = room.VideoState?.IsPaused ?? true,
+                        CurrentTime = room.VideoState?.CurrentTime.TotalSeconds ?? 0,
+                        CurrentVideo = room.VideoState?.CurrentVideo
+                    });
                 
                 return Ok(new {
                     room.VideoState.IsPaused,
-                    CurrentTimeInSeconds = room.VideoState.CurrentTime.TotalSeconds,               // Возвращаем секунды
+                    CurrentTimeInSeconds = room.VideoState.CurrentTime.TotalSeconds,    // Возвращаем секунды
                     room.VideoState.LastUpdated
                 }); 
             }
@@ -454,6 +476,15 @@ namespace WatchTogetherAPI.Controllers
                 room.VideoState.CurrentVideo = null;
 
                 await _context.SaveChangesAsync();
+
+                await _hubContext.Clients.Group(roomId.ToString())
+                    .SendAsync("VideoStateUpdated", new 
+                    {
+                        CurrentVideoId = (string)null,
+                        IsPaused = true,
+                        CurrentTime = 0,
+                        CurrentVideo = (object)null
+                    });
 
                 return NoContent();
             }

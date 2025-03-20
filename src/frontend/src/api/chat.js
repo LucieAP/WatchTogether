@@ -48,12 +48,31 @@ export const createConnection = (
     onVideoStateUpdated(videoState);
   });
 
+  // Обработчик обновлений состояний видео
+  connection.on("VideoStateUpdated", (videoState) => {
+    onVideoStateUpdated(videoState);
+  });
+
   const start = async () => {
     try {
-      await connection.start();
-      await connection.invoke("JoinRoom", roomId, username, userId);
+      // Проверяем состояние соединения перед запуском
+      if (connection.state === signalR.HubConnectionState.Disconnected) {
+        await connection.start();
+        console.log("SignalR connected. State:", connection.state);
+
+        // Вызываем JoinRoom только после успешного подключения
+        await connection
+          .invoke("JoinRoom", roomId, username, userId)
+          .catch((err) => console.error("JoinRoom error:", err));
+      }
     } catch (err) {
       console.error("SignalR Connection Error:", err);
+
+      // Останавливаем соединение перед повторной попыткой
+      if (connection.state !== signalR.HubConnectionState.Disconnected) {
+        await connection.stop();
+      }
+
       // Добавим автоматическую попытку переподключения через 5 секунд
       setTimeout(start, 5000);
     }
