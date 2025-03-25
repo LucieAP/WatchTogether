@@ -74,6 +74,7 @@ export default function CreateRoom() {
                   id="roomName"
                   name="roomName"
                   className="form-control"
+                  autocomplete="off"
                   required
                   {...INPUT_PROPS}
                   value={roomName}
