@@ -37,6 +37,7 @@ export default function VideoPlayer({
   const currentTimeRef = useRef(0); // Для отслеживания актуального времени
   const isSeekingRef = useRef(false);
   const mutedRef = useRef(muted);
+  const seekPreviewRef = useRef(null);
 
   // Cостояние для временных метаданных названия видео и его продолжительности
   const [videoMetadata, setVideoMetadata] = useState({
@@ -152,31 +153,48 @@ export default function VideoPlayer({
 
   // Обработчик для предпросмотра перемотки (показ времени при наведении на прогресс-бар)
   const handleSeekPreview = (e) => {
-    const progressBar = e.currentTarget;
-    const rect = progressBar.getBoundingClientRect();
+    // Получаем контейнер прогресс-бара
+    const container = e.currentTarget;
 
-    // Получаем сам элемент ввода внутри контейнера
-    const inputElement = progressBar.querySelector("input") || progressBar;
-    const inputRect = inputElement.getBoundingClientRect();
+    // Находим непосредственно элемент input[type="range"]
+    const progressBar = container.querySelector(".player-progress-bar");
+    const seekPreview = seekPreviewRef.current;
 
-    // Вычисляем действительную область полосы прогресса (учитывая возможные отступы)
-    const offsetX = e.clientX - rect.left; // Позиция курсора относительно прогресс-бара
-    const progressBarWidth = rect.width;
+    if (!progressBar || !duration || !seekPreview) return;
 
-    if (progressBarWidth > 0 && duration) {
-      // Ограничиваем процент между 0 и 1 с высокой точностью
-      const percentage = Math.min(1, Math.max(0, offsetX / progressBarWidth));
+    // Получаем реальные размеры и позицию полосы прогресса
+    const barRect = progressBar.getBoundingClientRect(); // getBoundingClientRect() возвращает размеры и координаты элемента относительно окна браузера
 
-      // Вычисляем точное время в секундах с высокой точностью
-      const exactSeconds = percentage * duration;
+    // Вычисляем позицию курсора относительно полосы прогресса
+    let offsetX = e.clientX - barRect.left; // e.clientX — координата курсора по оси X относительно окна.
 
-      // Сохраняем точное значение в секундах
-      setSeekPreviewTime(exactSeconds);
+    offsetX = Math.max(0, Math.min(offsetX, barRect.width)); // Ограничиваем смещение диапазоном [0, barRect.width], чтобы избежать выхода за границы.
 
-      // Вычисляем процентную позицию на основе того же значения
-      setSeekPreviewPosition(percentage * 100);
-    }
+    // // Получаем ширину превью
+    // const previewWidth = seekPreview.offsetWidth;
+    // const previewHalfWidth = previewWidth / 2;
+
+    // // Корректируем позицию, чтобы превью не выходило за границы
+    // let adjustedX = offsetX;
+    // if (previewWidth > 0) {
+    //   if (adjustedX < previewHalfWidth) {
+    //     adjustedX = previewHalfWidth;
+    //   } else if (adjustedX > barRect.width - previewHalfWidth) {
+    //     adjustedX = barRect.width - previewHalfWidth;
+    //   }
+    // }
+
+    // Рассчитываем процент и время
+    const percentage = offsetX / barRect.width;
+    const exactTime = percentage * duration;
+
+    // Сохраняем точное значение в секундах
+    setSeekPreviewTime(exactTime);
+
+    // Вычисляем процентную позицию на основе того же значения
+    setSeekPreviewPosition(percentage * 100);
   };
+
   // Обработчик для показа превью перемотки (например, при наведении на прогресс-бар)
   const handleSeekPreviewShow = () => setIsSeekPreviewVisible(true);
 
@@ -583,203 +601,226 @@ export default function VideoPlayer({
           </button>
         </div>
 
-        {/* Блок элементов управления - рендерится только при controls: true */}
-        {controlsVisible && !controls && (
-          <div className={`player-controls`}>
-            <button className="play-button" onClick={handlePlayPause}>
-              {playing ? (
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  role="img"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 320 512"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M48 64C21.5 64 0 85.5 0 112L0 400c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48L48 64zm192 0c-26.5 0-48 21.5-48 48l0 288c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48l-32 0z"
-                  />
-                </svg>
-              ) : (
-                // Если видео на паузе — показываем иконку "play"
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  role="img"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 384 512"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
-                  />
-                </svg>
-              )}
-            </button>
-            <div
-              className="player-progress-bar-container"
-              onMouseMove={handleSeekPreview}
-              onMouseEnter={handleSeekPreviewShow}
-              onMouseLeave={handleSeekPreviewHide}
-            >
-              <input
-                className="player-progress-bar"
-                type="range"
-                min={0}
-                max={0.999999}
-                step="any"
-                value={played}
-                onMouseDown={handleSeekMouseDown} // Обработчик нажатия кнопки мыши на ползунке
-                onChange={handleSeekChange} // Обработчик изменения значения ползунка
-                onMouseUp={handleSeekMouseUp} // Обработчик отпускания кнопки мыши на ползунке
-              />
-              {isSeekPreviewVisible && (
-                <div
-                  className="seek-preview"
-                  style={{
-                    left: `${seekPreviewPosition}%`,
-                    transform: "translateX(-50%)",
-                  }}
-                >
-                  <Duration seconds={seekPreviewTime} />
-                </div>
-              )}
-            </div>
-            <div className="time-display">
-              <span className="time-current">
-                {<Duration seconds={duration * played} />}
-              </span>
-              <span className="time-separator"> / </span>
-              <span className="time-duration">
-                {<Duration seconds={duration} />}
-              </span>
-            </div>
-            <div className="volume-container">
-              <button className="volume-btn" onClick={handleToggleMuted}>
-                {!muted ? (
-                  <svg
-                    className="svg-volume-not-muted"
-                    aria-hidden="true"
-                    focusable="false"
-                    role="img"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 640 512"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M533.6 32.5C598.5 85.2 640 165.8 640 256s-41.5 170.7-106.4 223.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C557.5 398.2 592 331.2 592 256s-34.5-142.2-88.7-186.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM473.1 107c43.2 35.2 70.9 88.9 70.9 149s-27.7 113.8-70.9 149c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C475.3 341.3 496 301.1 496 256s-20.7-85.3-53.2-111.8c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zm-60.5 74.5C434.1 199.1 448 225.9 448 256s-13.9 56.9-35.4 74.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C393.1 284.4 400 271 400 256s-6.9-28.4-17.7-37.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM301.1 34.8C312.6 40 320 51.4 320 64l0 384c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352 64 352c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l67.8 0L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3z"
-                    ></path>
-                  </svg>
-                ) : (
-                  <svg
-                    className="svg-volume-muted"
-                    aria-hidden="true"
-                    focusable="false"
-                    role="img"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 576 512"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M301.1 34.8C312.6 40 320 51.4 320 64l0 384c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352 64 352c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l67.8 0L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3zM425 167l55 55 55-55c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-55 55 55 55c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-55-55-55 55c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l55-55-55-55c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0z"
-                    ></path>
-                  </svg>
-                )}
-              </button>
-
-              <input
-                className="volume-change-bar"
-                type="range"
-                min={0}
-                max={1}
-                step="any"
-                // Если звук заглушён, то слайдер отображает 0, иначе текущее значение volume
-                value={muted ? 0 : volume}
-                onChange={handleVolumeChange}
-              />
-            </div>
-            <button className="settings-button" onClick={toggleSettings}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                <defs>
-                  <clipPath id="clip-dRPciZ8T0COj">
-                    <path
-                      fill="currentColor"
-                      d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"
-                    ></path>
-                  </clipPath>
-                </defs>
-                <rect
-                  fill="currentColor"
-                  clipPath="url(#clip-dRPciZ8T0COj)"
-                  mask="url(#mask-rTVkSWt4GzQZ)"
-                  x="0"
-                  y="0"
-                  width="100%"
-                  height="100%"
-                ></rect>
-              </svg>
-            </button>
-            {isSettingsOpen && (
+        <div className="player-controls-container">
+          {/* Вынесенный прогресс-бар - теперь на том же уровне, что и controls */}
+          {controlsVisible && !controls && (
+            <div className="player-progress-bar-container">
               <div
-                className="settings-list"
-                onClick={(e) => e.stopPropagation()}
+                className="progress-bar-wrapper"
+                onMouseMove={handleSeekPreview}
+                onMouseEnter={handleSeekPreviewShow}
+                onMouseLeave={handleSeekPreviewHide}
               >
-                <button
-                  className="speed-settings-btn"
-                  onClick={openSpeedSettings}
-                >
-                  <span>
-                    Скорость
-                    <span>{playbackRate}x</span>
+                <input
+                  className="player-progress-bar"
+                  type="range"
+                  min={0}
+                  max={1}
+                  step="any"
+                  value={played}
+                  onMouseDown={handleSeekMouseDown} // Обработчик нажатия кнопки мыши на ползунке
+                  onChange={handleSeekChange} // Обработчик изменения значения ползунка
+                  onMouseUp={handleSeekMouseUp} // Обработчик отпускания кнопки мыши на ползунке
+                />
+                {isSeekPreviewVisible && (
+                  <div
+                    className="seek-preview"
+                    ref={seekPreviewRef}
+                    style={{
+                      left: `${seekPreviewPosition}%`,
+                      transform: "translateX(-50%)",
+                    }}
+                  >
+                    <Duration seconds={seekPreviewTime} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Блок элементов управления - рендерится только при controls: true */}
+          {controlsVisible && !controls && (
+            <div className={`player-controls`}>
+              {/* Левая группа - кнопка воспроизведения и время */}
+              <div className="controls-left-group">
+                <button className="play-button" onClick={handlePlayPause}>
+                  {playing ? (
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      role="img"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 320 512"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M48 64C21.5 64 0 85.5 0 112L0 400c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48L48 64zm192 0c-26.5 0-48 21.5-48 48l0 288c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48l-32 0z"
+                      />
+                    </svg>
+                  ) : (
+                    // Если видео на паузе — показываем иконку "play"
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      role="img"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 384 512"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
+                      />
+                    </svg>
+                  )}
+                </button>
+
+                <div className="time-display">
+                  <span className="time-current">
+                    {<Duration seconds={duration * played} />}
                   </span>
+                  <span className="time-separator"> / </span>
+                  <span className="time-duration">
+                    {<Duration seconds={duration} />}
+                  </span>
+                </div>
+              </div>
+
+              {/* Правая группа - остальные элементы управления */}
+              <div className="controls-right-group">
+                <div className="volume-container">
+                  <button className="volume-btn" onClick={handleToggleMuted}>
+                    {!muted ? (
+                      <svg
+                        className="svg-volume-not-muted"
+                        aria-hidden="true"
+                        focusable="false"
+                        role="img"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 640 512"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M533.6 32.5C598.5 85.2 640 165.8 640 256s-41.5 170.7-106.4 223.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C557.5 398.2 592 331.2 592 256s-34.5-142.2-88.7-186.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM473.1 107c43.2 35.2 70.9 88.9 70.9 149s-27.7 113.8-70.9 149c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C475.3 341.3 496 301.1 496 256s-20.7-85.3-53.2-111.8c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zm-60.5 74.5C434.1 199.1 448 225.9 448 256s-13.9 56.9-35.4 74.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C393.1 284.4 400 271 400 256s-6.9-28.4-17.7-37.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM301.1 34.8C312.6 40 320 51.4 320 64l0 384c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352 64 352c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l67.8 0L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      <svg
+                        className="svg-volume-muted"
+                        aria-hidden="true"
+                        focusable="false"
+                        role="img"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 576 512"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M301.1 34.8C312.6 40 320 51.4 320 64l0 384c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352 64 352c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l67.8 0L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3zM425 167l55 55 55-55c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-55 55 55 55c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-55-55-55 55c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l55-55-55-55c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0z"
+                        ></path>
+                      </svg>
+                    )}
+                  </button>
+
+                  <input
+                    className="volume-change-bar"
+                    type="range"
+                    min={0}
+                    max={1}
+                    step="any"
+                    // Если звук заглушён, то слайдер отображает 0, иначе текущее значение volume
+                    value={muted ? 0 : volume}
+                    onChange={handleVolumeChange}
+                  />
+                </div>
+                <button className="settings-button" onClick={toggleSettings}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <defs>
+                      <clipPath id="clip-dRPciZ8T0COj">
+                        <path
+                          fill="currentColor"
+                          d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"
+                        ></path>
+                      </clipPath>
+                    </defs>
+                    <rect
+                      fill="currentColor"
+                      clipPath="url(#clip-dRPciZ8T0COj)"
+                      mask="url(#mask-rTVkSWt4GzQZ)"
+                      x="0"
+                      y="0"
+                      width="100%"
+                      height="100%"
+                    ></rect>
+                  </svg>
+                </button>
+                {isSettingsOpen && (
+                  <div
+                    className="settings-list"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="speed-settings-btn"
+                      onClick={openSpeedSettings}
+                    >
+                      <span>
+                        Скорость
+                        <span>{playbackRate}x</span>
+                      </span>
+                    </button>
+                  </div>
+                )}
+
+                {isSpeedSettingsOpen && (
+                  <div
+                    className="speed-settings-values"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {[0.5, 1, 1.5, 2].map((speed) => (
+                      <button
+                        key={speed}
+                        className="speed-value"
+                        onClick={() => handleSetPlaybackRate(speed)}
+                        value={speed}
+                      >
+                        {speed}x
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button
+                  className="fullscreen-button"
+                  onClick={toggleFullscreen}
+                >
+                  {isFullscreen ? (
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      data-prefix="fas"
+                      data-icon="compress"
+                      role="img"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 448 512"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 448 512"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"
+                      ></path>
+                    </svg>
+                  )}
                 </button>
               </div>
-            )}
-
-            {isSpeedSettingsOpen && (
-              <div
-                className="speed-settings-values"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {[0.5, 1, 1.5, 2].map((speed) => (
-                  <button
-                    key={speed}
-                    className="speed-value"
-                    onClick={() => handleSetPlaybackRate(speed)}
-                    value={speed}
-                  >
-                    {speed}x
-                  </button>
-                ))}
-              </div>
-            )}
-            <button className="fullscreen-button" onClick={toggleFullscreen}>
-              {isFullscreen ? (
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  data-prefix="fas"
-                  data-icon="compress"
-                  role="img"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 448 512"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"
-                  />
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-                  <path
-                    fill="currentColor"
-                    d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"
-                  ></path>
-                </svg>
-              )}
-            </button>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
         <button className="lock-button" onClick={handleToggleControls}>
           {controls ? (
