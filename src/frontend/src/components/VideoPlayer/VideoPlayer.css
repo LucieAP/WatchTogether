@@ -326,6 +326,17 @@ h1 {
   /* overflow: hidden; */
 }
 
+.playback-rate-display {
+  bottom: 60px; /* Расположение над контролами */
+  left: 10px;
+  color: white;
+  user-select: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: var(--z-bottom-controls);
+}
+
 /* .settings-button:hover,
     .fullscreen-button:hover {
       opacity: 1;

@@ -1,3 +1,5 @@
+// RoomPage.jsx:
+
 import { useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { updateRoom } from "../../api/rooms";
@@ -138,8 +140,12 @@ export default function RoomPage({
     }
   };
 
+  // В iframe api ютуба getCurrentTime() предоставляет данные примерно с интервалом в 250 миллисекунд – то есть около 4 раз в секунду
   // Отправляет время на сервер при каждом обновлении времени воспроизведения
   const handleTimeUpdate = useDebouncedCallback(async (seconds) => {
+    // const player = playerRef.current;
+    // const isSeeking = player?.getIsSeeking?.() || false; // Получаем состояние перемотки из плеера
+
     // Добавляем состояние последнего отправленного времени
     if (!roomData.isPaused && !isSeekingRef.current) {
       // Проверяем, достаточно ли значительное изменение
@@ -353,7 +359,7 @@ export default function RoomPage({
     console.log("Получено обновление состояния видео:", videoState);
 
     const now = Date.now();
-    // Игнорирует апдейты, приходящие чаще 2 секунд, стабилизируя синхронизацию
+    // Игнорирует апдейты, приходящие чаще 2 секунд, стабилизируя синхронизацию, защита от перегрузки сервера
     if (now - lastServerUpdateRef.current < 2000) {
       console.log("Пропускаем обновление (слишком частое)");
       return;
@@ -363,29 +369,41 @@ export default function RoomPage({
     const player = playerRef.current;
     const currentTime = player?.getCurrentTime?.() || 0;
     const serverTime = videoState?.currentTime || 0;
+    const timeDifference = serverTime - currentTime;
+
+    // const isSeeking = player?.getIsSeeking?.() || false;
 
     console.log(
-      `Синхронизация: локальное ${currentTime}, серверное ${serverTime}`
+      `Синхронизация: локальное ${currentTime}, серверное ${serverTime}, разница ${timeDifference.toFixed(
+        2
+      )}с`
     );
+
+    // Добавляем проверку на недавнюю ручную перемотку (5 секунд)
+    const wasRecentlyManuallySeek =
+      window.lastManualSeekTime && now - window.lastManualSeekTime < 5000;
 
     // Сначала обработать синхронизацию времени
     // Проверка на расскождение текущего времени на клиенте с серверным
     // Если разница больше 3 секунд (> 3), происходит принудительная перемотка (seekTo) к времени сервера
     // isSeekingRef: Блокирует синхронизацию во время перемотки, предотвращая конфликты. Сбрасывается через 2 секунды, давая время на стабилизацию
-    if (
-      Math.abs(serverTime - currentTime) > 3 &&
-      player?.seekTo &&
-      !isSeekingRef.current
-    ) {
-      console.log(`Синхронизация: перемотка с ${currentTime} на ${serverTime}`);
-      isSeekingRef.current = true;
 
-      player.seekTo(serverTime, "seconds");
+    if (player && !isSeekingRef.current && !wasRecentlyManuallySeek) {
+      if (Math.abs(serverTime - currentTime) > 5) {
+        console.log(
+          `Большое расхождение (${timeDifference.toFixed(
+            2
+          )}с): применяем прямую перемотку с ${currentTime} на ${serverTime}`
+        );
+        isSeekingRef.current = true;
 
-      // Сбрасываем флаг перемотки через короткое время
-      setTimeout(() => {
-        isSeekingRef.current = false;
-      }, 2000);
+        player.seekTo(serverTime, "seconds");
+
+        // Сбрасываем флаг перемотки через короткое время
+        setTimeout(() => {
+          isSeekingRef.current = false;
+        }, 2000);
+      }
     }
 
     // Если изменение инициировано сервером
@@ -421,6 +439,167 @@ export default function RoomPage({
       return prev;
     });
   };
+
+  /*
+  // Обработчик обновления состояния видео пользователей
+  // Получает обновления от сервера и может вызывать перемотку видео
+  const handleVideoStateUpdated = (videoState) => {
+    // Ранний возврат, если состояние видео равно null или не определено (предотвращает выполнение лишнего кода)
+    if (!videoState) {
+      console.warn("Получено обновление состояния пустого видео");
+      return;
+    }
+
+    console.log("Получено обновление состояния видео:", videoState);
+
+    const now = Date.now();
+    // Игнорирует апдейты, приходящие чаще 2 секунд, стабилизируя синхронизацию
+    if (now - lastServerUpdateRef.current < 2000) {
+      console.log("Пропускаем обновление (слишком частое)");
+      return;
+    }
+    lastServerUpdateRef.current = now;
+
+    const player = playerRef.current;
+    const currentTime = player?.getCurrentTime?.() || 0;
+    const serverTime = videoState?.currentTime || 0;
+    const timeDifference = serverTime - currentTime;
+
+    console.log(
+      `Синхронизация: локальное ${currentTime}, серверное ${serverTime}, разница ${timeDifference.toFixed(
+        2
+      )}с`
+    );
+
+    const isSeeking = player?.getIsSeeking() || false; // Получаем состояние перемотки
+
+    // Добавляем проверку на недавнюю ручную перемотку (5 секунд)
+    const wasRecentlyManuallySeek =
+      window.lastManualSeekTime && now - window.lastManualSeekTime < 5000;
+
+    // Сначала обработать синхронизацию времени
+    // Проверка на расскождение текущего времени на клиенте с серверным
+    // Если разница больше 3 секунд (> 3), происходит принудительная перемотка (seekTo) к времени сервера
+    // isSeekingRef: Блокирует синхронизацию во время перемотки, предотвращая конфликты. Сбрасывается через 2 секунды, давая время на стабилизацию
+
+    // Управляйте синхронизацией времени с помощью различных стратегий, основанных на разнице во времени
+    // if (player && !isSeekingRef.current && !roomData.isPaused) {
+    if (player && !isSeeking && !wasRecentlyManuallySeek) {
+      console.log(`Пытаемся синхронизировать: ${currentTime} -> ${serverTime}`);
+
+      // Большая разница во времени: используем перемотку при промежутках более 8 секунд
+      if (Math.abs(timeDifference) > 8) {
+        console.log(
+          `Большое расхождение (${timeDifference.toFixed(
+            2
+          )}с): применяем прямую перемотку с ${currentTime} на ${serverTime}`
+        );
+        player.seekTo(serverTime, "seconds");
+
+        // // Сбрасываем флаг перемотки через короткое время
+        // setTimeout(() => {
+        //   // Сбросить скорость всопроизведения после премотки
+        //   if (player.setPlaybackRate) {
+        //     player.setPlaybackRate(1);
+        //   }
+        // }, 2000);
+      } else if (Math.abs(timeDifference) > 3) {
+        // Рассчитываем соответствующую частоту воспроизведения (от 0,25x до 1,75x)
+        // Положительная разница означает, что нам нужно ускорить воспроизведение, отрицательная - замедлить
+        const adjustmentFactor = timeDifference > 0 ? 1.25 : 0.75;
+
+        if (player.setPlaybackRate) {
+          player.setPlaybackRate(adjustmentFactor);
+
+          // Возврат к обычной скорости (1,0x) воспроизведения через некоторое время
+          // Продолжительность тайм-аута зависит от того, сколько времени потребуется для восстановления
+          const catchupTime =
+            Math.abs(timeDifference) / Math.abs(1 - adjustmentFactor);
+          const timeoutDuration = Math.min(catchupTime * 1000, 8000); // Ограничение в 8 секунд
+
+          setTimeout(() => {
+            if (player.setPlaybackRate) {
+              console.log("Возвращаем нормальную скорость воспроизведения");
+              player.setPlaybackRate(1);
+            }
+          }, timeoutDuration);
+        }
+      } else if (Math.abs(timeDifference) > 1) {
+        // Очень маленькая разница во времени: Никаких корректировок скорости не требуется
+        // Нормальная скорость
+        console.log(
+          "Очень маленькая разница во времени (1-3 сек.): Никаких корректировок скорости не требуется"
+        );
+        if (player.setPlaybackRate) {
+          player.setPlaybackRate(1);
+        }
+      }
+      // } else if (Math.abs(timeDifference) > 1) {
+      //   // Тонкая регулировка (от 0,9 до 1,1)
+      //   const subtleAdjustment = timeDifference > 0 ? 1.1 : 0.9;
+
+      //   console.log(
+      //     `Небольшое расхождение (${timeDifference.toFixed(
+      //       2
+      //     )}с): плавно корректируем скорость до ${subtleAdjustment}x`
+      //   );
+
+      //   if (player.setPlaybackRate) {
+      //     player.setPlaybackRate(subtleAdjustment);
+
+      //     // Возврат к нормальной скорости через короткий промежуток времени
+      //     setTimeout(() => {
+      //       if (player.setPlaybackRate) {
+      //         console.log("Возвращаем нормальную скорость воспроизведения");
+      //         player.setPlaybackRate(1);
+      //       }
+      //     }, 5000); // 5 секунд воспроизведения с изменённой скоростью
+      //   }
+
+      // // Очень маленькая разница во времени: Никаких корректировок скорости не требуется
+      // else if (Math.abs(timeDifference) > 1) {
+      //   // Нормальная скорость
+      //   if (player.setPlaybackRate) {
+      //     player.setPlaybackRate(1);
+      //   }
+      // }
+    }
+
+    // Если изменение инициировано сервером
+    setRoomData((prev) => {
+      // Создаем новый объект видео только если он отличается
+      const newVideo = videoState.currentVideo
+        ? {
+            videoId: videoState.currentVideo.videoId,
+            title: videoState.currentVideo.title,
+            duration: videoState.currentVideo.durationInSeconds,
+          }
+        : null;
+
+      // Проверка, действительно ли что-то изменилось, чтобы избежать ненужных обновлений состояния
+      const videoIdChanged =
+        prev.currentVideoId !== (videoState.currentVideoId || null);
+      const isPausedChanged = prev.isPaused !== (videoState.isPaused ?? true);
+      const timeChanged = prev.currentTime !== (videoState.currentTime || 0);
+      const videoChanged =
+        JSON.stringify(prev.currentVideo) !== JSON.stringify(newVideo);
+
+      // Обновляйте состояние только в том случае, если что-то изменилось
+      if (videoIdChanged || isPausedChanged || timeChanged || videoChanged) {
+        return {
+          ...prev,
+          currentVideoId: videoState.currentVideoId || null,
+          isPaused: videoState.isPaused ?? true,
+          currentTime: videoState.currentTime || 0,
+          currentVideo: newVideo,
+        };
+      }
+
+      // Вовзрат предыдущего состояния, если ничего не изменилось
+      return prev;
+    });
+  };
+  */
 
   // Обработчик отправки сообщения
   const handleSubmit = async (e) => {
@@ -617,23 +796,6 @@ export default function RoomPage({
             Отправить
           </button>
         </form>
-
-        {/* <div className="participants-container">
-          Участники ({roomData.participants.length})
-          <ul>
-            {roomData.participants.map((participant) => (
-              <li
-                key={participant.userId}
-                className={
-                  participant.userId === userInfo?.userId ? "current-user" : ""
-                }
-              >
-                {participant.username}
-                {participant.userId === userInfo?.userId && " (вы)"}
-              </li>
-            ))}
-          </ul>
-        </div> */}
 
         {/* Модалка настроек комнаты, при нажатии на шестеренку */}
         {isSettingsModalOpen && (

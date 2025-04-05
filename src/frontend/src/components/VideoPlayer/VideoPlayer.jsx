@@ -58,6 +58,15 @@ const VideoPlayer = forwardRef(
     useImperativeHandle(ref, () => ({
       getCurrentTime: () => playerRef.current?.getCurrentTime(),
       seekTo: (seconds) => playerRef.current?.seekTo(seconds, "seconds"),
+      setPlaybackRate: (rate) => {
+        setPlaybackRate(rate); // Обновляем локальное состояние
+        const internalPlayer = playerRef.current?.getInternalPlayer();
+        if (internalPlayer?.setPlaybackRate) {
+          internalPlayer.setPlaybackRate(rate); // Для YouTube плеера
+        }
+      },
+      getPlaybackRate: () => playbackRate,
+      getIsSeeking: () => isSeekingRef.current,
     }));
 
     // Cостояние для временных метаданных названия видео и его продолжительности
@@ -94,15 +103,6 @@ const VideoPlayer = forwardRef(
         }));
       }
     };
-
-    // // Обработчик получения длительности видео. Вызывается автоматически
-    // // ReactPlayer после загрузки метаданных контента
-    // const handleDuration = (duration) => {
-    //   setVideoMetadata((prev) => ({
-    //     ...prev,
-    //     duration: Math.round(duration), // Обновляем состояние с новой длительностью
-    //   }));
-    // };
 
     /* Обработчики */
 
@@ -141,19 +141,30 @@ const VideoPlayer = forwardRef(
       setIsSpeedSettingsOpen(false);
     };
 
+    // Функция для получения текущей скорости воспроизведения
+    const getPlaybackRate = () => {
+      return playbackRate;
+    };
+
     // Обработчик нажатия кнопки мыши на ползунке (Начинает процесс перемотки)
     const handleSeekMouseDown = () => {
       setSeeking(true); // Устанавливаем состояние seeking в true, чтобы указать, что началась перемотка
+      // isSeekingRef.current = true;
     };
 
     // Обработчик отпускания кнопки мыши на ползунке (Завершает процесс перемотки)
     const handleSeekMouseUp = (e) => {
       setSeeking(false); // Устанавливаем состояние seeking в false, чтобы указать, что перемотка завершена
+      // isSeekingRef.current = false;
+
       const value = parseFloat(e.target.value);
 
       // Перемотка на точное значение в секундах
       const exactSeconds = value * duration; // Вычисляем точное время в секундах на основе значения ползунка и общей длительности
       playerRef.current.seekTo(exactSeconds, "seconds"); // Перематываем плеер на указанное время
+
+      // Добавляем блокировку синхронизации на несколько секунд
+      window.lastManualSeekTime = Date.now();
 
       // Вызываем onTimeUpdate после перемотки
       if (onTimeUpdate) {
@@ -758,6 +769,12 @@ const VideoPlayer = forwardRef(
                       onChange={handleVolumeChange}
                     />
                   </div>
+
+                  {/* Элемент для отображения текущей скорости */}
+                  <div className="playback-rate-display">
+                    {playbackRate.toFixed(2)}x
+                  </div>
+
                   <button className="settings-button" onClick={toggleSettings}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

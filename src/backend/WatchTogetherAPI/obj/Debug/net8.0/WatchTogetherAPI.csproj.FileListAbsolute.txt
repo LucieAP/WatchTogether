@@ -93,7 +93,6 @@ C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Drawing.Common.dll
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Formats.Asn1.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.IO.Pipelines.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Management.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Reflection.MetadataLoadContext.dll
@@ -279,3 +278,6 @@ C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\ref\WatchTogetherAPI.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.Extensions.ObjectPool.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Net.WebSockets.WebSocketProtocol.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\WatchTogetherAPI.staticwebassets.endpoints.json
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\staticwebassets\msbuild.WatchTogetherAPI.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
