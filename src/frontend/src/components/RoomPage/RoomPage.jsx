@@ -213,17 +213,23 @@ export default function RoomPage({
     // const player = playerRef.current;
     // const isSeeking = player?.getIsSeeking?.() || false; // Получаем состояние перемотки из плеера
 
+    console.log(
+      `Вызвался метод handleTimeUpdate, обновляем на время: ${seconds} сек.`
+    );
+
+    console.log("roomData.isPaused:", roomData.isPaused);
     // Добавляем состояние последнего отправленного времени
     if (!roomData.isPaused && !isSeekingRef.current) {
       // Проверяем, достаточно ли значительное изменение
       const lastReportedTime = lastReportedTimeRef.current || 0;
       // Отправляем на сервер только при изменении > 3 секунд
-      if (Math.abs(lastReportedTime - seconds) > 3) {
+      if (Math.abs(lastReportedTime - seconds) > 1) {
         // Отправляем только при воспроизведении
         try {
           const response = await axios.patch(`/api/rooms/${roomId}/player`, {
             currentTimeInSeconds: Math.floor(seconds),
           });
+          lastReportedTimeRef.current = seconds;
           console.log("CurrentTime: ", response.data.currentTimeInSeconds);
         } catch (error) {
           console.error("Ошибка обновления времени:", error);
@@ -440,11 +446,11 @@ export default function RoomPage({
 
     // const isSeeking = player?.getIsSeeking?.() || false;
 
-    console.log(
-      `Синхронизация: локальное ${currentTime}, серверное ${serverTime}, разница ${timeDifference.toFixed(
-        2
-      )}с`
-    );
+    // console.log(
+    //   `Синхронизация: локальное ${currentTime}, серверное ${serverTime}, разница ${timeDifference.toFixed(
+    //     2
+    //   )}с`
+    // );
 
     // Проверяем, был ли недавно отправлен Play/Pause запрос (в течение последних 2 секунд)
     const hasRecentPlayPauseAction =
@@ -486,13 +492,15 @@ export default function RoomPage({
     const wasRecentlyManuallySeek =
       window.lastManualSeekTime && now - window.lastManualSeekTime < 5000;
 
+    console.log("wasRecentlyManuallySeek: ", wasRecentlyManuallySeek);
+
     // Сначала обработать синхронизацию времени
     // Проверка на расскождение текущего времени на клиенте с серверным
     // Если разница больше 3 секунд (> 3), происходит принудительная перемотка (seekTo) к времени сервера
     // isSeekingRef: Блокирует синхронизацию во время перемотки, предотвращая конфликты. Сбрасывается через 2 секунды, давая время на стабилизацию
 
     if (player && !isSeekingRef.current && !wasRecentlyManuallySeek) {
-      if (Math.abs(serverTime - currentTime) > 5) {
+      if (Math.abs(serverTime - currentTime) > 8) {
         console.log(
           `Большое расхождение (${timeDifference.toFixed(
             2

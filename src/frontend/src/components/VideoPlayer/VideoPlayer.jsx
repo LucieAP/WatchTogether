@@ -198,7 +198,13 @@ const VideoPlayer = forwardRef(
 
       // Вызываем onTimeUpdate после перемотки
       if (onTimeUpdate) {
+        console.log(
+          `Вызываем метод handleTimeUpdate, обновляем на время: ${exactSeconds} сек.`
+        );
         onTimeUpdate(exactSeconds);
+        if (typeof onTimeUpdate.flush === "function") {
+          onTimeUpdate.flush(); // Принудительно моментально выполняем дебаунс, если есть отложенные вызовы
+        }
       }
     };
 
