@@ -67,6 +67,11 @@ const VideoPlayer = forwardRef(
       },
       getPlaybackRate: () => playbackRate,
       getIsSeeking: () => isSeekingRef.current,
+
+      pauseVideo: pauseVideo,
+      playVideo: playVideo,
+
+      isPlaying: () => playing,
     }));
 
     // Cостояние для временных метаданных названия видео и его продолжительности
@@ -105,6 +110,29 @@ const VideoPlayer = forwardRef(
     };
 
     /* Обработчики */
+
+    // Добавим функции для паузы и воспроизведения
+    const pauseVideo = () => {
+      setPlaying(false);
+      // Если есть обработчик onPlayPause, вызываем его
+      onPlayPause && onPlayPause("pause");
+
+      // Делаем элементы управления видимыми при паузе
+      setControlsVisible(true);
+
+      console.log("VideoPlayer: pauseVideo вызван, плеер поставлен на паузу");
+    };
+
+    const playVideo = () => {
+      setPlaying(true);
+      // Если есть обработчик onPlayPause, вызываем его
+      onPlayPause && onPlayPause("play");
+
+      // Сбрасываем таймер скрытия элементов управления
+      resetTimeout();
+
+      console.log("VideoPlayer: playVideo вызван, плеер запущен");
+    };
 
     // Обработчик включения контролсов (значок замка)
     const handleToggleControls = () => {
@@ -161,6 +189,8 @@ const VideoPlayer = forwardRef(
 
       // Перемотка на точное значение в секундах
       const exactSeconds = value * duration; // Вычисляем точное время в секундах на основе значения ползунка и общей длительности
+
+      console.log(`handleSeekMouseUp: Перематываем на, ${exactSeconds} с.`);
       playerRef.current.seekTo(exactSeconds, "seconds"); // Перематываем плеер на указанное время
 
       // Добавляем блокировку синхронизации на несколько секунд
@@ -201,20 +231,6 @@ const VideoPlayer = forwardRef(
       let offsetX = e.clientX - barRect.left; // e.clientX — координата курсора по оси X относительно окна.
 
       offsetX = Math.max(0, Math.min(offsetX, barRect.width)); // Ограничиваем смещение диапазоном [0, barRect.width], чтобы избежать выхода за границы.
-
-      // // Получаем ширину превью
-      // const previewWidth = seekPreview.offsetWidth;
-      // const previewHalfWidth = previewWidth / 2;
-
-      // // Корректируем позицию, чтобы превью не выходило за границы
-      // let adjustedX = offsetX;
-      // if (previewWidth > 0) {
-      //   if (adjustedX < previewHalfWidth) {
-      //     adjustedX = previewHalfWidth;
-      //   } else if (adjustedX > barRect.width - previewHalfWidth) {
-      //     adjustedX = barRect.width - previewHalfWidth;
-      //   }
-      // }
 
       // Рассчитываем процент и время
       const percentage = offsetX / barRect.width;
