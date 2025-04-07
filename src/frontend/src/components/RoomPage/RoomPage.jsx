@@ -47,6 +47,8 @@ export default function RoomPage({
   const lastPlayPauseTimeRef = useRef(null); // Время последнего действия
   const playPauseDebounceTimeoutRef = useRef(null);
 
+  const [connectionStatus, setConnectionStatus] = useState("disconnected"); // ref для отслеживания статуса соединения disconnected/connected/reconnecting/error
+
   // Объединяем данные комнаты в одно состояние
   const [roomData, setRoomData] = useState({
     roomName: "Название комнаты",
@@ -330,7 +332,6 @@ export default function RoomPage({
     const setupChat = async () => {
       try {
         const joinResponse = await axios.post(`/api/Rooms/${roomId}/join`);
-
         console.log("Join response data:", joinResponse.data);
 
         setUserInfo({
@@ -339,31 +340,66 @@ export default function RoomPage({
         });
 
         // Подключаемся к SignalR
-        const { connection, start, sendMessage } = createConnection(
-          roomId,
-          handleNewMessage,
-          handleParticipantsUpdated,
-          handleChatHistory,
-          joinResponse.data.username,
-          joinResponse.data.userId,
-          handleVideoStateUpdated
-        );
+        const { connection, start, sendMessage, checkConnection, reconnect } =
+          createConnection(
+            roomId,
+            handleNewMessage,
+            handleParticipantsUpdated,
+            handleChatHistory,
+            joinResponse.data.username,
+            joinResponse.data.userId,
+            handleVideoStateUpdated,
+            handleConnectionStateChanged
+          );
 
-        connectionRef.current = { connection, sendMessage };
+        connectionRef.current = {
+          connection,
+          sendMessage,
+          checkConnection,
+          reconnect,
+        };
         await start();
       } catch (error) {
         console.error("Chat setup error:", error);
+        setConnectionStatus("error");
       }
     };
 
     setupChat();
 
+    // Запускает проверку  каждые 30 секунд (30000 мс)
+    // При каждом срабатывании выполняется проверка состояния соединения
+    const pingInterval = setInterval(() => {
+      if (
+        connectionRef.current?.checkConnection && // Проверка существование метода checkConnection
+        !connectionRef.current.checkConnection() // Вызываем метод,если false (соединение разорвано), если true то все норм
+      ) {
+        console.log("Connection check failed, attempting to reconnect");
+        connectionRef.current?.reconnect?.();
+      }
+    }, 30000); // Проверка каждые 30 секунд
+
     return () => {
+      clearInterval(pingInterval); // 1. Останавливает ping-проверки
+      // 2. Проверяет наличие соединения
       if (connectionRef.current?.connection) {
-        connectionRef.current.connection.stop();
+        connectionRef.current.connection.stop(); // 3. Корректно останавливает SignalR соединение
       }
     };
   }, [roomId]);
+
+  // Функция для ручного переподключения
+  const handleManualReconnect = async () => {
+    if (connectionRef.current?.reconnect) {
+      setConnectionStatus("reconnecting");
+      try {
+        await connectionRef.current.reconnect();
+      } catch (error) {
+        console.error("Manual reconnection failed:", error);
+        setConnectionStatus("error");
+      }
+    }
+  };
 
   // Автопрокрутка к последнему сообщению
   useEffect(() => {
@@ -401,6 +437,17 @@ export default function RoomPage({
 
     setMessages(formattedHistory);
     console.log("Получена история сообщений:", formattedHistory);
+  };
+
+  // Обработчик изменения состояния соединения
+  const handleConnectionStateChanged = (state, error) => {
+    console.log(`Connection state changed to: ${state}`, error);
+    setConnectionStatus(state);
+
+    // // Дополнительная логика при изменении состояния
+    // if (state === "disconnected") {
+    //   // Показать UI-элемент для ручного переподключения
+    // }
   };
 
   // Обработчик обновления пользователей
@@ -918,6 +965,25 @@ export default function RoomPage({
             </div>
           </div>
         )}
+        {/* Отображение состояния соединения */}
+        <div className={`connection-status ${connectionStatus}`}>
+          {connectionStatus === "connected" && <span>✓ Подключено</span>}
+          {connectionStatus === "reconnecting" && (
+            <span>⟳ Переподключение...</span>
+          )}
+          {connectionStatus === "disconnected" && (
+            <div>
+              <span>✕ Соединение потеряно</span>
+              <button onClick={handleManualReconnect}>Переподключиться</button>
+            </div>
+          )}
+          {connectionStatus === "error" && (
+            <div>
+              <span>✕ Ошибка соединения</span>
+              <button onClick={handleManualReconnect}>Попробовать снова</button>
+            </div>
+          )}
+        </div>
 
         <div id="chat-messages" className="messages-container">
           {/* Сообщения чата */}
