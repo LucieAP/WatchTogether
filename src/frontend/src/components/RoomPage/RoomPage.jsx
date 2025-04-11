@@ -65,6 +65,11 @@ export default function RoomPage({
   // Константа для времени неактивности (30 минут)
   const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 минут в миллисекундах
 
+  const [isLeaveRoomModalOpen, setIsLeaveRoomModalOpen] = useState(false);
+
+  const openLeaveRoomModal = () => setIsLeaveRoomModalOpen(true);
+  const closeLeaveRoomModal = () => setIsLeaveRoomModalOpen(false);
+
   // Объединяем данные комнаты в одно состояние
   const [roomData, setRoomData] = useState({
     roomName: "Название комнаты",
@@ -432,7 +437,7 @@ export default function RoomPage({
   }, [roomId, navigate, lastActivity]);
 
   // Функция-обработчик кнопки "Выйти из комнаты"
-  const onLeaveRoom = () => {
+  const handleLeaveRoom = () => {
     handleManualLeave(roomId, connectionRef, navigate);
   };
 
@@ -1026,6 +1031,43 @@ export default function RoomPage({
             </div>
           </div>
         )}
+
+        {/* Выход из комнаты */}
+        <div className="leave-room-container">
+          {/* Кнопка, которая открывает модальное окно */}
+
+          <button onClick={openLeaveRoomModal} className="leave-button">
+            Покинуть комнату
+          </button>
+
+          {/* Модальное окно подтверждения */}
+          {isLeaveRoomModalOpen && (
+            <div className="leave-modal-overlay">
+              <div className="leave-modal-content">
+                <h3 className="leave-modal-title">Подтверждение</h3>
+                <p className="leave-modal-message">
+                  Вы уверены, что хотите покинуть комнату?
+                </p>
+
+                <div className="leave-modal-actions">
+                  <button
+                    onClick={closeLeaveRoomModal}
+                    className="leave-cancel-button"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    onClick={handleLeaveRoom}
+                    className="leave-confirm-button"
+                  >
+                    Да, покинуть
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Отображение состояния соединения */}
         <div className={`connection-status ${connectionStatus}`}>
           {connectionStatus === "connected" && <span>✓ Подключено</span>}
@@ -1045,19 +1087,6 @@ export default function RoomPage({
             </div>
           )}
         </div>
-
-        {/* Кнопка выхода из комнаты, использующая переданную функцию */}
-        {onLeaveRoom && (
-          <button onClick={onLeaveRoom} className="leave-button">
-            Выйти из комнаты
-          </button>
-        )}
-
-        {/* <button onClick={setupBrowserCloseHandler}>Test</button> */}
-
-        {/* <button onClick={() => handleBeforeUnload(new Event("beforeunload"))}>
-          Test
-        </button> */}
 
         <div id="chat-messages" className="messages-container">
           {/* Сообщения чата */}
