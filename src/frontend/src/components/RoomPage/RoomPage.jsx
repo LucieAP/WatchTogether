@@ -1,14 +1,22 @@
 // RoomPage.jsx:
 
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { updateRoom } from "../../api/rooms";
 import { getRoom } from "../../api/rooms";
-import { createConnection } from "../../api/chat";
+import { createConnection } from "../../api/media";
 import axios from "axios";
 import VideoPlayer from "../VideoPlayer/VideoPlayer";
 import { useDebouncedCallback } from "use-debounce";
 import { AddVideoModal } from "../AddVideoModal";
+
+import {
+  leaveRoom,
+  handleManualLeave,
+  // setupBrowserCloseHandler,
+  // handleTimeoutLeave,
+  // handleNetworkDisconnect,
+} from "../../api/leaveRoomAction";
 
 // Парамтеры для текста
 const INPUT_PROPS = {
@@ -22,6 +30,7 @@ export default function RoomPage({
   onSettingsClose,
   roomData: initialRoomData,
   refetchRoomData,
+  onLeaveRoomHandler, // Функция для обработки выхода из комнаты
 }) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
@@ -48,6 +57,13 @@ export default function RoomPage({
   const playPauseDebounceTimeoutRef = useRef(null);
 
   const [connectionStatus, setConnectionStatus] = useState("disconnected"); // ref для отслеживания статуса соединения disconnected/connected/reconnecting/error
+
+  const navigate = useNavigate();
+
+  const [inactivityTimer, setInactivityTimer] = useState(null);
+  const [lastActivity, setLastActivity] = useState(Date.now());
+  // Константа для времени неактивности (30 минут)
+  const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 минут в миллисекундах
 
   // Объединяем данные комнаты в одно состояние
   const [roomData, setRoomData] = useState({
@@ -367,6 +383,9 @@ export default function RoomPage({
 
     setupChat();
 
+    // Настраиваем обработчик закрытия браузера/вкладки
+    // const cleanupBrowserClose = setupBrowserCloseHandler(roomId, connectionRef);
+
     // Запускает проверку  каждые 30 секунд (30000 мс)
     // При каждом срабатывании выполняется проверка состояния соединения
     const pingInterval = setInterval(() => {
@@ -379,14 +398,38 @@ export default function RoomPage({
       }
     }, 30000); // Проверка каждые 30 секунд
 
+    // // Запускаем таймер проверки активности
+    // const activityCheckInterval = setInterval(() => {
+    //   const now = Date.now();
+    //   if (now - lastActivity > INACTIVITY_TIMEOUT) {
+    //     console.log("User inactive for too long, leaving room");
+    //     handleTimeoutLeave(roomId, connectionRef, navigate);
+    //   }
+    // }, 60000); // Проверка каждую минуту
+
+    // // Добавляем обработчики событий для отслеживания активности
+    // window.addEventListener("mousemove", registerActivity);
+    // window.addEventListener("keydown", registerActivity);
+    // window.addEventListener("click", registerActivity);
+    // window.addEventListener("scroll", registerActivity);
+
     return () => {
+      // Очищаем все интервалы и обработчики событий
+      // cleanupBrowserClose();
       clearInterval(pingInterval); // 1. Останавливает ping-проверки
+      //clearInterval(activityCheckInterval);
+
+      // window.removeEventListener("mousemove", registerActivity);
+      // window.removeEventListener("keydown", registerActivity);
+      // window.removeEventListener("click", registerActivity);
+      // window.removeEventListener("scroll", registerActivity);
+
       // 2. Проверяет наличие соединения
       if (connectionRef.current?.connection) {
         connectionRef.current.connection.stop(); // 3. Корректно останавливает SignalR соединение
       }
     };
-  }, [roomId]);
+  }, [roomId, navigate, lastActivity]);
 
   // Функция для ручного переподключения
   const handleManualReconnect = async () => {
@@ -423,6 +466,18 @@ export default function RoomPage({
     console.log("Получено новое сообщение:", message);
   };
 
+  // Функция-обработчик кнопки "Выйти из комнаты"
+  const onLeaveRoom = () => {
+    handleManualLeave(roomId, connectionRef, navigate);
+  };
+
+  // // Вызываем колбэк из родителя, передавая ему нашу функцию при монтировании компонента
+  // useEffect(() => {
+  //   if (onLeaveRoomHandler) {
+  //     onLeaveRoomHandler(onLeaveRoom);
+  //   }
+  // }, [onLeaveRoomHandler]);
+
   // Обработчик получения истории чата
   const handleChatHistory = (history) => {
     // Преобразуем историю в формат, используемый в компоненте
@@ -444,10 +499,16 @@ export default function RoomPage({
     console.log(`Connection state changed to: ${state}`, error);
     setConnectionStatus(state);
 
-    // // Дополнительная логика при изменении состояния
-    // if (state === "disconnected") {
-    //   // Показать UI-элемент для ручного переподключения
-    // }
+    // Дополнительная логика при изменении состояния
+    if (state === "disconnected" && error) {
+      // Пытаемся уведомить сервер о проблеме с сетью
+      handleNetworkDisconnect(roomId, connectionRef);
+    }
+  };
+
+  // Регистрируем любую активность пользователя
+  const registerActivity = () => {
+    setLastActivity(Date.now());
   };
 
   // Обработчик обновления пользователей
@@ -984,6 +1045,13 @@ export default function RoomPage({
             </div>
           )}
         </div>
+
+        {/* Кнопка выхода из комнаты, использующая переданную функцию */}
+        {onLeaveRoom && (
+          <button onClick={onLeaveRoom} className="leave-button">
+            Выйти из комнаты
+          </button>
+        )}
 
         <div id="chat-messages" className="messages-container">
           {/* Сообщения чата */}

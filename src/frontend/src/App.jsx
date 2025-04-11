@@ -30,17 +30,26 @@ function RoomPageWithHeader() {
   const { roomId } = useParams();
   const { roomData, isLoading, error, refetch } = useRoomData(roomId);
 
+  const [leaveRoomFunction, setLeaveRoomFunction] = useState(null); // Состояние для хранения функции выхода
+
+  // Функция для получения метода onLeaveRoom из RoomPage
+  const handleLeaveRoomFunction = (leaveFunc) => {
+    setLeaveRoomFunction(leaveFunc);
+  };
+
   return (
     <>
       <RoomHeader
         onSettingsClick={() => setIsSettingsModalOpen(true)}
         roomName={roomData?.roomName}
+        //onLeaveRoom={leaveRoomFunction} // Передаем функцию в RoomHeader
       />
       <RoomPage
         isSettingsModalOpen={isSettingsModalOpen}
         onSettingsClose={() => setIsSettingsModalOpen(false)}
         roomData={roomData}
         refetchRoomData={refetch}
+        //onLeaveRoomHandler={handleLeaveRoomFunction} // Передаем колбэк в RoomPage
       />
     </>
   );

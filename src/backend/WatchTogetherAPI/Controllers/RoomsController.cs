@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -294,36 +295,200 @@ namespace WatchTogetherAPI.Controllers
         {
             try
             {
-                var user = await GetOrCreateUserAsync();
+                var currentUser = await GetOrCreateUserAsync();
                 var room = await _context.Rooms
                     .Include(r => r.Participants)
                     .Include(r => r.VideoState)
                         .ThenInclude(vs => vs.CurrentVideo)
                     .FirstOrDefaultAsync(r => r.RoomId == roomId);
 
-                if (room == null) return NotFound();
+                if (room == null) return NotFound(new { Message = "Комната не найдена" });
 
-                if (!room.Participants.Any(p => p.UserId == user.UserId))
+                if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
                 {
                     room.Participants.Add(new Participant
                     {
-                        UserId = user.UserId,
+                        UserId = currentUser.UserId,
                         Role = ParticipantRole.Member,
                         JoinedAt = DateTime.UtcNow
                     });
                     await _context.SaveChangesAsync(); 
                 }
 
+                // // Уведомление остальных участников о выходе пользователя
+                // await _hubContext.Clients.Group(roomId.ToString()).SendAsync("UserJoined", new 
+                // {
+                //     UserId = currentUser.UserId,
+                //     Username = currentUser.Username
+                // });
+
                 return Ok(new 
                 { 
-                    user.UserId, 
-                    user.Username 
+                    currentUser.UserId, 
+                    currentUser.Username 
                 });
             } catch (Exception ex)
             {
-                _logger.LogError(ex, "Error joining room {RoomId}", roomId);
-                return StatusCode(500, "Internal server error");
+                _logger.LogError(ex, "Ошибка при присоединении к комнате {RoomId}", roomId);
+                return StatusCode(500, "Внутренняя ошибка сервера");
             }
+        }
+
+        [HttpPost("{roomId:guid}/leave")]
+        public async Task<IActionResult> LeaveRoom(Guid roomId, [FromBody]LeaveRoomRequest request)
+        {
+            try
+            {
+                var currentUser = await GetOrCreateUserAsync();
+                var room = await _context.Rooms
+                    .Include(r => r.Participants)
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                
+                if (room == null) return NotFound(new { Message = "Комната не найдена" });
+
+                var participant = room.Participants.FirstOrDefault(p => p.UserId == currentUser.UserId);
+
+                // Если пользователь не найден в списке участников, возвращаем ошибку
+                if (participant == null)
+                {
+                    return BadRequest(new { Message = "Пользователь не является участником этой комнаты" });
+                }
+
+                // Если request null или LeaveType не указан, использует значение по умолчанию LeaveRoomType.Manual
+                var leaveType = request?.LeaveType ?? LeaveRoomType.Manual; 
+                var isCreator = room.CreatedByUserId == currentUser.UserId;
+
+                switch (leaveType)
+                {
+                    case LeaveRoomType.Manual:
+                        // Логика для ручного выхода из комнаты
+                        return await HandleManualLeave(room, participant, isCreator);
+                    case LeaveRoomType.BrowserClose:
+                        // Логика для выхода при закрытии вкладки/браузера
+                        return await HandleBrowserClose(room, participant, isCreator);
+                    case LeaveRoomType.Timeout:
+                        // Логика для выхода по таймауту
+                        return await HandleTimeoutLeave(room, participant, isCreator); 
+                    case LeaveRoomType.NetworkDisconnect:
+                        // Логика для выхода при потере соединения
+                        return await HandleNetworkDisconnect(room, participant, isCreator);
+                    default:
+                        // Для неопределенных случаев используем стандартное поведение
+                        break;
+                }
+
+                return NoContent(); // Успешно удалено
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при выходе из комнаты {RoomId}", roomId);
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
+        }
+
+        private async Task<IActionResult> HandleManualLeave(Room room, Participant participant, bool isCreator)
+        {
+            // Если текущий пользователь - не создатель комнаты и в комнате больше нет участников, удаляем комнату
+            if (isCreator)
+            {
+                // Если создатель комнаты выходит явно
+                var otherParticipants = room.Participants.Where(p => p.UserId != participant.UserId).ToList();
+
+                if (otherParticipants.Any())
+                {
+                    // Есть другие участники, передаем права старейшему участнику
+                    var oldestParticipant = otherParticipants
+                        .OrderBy(p => p.JoinedAt)
+                        .First();
+                    
+                    room.CreatedByUserId = oldestParticipant.UserId;
+                    oldestParticipant.Role = ParticipantRole.Creator;
+                    
+                    // Удаляем текущего пользователя из участников
+                    _context.Participants.Remove(participant);
+                    await _context.SaveChangesAsync();
+                    await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated");
+                    
+                    // // Уведомляем всех о смене владельца
+                    // await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("OwnershipChanged", new 
+                    // {
+                    //     RoomId = room.RoomId,
+                    //     NewOwnerId = oldestParticipant.UserId,
+                    //     NewOwnerUsername = oldestParticipant.User?.Username ?? "Unknown",
+                    //     PreviousOwnerId = participant.UserId
+                    // });
+                    
+                    // await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("UserLeft", new 
+                    // {
+                    //     UserId = participant.UserId,
+                    //     Username = participant.User?.Username ?? "Unknown",
+                    //     WasOwner = true
+                    // });
+                    
+                    return Ok(new { 
+                        Message = "Вы вышли из комнаты. Права владельца переданы другому участнику.",
+                        NewOwnerId = oldestParticipant.UserId
+                    });
+                }
+                else
+                {
+                    // Нет других участников, удаляем комнату
+                    _context.Rooms.Remove(room);
+                    await _context.SaveChangesAsync();
+                    return Ok(new { Message = "Комната удалена, так как вы были последним участником." });
+                }
+            }
+            else{
+                // Обычный участник выходит
+                _context.Participants.Remove(participant);
+                await _context.SaveChangesAsync();
+                await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated");
+
+
+                // Уведомляем всех об уходе пользователя
+                // await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("UserLeft", new 
+                // {
+                //     UserId = participant.UserId,
+                //     Username = participant.User?.Username ?? "Unknown",
+                //     WasOwner = false
+                // });
+                
+                return Ok(new { Message = "Вы успешно вышли из комнаты." });
+            }
+        }
+
+        private async Task<IActionResult> HandleBrowserClose(Room room, Participant participant, bool isCreator)
+        {
+            // Если текущий пользователь - не создатель комнаты и в комнате больше нет участников, удаляем комнату
+            if (isCreator)
+            {
+                return NoContent();
+            }
+            else{
+                // Обычный участник выходит
+                _context.Participants.Remove(participant);
+                await _context.SaveChangesAsync();
+                await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated");
+
+
+                // Уведомляем всех об уходе пользователя
+                return Ok(new { Message = "Вы успешно вышли из комнаты." });
+            }
+        }
+
+        // Обработчик таймаута сессии
+        private async Task<IActionResult> HandleTimeoutLeave(Room room, Participant participant, bool isCreator)
+        {
+            // При таймауте сессии выполняем те же действия, что и при явном выходе
+            return await HandleManualLeave(room, participant, isCreator);
+        }
+        
+        // Обработчик отключения сети
+        private async Task<IActionResult> HandleNetworkDisconnect(Room room, Participant participant, bool isCreator)
+        {
+            // Похоже на обработку закрытия браузера, но с более коротким таймаутом
+            // В этой реализации используем тот же подход для простоты
+            return await HandleBrowserClose(room, participant, isCreator);
         }
 
         [HttpPut("{roomId:guid}/video")]
