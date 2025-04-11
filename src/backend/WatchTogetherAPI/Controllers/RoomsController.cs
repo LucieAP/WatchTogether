@@ -456,7 +456,6 @@ namespace WatchTogetherAPI.Controllers
                 return Ok(new { Message = "Вы успешно вышли из комнаты." });
             }
         }
-
         private async Task<IActionResult> HandleBrowserClose(Room room, Participant participant, bool isCreator)
         {
             // Если текущий пользователь - не создатель комнаты и в комнате больше нет участников, удаляем комнату

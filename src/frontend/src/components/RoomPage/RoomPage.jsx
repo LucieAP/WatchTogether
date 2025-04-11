@@ -13,7 +13,7 @@ import { AddVideoModal } from "../AddVideoModal";
 import {
   leaveRoom,
   handleManualLeave,
-  // setupBrowserCloseHandler,
+  setupBrowserCloseHandler,
   // handleTimeoutLeave,
   // handleNetworkDisconnect,
 } from "../../api/leaveRoomAction";
@@ -384,7 +384,7 @@ export default function RoomPage({
     setupChat();
 
     // Настраиваем обработчик закрытия браузера/вкладки
-    // const cleanupBrowserClose = setupBrowserCloseHandler(roomId, connectionRef);
+    const cleanupBrowserClose = setupBrowserCloseHandler(roomId, connectionRef);
 
     // Запускает проверку  каждые 30 секунд (30000 мс)
     // При каждом срабатывании выполняется проверка состояния соединения
@@ -415,7 +415,7 @@ export default function RoomPage({
 
     return () => {
       // Очищаем все интервалы и обработчики событий
-      // cleanupBrowserClose();
+      cleanupBrowserClose();
       clearInterval(pingInterval); // 1. Останавливает ping-проверки
       //clearInterval(activityCheckInterval);
 
@@ -430,6 +430,18 @@ export default function RoomPage({
       }
     };
   }, [roomId, navigate, lastActivity]);
+
+  // Функция-обработчик кнопки "Выйти из комнаты"
+  const onLeaveRoom = () => {
+    handleManualLeave(roomId, connectionRef, navigate);
+  };
+
+  // // Вызываем колбэк из родителя, передавая ему нашу функцию при монтировании компонента
+  // useEffect(() => {
+  //   if (onLeaveRoomHandler) {
+  //     onLeaveRoomHandler(onLeaveRoom);
+  //   }
+  // }, [onLeaveRoomHandler]);
 
   // Функция для ручного переподключения
   const handleManualReconnect = async () => {
@@ -465,18 +477,6 @@ export default function RoomPage({
     ]);
     console.log("Получено новое сообщение:", message);
   };
-
-  // Функция-обработчик кнопки "Выйти из комнаты"
-  const onLeaveRoom = () => {
-    handleManualLeave(roomId, connectionRef, navigate);
-  };
-
-  // // Вызываем колбэк из родителя, передавая ему нашу функцию при монтировании компонента
-  // useEffect(() => {
-  //   if (onLeaveRoomHandler) {
-  //     onLeaveRoomHandler(onLeaveRoom);
-  //   }
-  // }, [onLeaveRoomHandler]);
 
   // Обработчик получения истории чата
   const handleChatHistory = (history) => {
@@ -1052,6 +1052,12 @@ export default function RoomPage({
             Выйти из комнаты
           </button>
         )}
+
+        {/* <button onClick={setupBrowserCloseHandler}>Test</button> */}
+
+        {/* <button onClick={() => handleBeforeUnload(new Event("beforeunload"))}>
+          Test
+        </button> */}
 
         <div id="chat-messages" className="messages-container">
           {/* Сообщения чата */}
