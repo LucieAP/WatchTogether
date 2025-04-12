@@ -467,6 +467,12 @@ h1 {
     font-size: 11px;
   }
 
+  /* .time-current,
+  .time-separator,
+  .time-duration time {
+    user-select: none;
+  } */
+
   .player-progress-bar-container {
     margin: 0 6px;
   }

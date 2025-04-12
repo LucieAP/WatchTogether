@@ -249,12 +249,12 @@
   justify-content: center;
 }
 
-#close-video-btn {
+/* #close-video-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100px;
-}
+} */
 
 /* Модальное окно выхода из комнаты */
 
@@ -266,8 +266,18 @@
   padding: 2rem; */
 }
 
+.close-video-container {
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  padding: 1rem;
+  padding-left: 0;
+  width: 200px;
+}
+
 /* Кнопка "Покинуть комнату" */
-.leave-button {
+.leave-button,
+.close-video-button {
   background-color: #ef4444;
   color: white;
   font-size: 18px;
@@ -278,12 +288,18 @@
   user-select: none;
 }
 
-.leave-button:hover {
+.close-video-button {
+  width: 100%;
+}
+
+.leave-button:hover,
+.close-video-button:hover {
   background-color: #dc2626;
 }
 
 /* Модальное окно */
-.leave-modal-overlay {
+.leave-modal-overlay,
+.close-video-modal-overlay {
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
@@ -293,7 +309,8 @@
   z-index: 50;
 }
 
-.leave-modal-content {
+.leave-modal-content,
+.close-video-modal-content {
   background-color: white;
   border-radius: 0.5rem;
   padding: 2rem;
@@ -303,30 +320,37 @@
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-.leave-modal-title {
+.leave-modal-title,
+.close-video-modal-title {
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1rem;
   user-select: none;
 }
 
-.leave-modal-message {
+.leave-modal-message,
+.close-video-modal-message {
   color: #4b5563;
   margin-bottom: 1.5rem;
   user-select: none;
+  font-size: 16px;
 }
 
 /* Кнопки в модальном окне */
-.leave-modal-actions {
+.leave-modal-actions,
+.close-video-modal-actions {
   display: flex;
   /* justify-content: flex-end; */
   gap: 1rem;
 }
 
-.leave-cancel-button {
+.leave-cancel-button,
+.close-video-cancel-button,
+.leave-confirm-button,
+.close-video-confirm-button {
   background-color: #d1d5db;
   color: #1f2937;
-  font-weight: 500;
+  font-size: 18px;
   padding: 0.5rem 1rem;
   border-radius: 0.25rem;
   border: none;
@@ -334,22 +358,25 @@
   user-select: none;
 }
 
-.leave-cancel-button:hover {
+.leave-cancel-button,
+.close-video-cancel-button {
+  background-color: #d1d5db;
+  color: #1f2937;
+}
+
+.leave-confirm-button,
+.close-video-confirm-button {
+  background-color: #ef4444;
+  color: white;
+}
+
+.leave-cancel-button:hover,
+.close-video-cancel-button:hover {
   background-color: #9ca3af;
 }
 
-.leave-confirm-button {
-  background-color: #ef4444;
-  color: white;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
-  border: none;
-  cursor: pointer;
-  user-select: none;
-}
-
-.leave-confirm-button:hover {
+.leave-confirm-button:hover,
+.close-video-confirm-button:hover {
   background-color: #dc2626;
 }
 

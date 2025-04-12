@@ -66,9 +66,13 @@ export default function RoomPage({
   const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 минут в миллисекундах
 
   const [isLeaveRoomModalOpen, setIsLeaveRoomModalOpen] = useState(false);
+  const [isCloseVideoModalOpen, setIsCloseVideoModalOpen] = useState(false);
 
   const openLeaveRoomModal = () => setIsLeaveRoomModalOpen(true);
   const closeLeaveRoomModal = () => setIsLeaveRoomModalOpen(false);
+
+  const openCloseVideoModal = () => setIsCloseVideoModalOpen(true);
+  const closeVideoModal = () => setIsCloseVideoModalOpen(false);
 
   // Объединяем данные комнаты в одно состояние
   const [roomData, setRoomData] = useState({
@@ -132,6 +136,7 @@ export default function RoomPage({
         }));
 
         setIsAddVideoModalOpen(false);
+        setIsCloseVideoModalOpen(false);
         setVideoUrl("");
         setTempMetadata({ title: "", duration: 0 }); // Сброс метаданных
       } catch (error) {
@@ -921,14 +926,51 @@ export default function RoomPage({
               onPlayPause={handlePlayPause}
               onTimeUpdate={handleTimeUpdate}
             />
-            {/* Кнопка закрытия плеера */}
-            <button
-              id="close-video-btn"
-              className="btn"
-              onClick={handleCloseVideo}
-            >
-              Закрыть
-            </button>
+
+            {/* Модалка подтверждения закрытия видео */}
+            <div className="close-video-container">
+              {/* Кнопка закрытия плеера */}
+              <button
+                className="close-video-button"
+                onClick={openCloseVideoModal}
+              >
+                Закрыть видео
+              </button>
+
+              {console.log(
+                "Rendering modal check, isCloseVideoModalOpen:",
+                isCloseVideoModalOpen
+              )}
+
+              {isCloseVideoModalOpen && (
+                <div
+                  className="close-video-modal-overlay"
+                  onClick={closeVideoModal} // Закрываем модалку при клике на оверлей
+                >
+                  <div className="close-video-modal-content">
+                    <h3 className="close-video-modal-title">Подтверждение</h3>
+                    <p className="close-video-modal-message">
+                      Вы уверены, что хотите закрыть видео?
+                    </p>
+
+                    <div className="close-video-modal-actions">
+                      <button
+                        onClick={closeVideoModal}
+                        className="close-video-cancel-button"
+                      >
+                        Отмена
+                      </button>
+                      <button
+                        onClick={handleCloseVideo}
+                        className="close-video-confirm-button"
+                      >
+                        Да, закрыть
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </>
         ) : (
           <button
@@ -1042,8 +1084,11 @@ export default function RoomPage({
 
           {/* Модальное окно подтверждения */}
           {isLeaveRoomModalOpen && (
-            <div className="leave-modal-overlay">
-              <div className="leave-modal-content">
+            <div className="leave-modal-overlay" onClick={closeLeaveRoomModal}>
+              <div
+                className="leave-modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <h3 className="leave-modal-title">Подтверждение</h3>
                 <p className="leave-modal-message">
                   Вы уверены, что хотите покинуть комнату?
