@@ -18,7 +18,6 @@ namespace WatchTogetherAPI.Controllers
     [ApiController]
     public class RoomsController : Controller
     {
-
         private readonly AppDbContext _context;
         private readonly ILogger<RoomsController> _logger;
         private readonly Random _random = new();
@@ -33,7 +32,7 @@ namespace WatchTogetherAPI.Controllers
 
         // GET: api/Rooms
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Room>>> GetRooms()
+        public async Task<ActionResult<IEnumerable<Room>>> GetRooms(CancellationToken cancellationToken = default)
         {
             return await _context.Rooms
                 .Include(r => r.CreatedByUser)
@@ -42,15 +41,15 @@ namespace WatchTogetherAPI.Controllers
                     .ThenInclude(p => p.User)
                 .Include(r => r.VideoState)
                     .ThenInclude(vs => vs.CurrentVideo)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
         // POST: api/Rooms/Create
         [HttpPost("Create")]
-        public async Task<IActionResult> CreateRoom([FromBody] CreateRoomRequest request)
+        public async Task<IActionResult> CreateRoom([FromBody] CreateRoomRequest request, CancellationToken cancellationToken = default)
         {
             // Начинаем транзакцию
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
             try
             {
@@ -67,7 +66,7 @@ namespace WatchTogetherAPI.Controllers
                 };
 
                 _context.Users.Add(guestUser);
-                await _context.SaveChangesAsync(); // Сохранение guestUser, чтобы получить UserId
+                await _context.SaveChangesAsync(cancellationToken); // Сохранение guestUser, чтобы получить UserId
 
                 // После сохранения guestUser в базу добавьте установку куки
                 Response.Cookies.Append(
@@ -98,11 +97,11 @@ namespace WatchTogetherAPI.Controllers
                 };
 
                 _context.Rooms.Add(newRoom);
-                await _context.SaveChangesAsync();      // Сохранение newRoom, чтобы получить RoomId
+                await _context.SaveChangesAsync(cancellationToken);      // Сохранение newRoom, чтобы получить RoomId
 
                 // Формируем полную ссылку
                 newRoom.InvitationLink = $"{baseUrl}/room/{newRoom.RoomId}";
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 // Добавляем участника
 
@@ -115,10 +114,10 @@ namespace WatchTogetherAPI.Controllers
                 };
 
                 _context.Participants.Add(participant);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 // Фиксируем транзакцию
-                await transaction.CommitAsync();
+                await transaction.CommitAsync(cancellationToken);
 
                 var response = new
                 {
@@ -138,10 +137,16 @@ namespace WatchTogetherAPI.Controllers
                     StatusCode = StatusCodes.Status201Created
                 };
             }
+            catch (OperationCanceledException)
+            {
+                // Обработка отмены операции
+                _logger.LogInformation("Запрос на создание комнаты был отменен");
+                return StatusCode(499, "Запрос был отменен");
+            }
             catch (Exception ex)
             {
                 // В случае ошибки откатываем транзакцию
-                await transaction.RollbackAsync();
+                await transaction.RollbackAsync(cancellationToken);
 
                 _logger.LogError(ex, "Ошибка создания комнаты");
                 return StatusCode(500, "Internal server error");
@@ -150,7 +155,7 @@ namespace WatchTogetherAPI.Controllers
 
         // GET: api/Rooms/{roomId}
         [HttpGet("{roomId:guid}")]      // Добавляем constraint для GUID, чтобы обрабатывался только guid
-        public async Task<IActionResult> GetRoom(Guid roomId)
+        public async Task<IActionResult> GetRoom(Guid roomId, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -160,7 +165,7 @@ namespace WatchTogetherAPI.Controllers
                     .Include(r => r.CreatedByUser)
                     .Include(r => r.VideoState) 
                         .ThenInclude(vs => vs.CurrentVideo) // Загружаем связанное видео
-                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
 
                 if (room == null)
                 {
@@ -172,11 +177,11 @@ namespace WatchTogetherAPI.Controllers
                 {
                     var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
                     room.InvitationLink = $"{baseUrl}/room/{room.RoomId}";
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(cancellationToken);
                 }
 
                 // Получаем или создаем пользователя через Cookie
-                var currentUser = await GetOrCreateUserAsync();
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
 
                 // Основная логика добавления участника
                 // Проверка наличия пользователя в списке участников комнаты, и если его там нет, добавляем его в базу данных как нового участника 
@@ -192,13 +197,13 @@ namespace WatchTogetherAPI.Controllers
                         JoinedAt = DateTime.UtcNow
                     });
 
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(cancellationToken);
 
                     // Обновляем данные комнаты после изменений
                     room = await _context.Rooms
                         .Include(r => r.Participants)
                             .ThenInclude(p => p.User)
-                        .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                        .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
                 }
 
                 // Формирование ответа
@@ -224,6 +229,11 @@ namespace WatchTogetherAPI.Controllers
 
                 return Ok(response);
             }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на получение комнаты {RoomId} был отменен", roomId);
+                return StatusCode(499, "Запрос был отменен");
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error getting room {roomId}");
@@ -233,7 +243,7 @@ namespace WatchTogetherAPI.Controllers
 
         // PUT: api/Rooms/{id}
         [HttpPut("{roomId:guid}")]
-        public async Task<IActionResult> UpdateRoom(Guid roomId, [FromBody] UpdateRoomRequest request)
+        public async Task<IActionResult> UpdateRoom(Guid roomId, [FromBody] UpdateRoomRequest request, CancellationToken cancellationToken = default)
         {
             if (request.RoomName == null && request.Description == null)
             {
@@ -241,14 +251,14 @@ namespace WatchTogetherAPI.Controllers
             }
 
             //Поиск комнаты по идентификатору
-            var room = await _context.Rooms.FindAsync(roomId);
+            var room = await _context.Rooms.FindAsync(roomId, cancellationToken);
             if (room == null)
             {
                 return NotFound(new { Message = "Комната не найдена" });
             }
 
             // Получаем текущего пользователя 
-            var currentUser = await GetOrCreateUserAsync();
+            var currentUser = await GetOrCreateUserAsync(cancellationToken);
 
             if (currentUser == null)
             {
@@ -274,7 +284,12 @@ namespace WatchTogetherAPI.Controllers
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на обновление комнаты {RoomId} был отменен", roomId);
+                return StatusCode(499, "Запрос был отменен");
             }
             catch (Exception ex)
             {
@@ -291,16 +306,16 @@ namespace WatchTogetherAPI.Controllers
         }
 
         [HttpPost("{roomId:guid}/join")]
-        public async Task<IActionResult> JoinChat(Guid roomId)
+        public async Task<IActionResult> JoinChat(Guid roomId, CancellationToken cancellationToken = default)
         {
             try
             {
-                var currentUser = await GetOrCreateUserAsync();
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
                 var room = await _context.Rooms
                     .Include(r => r.Participants)
                     .Include(r => r.VideoState)
                         .ThenInclude(vs => vs.CurrentVideo)
-                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
 
                 if (room == null) return NotFound(new { Message = "Комната не найдена" });
 
@@ -312,7 +327,7 @@ namespace WatchTogetherAPI.Controllers
                         Role = ParticipantRole.Member,
                         JoinedAt = DateTime.UtcNow
                     });
-                    await _context.SaveChangesAsync(); 
+                    await _context.SaveChangesAsync(cancellationToken); 
                 }
 
                 // // Уведомление остальных участников о выходе пользователя
@@ -327,7 +342,13 @@ namespace WatchTogetherAPI.Controllers
                     currentUser.UserId, 
                     currentUser.Username 
                 });
-            } catch (Exception ex)
+            } 
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на присоединение к комнате {RoomId} был отменен", roomId);
+                return StatusCode(499, "Запрос был отменен");
+            }
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при присоединении к комнате {RoomId}", roomId);
                 return StatusCode(500, "Внутренняя ошибка сервера");
@@ -335,14 +356,14 @@ namespace WatchTogetherAPI.Controllers
         }
 
         [HttpPost("{roomId:guid}/leave")]
-        public async Task<IActionResult> LeaveRoom(Guid roomId, [FromBody]LeaveRoomRequest request)
+        public async Task<IActionResult> LeaveRoom(Guid roomId, [FromBody]LeaveRoomRequest request, CancellationToken cancellationToken = default)
         {
             try
             {
-                var currentUser = await GetOrCreateUserAsync();
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
                 var room = await _context.Rooms
                     .Include(r => r.Participants)
-                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
                 
                 if (room == null) return NotFound(new { Message = "Комната не найдена" });
 
@@ -362,10 +383,10 @@ namespace WatchTogetherAPI.Controllers
                 {
                     case LeaveRoomType.Manual:
                         // Логика для ручного выхода из комнаты
-                        return await HandleManualLeave(room, participant, isCreator);
+                        return await HandleManualLeave(room, participant, isCreator, cancellationToken);
                     case LeaveRoomType.BrowserClose:
                         // Логика для выхода при закрытии вкладки/браузера
-                        return await HandleBrowserClose(room, participant, isCreator);
+                        return await HandleBrowserClose(room, participant, isCreator, cancellationToken);
                     case LeaveRoomType.Timeout:
                         // Логика для выхода по таймауту
                         return await HandleTimeoutLeave(room, participant, isCreator); 
@@ -379,6 +400,11 @@ namespace WatchTogetherAPI.Controllers
 
                 return NoContent(); // Успешно удалено
             }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на выход из комнаты {RoomId} был отменен", roomId);
+                return StatusCode(499, "Запрос был отменен");
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при выходе из комнаты {RoomId}", roomId);
@@ -386,7 +412,7 @@ namespace WatchTogetherAPI.Controllers
             }
         }
 
-        private async Task<IActionResult> HandleManualLeave(Room room, Participant participant, bool isCreator)
+        private async Task<IActionResult> HandleManualLeave(Room room, Participant participant, bool isCreator, CancellationToken cancellationToken = default)
         {
             // Если текущий пользователь - не создатель комнаты и в комнате больше нет участников, удаляем комнату
             if (isCreator)
@@ -406,8 +432,8 @@ namespace WatchTogetherAPI.Controllers
                     
                     // Удаляем текущего пользователя из участников
                     _context.Participants.Remove(participant);
-                    await _context.SaveChangesAsync();
-                    await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated");
+                    await _context.SaveChangesAsync(cancellationToken);
+                    await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated", cancellationToken);
                     
                     // // Уведомляем всех о смене владельца
                     // await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("OwnershipChanged", new 
@@ -441,8 +467,8 @@ namespace WatchTogetherAPI.Controllers
             else{
                 // Обычный участник выходит
                 _context.Participants.Remove(participant);
-                await _context.SaveChangesAsync();
-                await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated");
+                await _context.SaveChangesAsync(cancellationToken);
+                await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated", cancellationToken);
 
 
                 // Уведомляем всех об уходе пользователя
@@ -456,7 +482,7 @@ namespace WatchTogetherAPI.Controllers
                 return Ok(new { Message = "Вы успешно вышли из комнаты." });
             }
         }
-        private async Task<IActionResult> HandleBrowserClose(Room room, Participant participant, bool isCreator)
+        private async Task<IActionResult> HandleBrowserClose(Room room, Participant participant, bool isCreator, CancellationToken cancellationToken = default)
         {
             // Если текущий пользователь - не создатель комнаты и в комнате больше нет участников, удаляем комнату
             if (isCreator)
@@ -466,9 +492,8 @@ namespace WatchTogetherAPI.Controllers
             else{
                 // Обычный участник выходит
                 _context.Participants.Remove(participant);
-                await _context.SaveChangesAsync();
-                await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated");
-
+                await _context.SaveChangesAsync(cancellationToken);
+                await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated", cancellationToken);
 
                 // Уведомляем всех об уходе пользователя
                 return Ok(new { Message = "Вы успешно вышли из комнаты." });
@@ -491,22 +516,22 @@ namespace WatchTogetherAPI.Controllers
         }
 
         [HttpPut("{roomId:guid}/video")]
-        public async Task<IActionResult> UpdateVideo(Guid roomId, [FromBody] UpdateVideoRequest request)
+        public async Task<IActionResult> UpdateVideo(Guid roomId, [FromBody] UpdateVideoRequest request, CancellationToken cancellationToken = default)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 var room = await _context.Rooms
                     .Include(r => r.Participants)
                     .Include(r => r.VideoState)
                         .ThenInclude(vs => vs.CurrentVideo) // Загружаем связанное видео
-                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
                 
                 if (room == null) return NotFound("Комната не найдена");
 
                 // Проверяем существование видео в базе
                 var video = await _context.Videos
-                    .FirstOrDefaultAsync(v => v.VideoId == request.VideoId);
+                    .FirstOrDefaultAsync(v => v.VideoId == request.VideoId, cancellationToken);
 
                 if (video == null)
                 {
@@ -520,7 +545,7 @@ namespace WatchTogetherAPI.Controllers
                     _context.Videos.Add(video);
                 }
 
-                var currentUser = await GetOrCreateUserAsync();
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
 
                 //if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
                 //{
@@ -542,23 +567,29 @@ namespace WatchTogetherAPI.Controllers
                         IsPaused = room.VideoState?.IsPaused ?? true,
                         CurrentTime = room.VideoState?.CurrentTime.TotalSeconds ?? 0,
                         // CurrentVideo = room.VideoState?.CurrentVideo
-                    });
+                    }, cancellationToken);
 
                 return Ok(new{ 
                     room,
                     video
                 });
             }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на обновление видео в комнате {RoomId} был отменен", roomId);
+                await transaction.RollbackAsync(cancellationToken);
+                return StatusCode(499, "Запрос был отменен");
+            }
             catch (Exception error)
             {
                 _logger.LogError(error, "Ошибка добавления видео");
-                await transaction.RollbackAsync();
+                await transaction.RollbackAsync(cancellationToken);
                 return StatusCode(500, "Внутренняя ошибка сервера");
             }
         }
 
         [HttpPatch("{roomId:guid}/player")]
-        public async Task<IActionResult> UpdateVideoState(Guid roomId, [FromBody] UpdateVideoStateRequest request)
+        public async Task<IActionResult> UpdateVideoState(Guid roomId, [FromBody] UpdateVideoStateRequest request, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -566,11 +597,11 @@ namespace WatchTogetherAPI.Controllers
                     .Include(p => p.Participants)
                     .Include(r => r.VideoState)
                         .ThenInclude(vs => vs.CurrentVideo) // Загружаем связанное видео 
-                    .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
                 
                 if (room == null) return NotFound("Комната не найдена");
 
-                var currentUser = await GetOrCreateUserAsync();
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
 
                 // if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
                 // {
@@ -589,7 +620,7 @@ namespace WatchTogetherAPI.Controllers
                 
                 room.VideoState.LastUpdated = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 await _hubContext.Clients.Group(roomId.ToString())
                     .SendAsync("VideoStateUpdated", new 
@@ -598,13 +629,18 @@ namespace WatchTogetherAPI.Controllers
                         IsPaused = room.VideoState?.IsPaused ?? true,
                         CurrentTime = room.VideoState?.CurrentTime.TotalSeconds ?? 0,
                         CurrentVideo = room.VideoState?.CurrentVideo
-                    });
+                    }, cancellationToken);
                 
                 return Ok(new {
                     room.VideoState.IsPaused,
                     CurrentTimeInSeconds = room.VideoState.CurrentTime.TotalSeconds,    // Возвращаем секунды
                     room.VideoState.LastUpdated
                 }); 
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на обновление состояния плеера в комнате {RoomId} был отменен", roomId);
+                return StatusCode(499, "Запрос был отменен");
             }
             catch (Exception error)
             {
@@ -614,12 +650,12 @@ namespace WatchTogetherAPI.Controllers
         }
 
         [HttpDelete("{roomId:guid}/video")]
-        public async Task<IActionResult> DeleteCurrentVideo(Guid roomId)
+        public async Task<IActionResult> DeleteCurrentVideo(Guid roomId, CancellationToken cancellationToken = default)
         {
             var room = await _context.Rooms
                 .Include(r => r.VideoState)
                     .ThenInclude(vs => vs.CurrentVideo)
-                .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
                     
             if (room == null) return NotFound();
 
@@ -639,7 +675,7 @@ namespace WatchTogetherAPI.Controllers
                 room.VideoState.LastUpdated = DateTime.UtcNow;
                 room.VideoState.CurrentVideo = null;
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 await _hubContext.Clients.Group(roomId.ToString())
                     .SendAsync("VideoStateUpdated", new 
@@ -648,9 +684,14 @@ namespace WatchTogetherAPI.Controllers
                         IsPaused = true,
                         CurrentTime = 0,
                         CurrentVideo = (object)null
-                    });
+                    }, cancellationToken);
 
                 return NoContent();
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на удаление видео из комнаты {RoomId} был отменен", roomId);
+                return StatusCode(499, "Запрос был отменен");
             }
             catch (Exception error)
             {
@@ -659,13 +700,13 @@ namespace WatchTogetherAPI.Controllers
             }
         }
 
-        private async Task<User> GetOrCreateUserAsync()
+        private async Task<User> GetOrCreateUserAsync(CancellationToken cancellationToken = default)
         {
             // Пробуем получить UserId из Cookie
             if (Request.Cookies.TryGetValue("X-User-Id", out var userIdCookie) &&
                 Guid.TryParse(userIdCookie, out var userId))
             {
-                var existingUser = await _context.Users.FindAsync(userId);
+                var existingUser = await _context.Users.FindAsync(userId, cancellationToken);
                 if (existingUser != null)       // Если пользователь найден (user != null), метод сразу возвращает его.
                     return existingUser;
             }
@@ -681,7 +722,7 @@ namespace WatchTogetherAPI.Controllers
             };
 
             _context.Users.Add(newUser);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             // Устанавливаем Cookie в ответе
             Response.Cookies.Append(
@@ -701,7 +742,6 @@ namespace WatchTogetherAPI.Controllers
             return newUser;
         }
 
-    
         // Генератор никнеймов
         private string GenerateRandomUsername(int length = 8)
         {
