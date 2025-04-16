@@ -8,8 +8,10 @@ import HomePage from "./components/HomePage/HomePage";
 import RoomPage from "./components/RoomPage/RoomPage";
 import RoomHeader from "./components/RoomPage/RoomHeader";
 import GetRooms from "./components/GetRooms";
+import Auth from "./components/Auth/Auth";
 import { matchPath, useParams } from "react-router";
 import { useRoomData } from "./hooks/useRoomData";
+import { AuthProvider } from "./context/AuthContext";
 import {
   BrowserRouter as Router,
   Routes,
@@ -58,18 +60,21 @@ function RoomPageWithHeader() {
 export default function App() {
   return (
     <Router>
-      <div className="layout-container">
-        <HeaderSelector />
-        <main className="main-content">
-          <Routes>
-            <Route path="/rooms" element={<GetRooms />} />
-            <Route path="/create-room" element={<CreateRoom />} />
-            <Route path="/room/:roomId" element={<RoomPageWithHeader />} />
-            <Route path="/" element={<HomePage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </main>
-      </div>
+      <AuthProvider>
+        <div className="layout-container">
+          <HeaderSelector />
+          <main className="main-content">
+            <Routes>
+              <Route path="/rooms" element={<GetRooms />} />
+              <Route path="/create-room" element={<CreateRoom />} />
+              <Route path="/room/:roomId" element={<RoomPageWithHeader />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/" element={<HomePage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </main>
+        </div>
+      </AuthProvider>
     </Router>
   );
 }

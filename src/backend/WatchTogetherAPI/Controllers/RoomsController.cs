@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using WatchTogetherAPI.Data.AppDbContext;
@@ -57,7 +56,6 @@ namespace WatchTogetherAPI.Controllers
                 var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
 
                 // Создаем гостевого пользователя
-
                 var guestUser = new User
                 {
                     Username = GenerateRandomUsername(),

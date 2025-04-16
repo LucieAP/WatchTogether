@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "khPvxvwp4H3sjUvge6lrjb7OLf9Vmi4eK0GwVdZhlGY=",
+  "Hash": "JL5sS1GZFENO7kqbDD8Lgae4Ibj4RcGfgyC/xFg1vO8=",
   "Source": "WatchTogetherAPI",
   "BasePath": "_content/WatchTogetherAPI",
   "Mode": "Default",
@@ -22,17 +22,15 @@
       "SourceType": "Discovered",
       "ContentRoot": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\",
       "BasePath": "_content/WatchTogetherAPI",
-      "RelativePath": "icons/gear-icon#[.{fingerprint}]?.png",
+      "RelativePath": "icons/gear-icon.png",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
+      "AssetMergeBehavior": "PreferTarget",
       "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
-      "Fingerprint": "0ywzzy9s4x",
-      "Integrity": "iOwS7G7JWBtSvucUpSFmYbPNvgRuEDG0ONTvFD+oDSk=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\icons\\gear-icon.png"
@@ -43,186 +41,18 @@
       "SourceType": "Discovered",
       "ContentRoot": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\",
       "BasePath": "_content/WatchTogetherAPI",
-      "RelativePath": "index#[.{fingerprint}]?.html",
+      "RelativePath": "index.html",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
+      "AssetMergeBehavior": "PreferTarget",
       "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
-      "Fingerprint": "ogsv4xtf6m",
-      "Integrity": "2NkEPGaB7SJd/Q51+5H9kB+tI+lqTcsece2QJVCxZ+M=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\index.html"
-    }
-  ],
-  "Endpoints": [
-    {
-      "Route": "icons/gear-icon.0ywzzy9s4x.png",
-      "AssetFile": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\icons\\gear-icon.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "21348"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"iOwS7G7JWBtSvucUpSFmYbPNvgRuEDG0ONTvFD+oDSk=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Sat, 08 Feb 2025 14:22:45 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "0ywzzy9s4x"
-        },
-        {
-          "Name": "label",
-          "Value": "icons/gear-icon.png"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-iOwS7G7JWBtSvucUpSFmYbPNvgRuEDG0ONTvFD+oDSk="
-        }
-      ]
-    },
-    {
-      "Route": "icons/gear-icon.png",
-      "AssetFile": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\icons\\gear-icon.png",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "21348"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/png"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"iOwS7G7JWBtSvucUpSFmYbPNvgRuEDG0ONTvFD+oDSk=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Sat, 08 Feb 2025 14:22:45 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=3600, must-revalidate"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-iOwS7G7JWBtSvucUpSFmYbPNvgRuEDG0ONTvFD+oDSk="
-        }
-      ]
-    },
-    {
-      "Route": "index.html",
-      "AssetFile": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\index.html",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "312"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/html"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"2NkEPGaB7SJd/Q51+5H9kB+tI+lqTcsece2QJVCxZ+M=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Sun, 09 Feb 2025 17:10:09 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-2NkEPGaB7SJd/Q51+5H9kB+tI+lqTcsece2QJVCxZ+M="
-        }
-      ]
-    },
-    {
-      "Route": "index.ogsv4xtf6m.html",
-      "AssetFile": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\index.html",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "312"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/html"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"2NkEPGaB7SJd/Q51+5H9kB+tI+lqTcsece2QJVCxZ+M=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Sun, 09 Feb 2025 17:10:09 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "ogsv4xtf6m"
-        },
-        {
-          "Name": "label",
-          "Value": "index.html"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-2NkEPGaB7SJd/Q51+5H9kB+tI+lqTcsece2QJVCxZ+M="
-        }
-      ]
     }
   ]
 }

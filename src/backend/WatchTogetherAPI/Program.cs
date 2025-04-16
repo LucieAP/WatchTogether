@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
 using WatchTogetherAPI.Data.AppDbContext;
 using WatchTogetherAPI.Hubs;
@@ -14,16 +17,32 @@ namespace WatchTogetherAPI
 
             // Add services to the container.
 
-            builder.Services.AddDistributedMemoryCache(); // ����������� ��� �������� ������
+            builder.Services.AddDistributedMemoryCache(); // Используется для хранения сессий
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(20);
                 options.Cookie.HttpOnly = true;
             });
 
+            // Настройка JWT аутентификации с использованием схемы Bearer
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true, // Проверка ключа подписи
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(
+                            builder.Configuration["Jwt:Key"] ?? "watchTogetherSecretKey12345!@#$%")), // Ключ для проверки подписи токена
+                        ValidateIssuer = false, // Не проверяем издателя токена
+                        ValidateAudience = false, // Не проверяем аудиторию токена
+                        ValidateLifetime = true, // Проверяем срок действия токена
+                        ClockSkew = TimeSpan.Zero // Без допуска на расхождение времени
+                    };
+                });
+
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
-                {   // ��������� ����������� ������   
+                {   // Настройка сериализации JSON   
                     //options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 });
@@ -41,12 +60,12 @@ namespace WatchTogetherAPI
                           .WithOrigins("https://localhost:5173")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
-                          .WithExposedHeaders("X-User-Id") // ��������� ������� ������ X-User-Id
+                          .WithExposedHeaders("X-User-Id") // Разрешаем клиенту видеть X-User-Id
                           .AllowCredentials(); // Cookie
                 });
             });
 
-            builder.Services.AddHostedService<RoomCleanupService>();        // ������ ������� ������ �� ��
+            builder.Services.AddHostedService<RoomCleanupService>();        // Сервис очистки комнат из БД
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -70,8 +89,10 @@ namespace WatchTogetherAPI
 
             app.UseSession();
 
-            app.UseStaticFiles();           // ��������� �������� ����� �� wwwroot
+            app.UseStaticFiles();           // Разрешаем статичные файлы из wwwroot
 
+            // Добавляем middleware для аутентификации перед авторизацией
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
@@ -82,7 +103,7 @@ namespace WatchTogetherAPI
 
             app.MapFallbackToFile("index.html");
 
-            app.MapHub<MediaHub>("mediaHub");    // ���+�����
+            app.MapHub<MediaHub>("mediaHub");    // Хаб+логика
 
             app.Run();
         }

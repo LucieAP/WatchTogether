@@ -5,8 +5,6 @@ C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\WatchTogetherAPI.csproj.CoreCompileInputs.cache
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\WatchTogetherAPI.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\WatchTogetherAPI.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\WatchTogetherAPI.RazorAssemblyInfo.cache
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\WatchTogetherAPI.RazorAssemblyInfo.cs
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\WatchTogetherAPI.sourcelink.json
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\appsettings.json
@@ -16,12 +14,6 @@ C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\WatchTogetherAPI.runtimeconfig.json
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\WatchTogetherAPI.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\WatchTogetherAPI.pdb
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\FirebaseAdmin.dll
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Api.Gax.dll
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Api.Gax.Rest.dll
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Apis.dll
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Apis.Auth.dll
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Apis.Core.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Humanizer.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.AspNetCore.Razor.Language.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
@@ -94,7 +86,6 @@ C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Drawing.Common.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.IO.Pipelines.dll
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Management.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Reflection.MetadataLoadContext.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Security.Cryptography.Pkcs.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
@@ -257,7 +248,6 @@ C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\runtimes\win\lib\net7.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Management.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
@@ -278,6 +268,13 @@ C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\ref\WatchTogetherAPI.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.Extensions.ObjectPool.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Net.WebSockets.WebSocketProtocol.dll
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\WatchTogetherAPI.staticwebassets.endpoints.json
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\obj\Debug\net8.0\staticwebassets\msbuild.WatchTogetherAPI.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.Bcl.Memory.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Formats.Asn1.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll

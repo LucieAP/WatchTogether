@@ -1,39 +1,35 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import gearIcon from "../../assets/gear-icon.png";
+import userIcon from "../../assets/user-icon.png";
+import BaseHeader from "../Header/BaseHeader";
+import "./RoomHeader.css";
 
 export default function RoomHeader({ onSettingsClick, roomName, onLeaveRoom }) {
-  const navigate = useNavigate();
-
-  const HandleHomePage = () => {
-    navigate("/");
-  };
-
   return (
-    <header className="header">
-      <div className="logo" onClick={HandleHomePage}>
-        WatchTogether
-      </div>
+    <BaseHeader>
+      {/* Специфичный для комнаты контент, который будет вставлен между логотипом и авторизацией */}
+      <div className="room-header-content">
+        <div className="room-info">
+          <h1 className="room-title">{roomName}</h1>
+          <img
+            src={gearIcon}
+            alt="Настройки"
+            className="gear-icon"
+            onClick={onSettingsClick}
+          />
+        </div>
 
-      <div className="room-info">
-        <h1 className="room-title">{roomName}</h1>
-        <img
-          src={gearIcon}
-          alt="Настройки"
-          className="gear-icon"
-          onClick={onSettingsClick}
-        />
+        {/* Кнопка выхода из комнаты
+        {onLeaveRoom && (
+          <button onClick={onLeaveRoom} className="leave-button">
+            Выйти из комнаты
+          </button>
+        )} */}
+        
+        <div className="user-profile">
+          <img src={userIcon} alt="Профиль пользователя" className="user-icon"/>
+        </div>
       </div>
-
-      {/* Кнопка выхода из комнаты, использующая переданную функцию */}
-      {onLeaveRoom && (
-        <button onClick={onLeaveRoom} className="leave-button">
-          Выйти из комнаты
-        </button>
-      )}
-
-      <div className="user-profile">
-        <img src="~/images/user-icon.png" alt="Профиль пользователя" />
-      </div>
-    </header>
+    </BaseHeader>
   );
 }
