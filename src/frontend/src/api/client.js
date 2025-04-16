@@ -1,3 +1,4 @@
+// API клиент для взаимодействия с сервером
 import axios from "axios";
 
 const API_BASE = "/api";

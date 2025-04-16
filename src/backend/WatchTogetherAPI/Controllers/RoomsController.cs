@@ -55,31 +55,8 @@ namespace WatchTogetherAPI.Controllers
                 // Генерация базового URL
                 var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
 
-                // Создаем гостевого пользователя
-                var guestUser = new User
-                {
-                    Username = GenerateRandomUsername(),
-                    Status = UserStatus.UnAuthed,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                _context.Users.Add(guestUser);
-                await _context.SaveChangesAsync(cancellationToken); // Сохранение guestUser, чтобы получить UserId
-
-                // После сохранения guestUser в базу добавьте установку куки
-                Response.Cookies.Append(
-                    "X-User-Id",
-                    guestUser.UserId.ToString(),
-                    new CookieOptions
-                    {
-                        Path = "/",
-                        MaxAge = TimeSpan.FromDays(7),
-                        SameSite = SameSiteMode.None, // Для кросс-доменных запросов
-                        Secure = true,
-                        HttpOnly = true,
-                        IsEssential = true
-                    }
-                );
+                // Получаем существующего пользователя по кукам или создаем нового гостевого пользователя
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
 
                 // Создаем комнату
                 var newRoom = new Room
@@ -87,11 +64,11 @@ namespace WatchTogetherAPI.Controllers
                     RoomName = request.RoomName,
                     Description = request.Description,
                     Status = request.Status,
-                    CreatedByUserId = guestUser.UserId,      // Теперь у guestUser будет UserId
+                    CreatedByUserId = currentUser.UserId,
                     CreatedAt = DateTime.UtcNow,
                     ExpiresAt = DateTime.UtcNow.AddHours(24),
                     InvitationLink = "",
-                    CreatedByUser = guestUser
+                    CreatedByUser = currentUser
                 };
 
                 _context.Rooms.Add(newRoom);
@@ -102,11 +79,10 @@ namespace WatchTogetherAPI.Controllers
                 await _context.SaveChangesAsync(cancellationToken);
 
                 // Добавляем участника
-
                 var participant = new Participant
                 {
-                    RoomId = newRoom.RoomId, // Use the RoomId from the saved room
-                    UserId = guestUser.UserId, // Use the UserId from the saved user
+                    RoomId = newRoom.RoomId,
+                    UserId = currentUser.UserId,
                     Role = ParticipantRole.Creator,
                     JoinedAt = DateTime.UtcNow
                 };
@@ -123,9 +99,9 @@ namespace WatchTogetherAPI.Controllers
                     InvitationLink = $"/room/{newRoom.RoomId}",
                     User = new
                     {
-                        guestUser.UserId,
-                        guestUser.Username,
-                        guestUser.Status
+                        currentUser.UserId,
+                        currentUser.Username,
+                        currentUser.Status
                     }
                 };
 
@@ -710,8 +686,7 @@ namespace WatchTogetherAPI.Controllers
             }
 
             // Если идентификатор отсутствует, невалиден или пользователь с таким Guid не найден в базе данных, создаётся новый объект User:
-            // Т.е. если пользователь - новый
-
+            // Т.е. если пользователь - новый, он всегда будет гостевым с рандомным именем пользователя
             var newUser = new User
             {
                 Username = GenerateRandomUsername(),

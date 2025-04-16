@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { matchPath, useParams } from "react-router";
 import "./App.css";
 import CreateRoom from "./components/CreateRoom/CreateRoom";
 import Header from "./components/Header/Header";
@@ -9,7 +10,6 @@ import RoomPage from "./components/RoomPage/RoomPage";
 import RoomHeader from "./components/RoomPage/RoomHeader";
 import GetRooms from "./components/GetRooms";
 import Auth from "./components/Auth/Auth";
-import { matchPath, useParams } from "react-router";
 import { useRoomData } from "./hooks/useRoomData";
 import { AuthProvider } from "./context/AuthContext";
 import {
@@ -32,12 +32,12 @@ function RoomPageWithHeader() {
   const { roomId } = useParams();
   const { roomData, isLoading, error, refetch } = useRoomData(roomId);
 
-  const [leaveRoomFunction, setLeaveRoomFunction] = useState(null); // Состояние для хранения функции выхода
+  // const [leaveRoomFunction, setLeaveRoomFunction] = useState(null); // Состояние для хранения функции выхода
 
-  // Функция для получения метода onLeaveRoom из RoomPage
-  const handleLeaveRoomFunction = (leaveFunc) => {
-    setLeaveRoomFunction(leaveFunc);
-  };
+  // // Функция для получения метода onLeaveRoom из RoomPage
+  // const handleLeaveRoomFunction = (leaveFunc) => {
+  //   setLeaveRoomFunction(leaveFunc);
+  // };
 
   return (
     <>
