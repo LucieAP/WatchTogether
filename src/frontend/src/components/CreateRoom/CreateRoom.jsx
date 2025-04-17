@@ -51,10 +51,8 @@ export default function CreateRoom() {
       const createdRoom = await createRoom(dataToSend);
       console.log("Комната создана:", createdRoom);
 
-      // Устанавливаем маркер только что созданной комнаты для гостей
-      if (!isLoggedIn) {
-        sessionStorage.setItem('just_created_room', 'true');
-      }
+      // Устанавливаем маркер только что созданной комнаты для всех пользователей
+      sessionStorage.setItem('just_created_room', 'true');
 
       // Переходим на страницу комнаты
       navigate(`/room/${createdRoom.roomId}`);

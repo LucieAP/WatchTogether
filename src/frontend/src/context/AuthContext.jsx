@@ -39,57 +39,6 @@ export const AuthProvider = ({ children }) => {
   // Гостевой режим - это когда пользователь не авторизован
   const isGuest = !isLoggedIn;
 
-  // Отслеживаем изменения авторизации и навигации по истории браузера
-  // Этот хук используется для блокировки возврата в комнату при выходе из системы
-  useEffect(() => {
-    // Блокировка возврата в комнату при выходе из системы
-    const handlePopState = () => {
-      // Строго защищенные маршруты (требуют авторизации всегда)
-      const strictProtectedRoutes = ['/profile'];
-      
-      // Маршруты, которые могут использовать гости
-      const guestAllowedRoutes = ['/create-room', '/room/'];
-      
-      // Проверяем, пытается ли пользователь получить доступ к строго защищенному маршруту
-      const isStrictProtectedRoute = strictProtectedRoutes.some(route => location.pathname.startsWith(route));
-      
-      // Проверяем наличие метки времени выхода
-      const logoutTimestamp = sessionStorage.getItem('logout_timestamp');
-      
-      // Проверяем, является ли маршрут разрешенным для гостей
-      const isGuestAllowedRoute = guestAllowedRoutes.some(route => location.pathname.startsWith(route));
-      
-      // Проверяем, был ли переход на страницу комнаты (/room/id) после создания комнаты
-      const justCreatedRoom = sessionStorage.getItem('just_created_room');
-      const isRoomRoute = location.pathname.startsWith('/room/');
-
-      // Перенаправляем если:
-      // 1. Это строго защищенный маршрут и пользователь не авторизован
-      // 2. Маршрут с разрешенным гостевым доступом, но есть метка выхода
-      if ((isStrictProtectedRoute && !isLoggedIn) || 
-          (isGuestAllowedRoute && !isLoggedIn && logoutTimestamp && !isRoomRoute)) {
-        // Перенаправляем на главную страницу
-        navigate('/', { replace: true });
-      }
-      
-      // Если мы находимся на странице комнаты и маркер создания комнаты установлен, удаляем его
-      if (isRoomRoute && justCreatedRoom) {
-        sessionStorage.removeItem('just_created_room');
-      }
-    };
-
-    // Проверяем маршрут при каждом изменении авторизации или URL
-    handlePopState();
-
-    // Добавляем обработчик события popstate (когда пользователь нажимает кнопку "Назад" или "Вперед" в браузере)
-    window.addEventListener('popstate', handlePopState);
-    
-    // Очищаем обработчик при размонтировании компонента
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [isLoggedIn, location.pathname, navigate]);
-
   // Функция для входа пользователя
   const login = (userData) => {
     localStorage.setItem('token', userData.token);

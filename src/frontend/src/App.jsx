@@ -28,27 +28,57 @@ function HeaderSelector() {
   return isRoomPage ? null : <Header />;
 }
 
-// Компонент для защиты маршрутов, требующих авторизации
-function ProtectedRoute({ children, allowGuest = true }) {
+/**
+ * Компонент для защиты маршрутов, требующих авторизации.
+ * 
+ * Проверяет статус авторизации пользователя и решает, разрешить ли доступ к защищенному маршруту.
+ * Если пользователь не авторизован и гостевой доступ не разрешен, или если пользователь недавно вышел
+ * из системы и пытается получить доступ к защищенному маршруту, компонент перенаправляет на главную страницу.
+ * 
+ * @param {Object} props - Свойства компонента
+ * @param {React.ReactNode} props.children - Дочерние компоненты, которые будут отображены при успешной авторизации
+ * @param {boolean} props.allowGuest - Флаг, разрешающий доступ неавторизованным пользователям (по умолчанию true)
+ * @param {boolean} props.checkLogoutTimestamp - Проверять ли метку времени выхода (по умолчанию true)
+ * @returns {React.ReactNode} - Дочерние компоненты или перенаправление на главную страницу
+ */
+
+function ProtectedRoute({ children, allowGuest = true, checkLogoutTimestamp = true }) {
   const { isLoggedIn } = useAuth();
-  const location = useLocation(); // Получаем текущий URL
+  const location = useLocation();
   
   // Получаем время последнего выхода из системы
   const logoutTimestamp = sessionStorage.getItem('logout_timestamp');
+
+  // Проверяем, находимся ли мы на странице комнаты
+  const isRoomRoute = location.pathname.startsWith('/room/');
   
-  console.log("isLoggedIn", isLoggedIn);
-  console.log("allowGuest", allowGuest);
-  console.log("logoutTimestamp", logoutTimestamp);
-    
-  // Перенаправляем на главную страницу в двух случаях:
-  // 1. Если пользователь не авторизован (isLoggedIn = false) и гостевой доступ не разрешен (allowGuest = false)
-  // 2. Если есть метка о недавнем выходе из системы (logoutTimestamp существует) и гостевой доступ не разрешен
-  if ((!isLoggedIn && !allowGuest) || (logoutTimestamp && !allowGuest)) {
-    // Если существует метка времени выхода и пользователь пытается перейти на защищенный маршрут,
-    // перенаправляем на главную страницу
+  // Проверяем, был ли переход на страницу комнаты после создания комнаты
+  const justCreatedRoom = sessionStorage.getItem('just_created_room');
+  
+  // Если мы находимся на странице комнаты и маркер создания комнаты установлен, удаляем его
+  if (isRoomRoute && justCreatedRoom) {
+    sessionStorage.removeItem('just_created_room');
+  }
+  
+  // Проверяем условия доступа:
+  const needsAuth = !allowGuest && !isLoggedIn; // Нужна авторизация, но пользователь не авторизован
+  const hasRecentLogout = checkLogoutTimestamp && logoutTimestamp && !isLoggedIn; // Есть метка о недавнем выходе
+  
+  // Специальное исключение: если это маршрут комнаты и комната только что была создана, 
+  // разрешаем доступ даже после выхода из системы
+  const isExceptionCase = isRoomRoute && justCreatedRoom;
+  
+  // Перенаправляем, если нужна авторизация или есть метка о выходе, и это не исключительный случай
+  if ((needsAuth || hasRecentLogout) && !isExceptionCase) {
+    // <Navigate> — это компонент из React Router, который при рендеринге выполняет навигацию на указанный маршрут.
+    // replace — это опция, которая указывает, что вместо добавления новой записи в историю браузера, будет заменена текущая запись.
+    // state — это опция, которая передает данные в виде объекта в URL.
+    // reason — это ключ, который используется для передачи причины перенаправления.
+
     return <Navigate to="/" replace state={{ from: location, reason: "auth_required" }} />;
   }
   
+  // Если все проверки пройдены - показываем защищенный контент
   return children;
 }
 
@@ -84,12 +114,12 @@ export default function App() {
             <Routes>
               <Route path="/rooms" element={<GetRooms />} />
               <Route path="/create-room" element={
-                <ProtectedRoute allowGuest={true}>
+                <ProtectedRoute allowGuest={true} checkLogoutTimestamp={false}>
                   <CreateRoom />
                 </ProtectedRoute>
               } />
               <Route path="/room/:roomId" element={
-                <ProtectedRoute allowGuest={true}>
+                <ProtectedRoute allowGuest={true} checkLogoutTimestamp={false}>
                   <RoomPageWithHeader />
                 </ProtectedRoute>
               } />
