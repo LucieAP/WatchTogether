@@ -1,0 +1,106 @@
+.profile-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Roboto', sans-serif;
+}
+
+.profile-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  transition: all 0.3s ease;
+}
+
+.profile-card h2 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 15px;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-avatar {
+  flex-shrink: 0;
+}
+
+.avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #3d84a8;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.profile-details {
+  flex-grow: 1;
+}
+
+.profile-details p {
+  margin: 10px 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 14px;
+  margin-left: 5px;
+  font-weight: 500;
+}
+
+.status-badge.online {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.offline {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.profile-container.loading,
+.profile-container.error,
+.profile-container.not-logged-in {
+  text-align: center;
+  padding: 40px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-container.loading {
+  color: #6c757d;
+}
+
+.profile-container.error {
+  color: #721c24;
+  background-color: #f8d7da;
+}
+
+.profile-container.not-logged-in {
+  color: #856404;
+  background-color: #fff3cd;
+}
+
+@media (max-width: 600px) {
+  .profile-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+} 
