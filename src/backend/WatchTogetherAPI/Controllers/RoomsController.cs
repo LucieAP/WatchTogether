@@ -716,11 +716,12 @@ namespace WatchTogetherAPI.Controllers
         }
 
         // Генератор никнеймов
-        private string GenerateRandomUsername(int length = 8)
+        private string GenerateRandomUsername(int length = 5)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            return new string(Enumerable.Repeat(chars, length)
+            string randomUsername = "guest_" + new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[_random.Next(s.Length)]).ToArray());
+            return randomUsername;
         }
     }
 }
