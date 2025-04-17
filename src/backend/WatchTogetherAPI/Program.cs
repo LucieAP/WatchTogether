@@ -66,11 +66,11 @@ namespace WatchTogetherAPI
             });
 
             builder.Services.AddHostedService<RoomCleanupService>();        // Сервис очистки комнат из БД
+            builder.Services.AddHostedService<UserCleanupService>();        // Сервис очистки неактивных гостевых пользователей
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(connectionString));
-
 
             builder.Services.AddRazorPages();
 

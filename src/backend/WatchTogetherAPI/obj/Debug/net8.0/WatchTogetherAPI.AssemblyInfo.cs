@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WatchTogetherAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+55528a8ce67575f3632a0de14f39de30746fac8f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a59d7125543bf78c3a1db0c93d123963b5c5a4e7")]
 [assembly: System.Reflection.AssemblyProductAttribute("WatchTogetherAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WatchTogetherAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
