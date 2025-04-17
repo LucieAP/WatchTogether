@@ -12,12 +12,13 @@ import GetRooms from "./components/GetRooms";
 import Auth from "./components/Auth/Auth";
 import Profile from "./components/Profile/Profile";
 import { useRoomData } from "./hooks/useRoomData";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   useLocation,
+  Navigate,
 } from "react-router-dom";
 
 function HeaderSelector() {
@@ -27,32 +28,47 @@ function HeaderSelector() {
   return isRoomPage ? null : <Header />;
 }
 
+// Компонент для защиты маршрутов, требующих авторизации
+function ProtectedRoute({ children, allowGuest = true }) {
+  const { isLoggedIn } = useAuth();
+  const location = useLocation(); // Получаем текущий URL
+  
+  // Получаем время последнего выхода из системы
+  const logoutTimestamp = sessionStorage.getItem('logout_timestamp');
+  
+  console.log("isLoggedIn", isLoggedIn);
+  console.log("allowGuest", allowGuest);
+  console.log("logoutTimestamp", logoutTimestamp);
+    
+  // Перенаправляем на главную страницу в двух случаях:
+  // 1. Если пользователь не авторизован (isLoggedIn = false) и гостевой доступ не разрешен (allowGuest = false)
+  // 2. Если есть метка о недавнем выходе из системы (logoutTimestamp существует) и гостевой доступ не разрешен
+  if ((!isLoggedIn && !allowGuest) || (logoutTimestamp && !allowGuest)) {
+    // Если существует метка времени выхода и пользователь пытается перейти на защищенный маршрут,
+    // перенаправляем на главную страницу
+    return <Navigate to="/" replace state={{ from: location, reason: "auth_required" }} />;
+  }
+  
+  return children;
+}
+
 function RoomPageWithHeader() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false); // Открытие модального окна при нажатии на шестеренку
 
   const { roomId } = useParams();
   const { roomData, isLoading, error, refetch } = useRoomData(roomId);
 
-  // const [leaveRoomFunction, setLeaveRoomFunction] = useState(null); // Состояние для хранения функции выхода
-
-  // // Функция для получения метода onLeaveRoom из RoomPage
-  // const handleLeaveRoomFunction = (leaveFunc) => {
-  //   setLeaveRoomFunction(leaveFunc);
-  // };
-
   return (
     <>
       <RoomHeader
         onSettingsClick={() => setIsSettingsModalOpen(true)}
         roomName={roomData?.roomName}
-        //onLeaveRoom={leaveRoomFunction} // Передаем функцию в RoomHeader
       />
       <RoomPage
         isSettingsModalOpen={isSettingsModalOpen}
         onSettingsClose={() => setIsSettingsModalOpen(false)}
         roomData={roomData}
         refetchRoomData={refetch}
-        //onLeaveRoomHandler={handleLeaveRoomFunction} // Передаем колбэк в RoomPage
       />
     </>
   );
@@ -67,10 +83,22 @@ export default function App() {
           <main className="main-content">
             <Routes>
               <Route path="/rooms" element={<GetRooms />} />
-              <Route path="/create-room" element={<CreateRoom />} />
-              <Route path="/room/:roomId" element={<RoomPageWithHeader />} />
+              <Route path="/create-room" element={
+                <ProtectedRoute allowGuest={true}>
+                  <CreateRoom />
+                </ProtectedRoute>
+              } />
+              <Route path="/room/:roomId" element={
+                <ProtectedRoute allowGuest={true}>
+                  <RoomPageWithHeader />
+                </ProtectedRoute>
+              } />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile" element={
+                <ProtectedRoute allowGuest={false}>
+                  <Profile />
+                </ProtectedRoute>
+              } />
               <Route path="/" element={<HomePage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

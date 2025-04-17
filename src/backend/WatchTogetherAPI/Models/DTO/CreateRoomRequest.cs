@@ -13,5 +13,8 @@ namespace WatchTogetherAPI.Models.DTO
         public string Description { get; set; }
 
         public RoomStatus Status { get; set; }
+        
+        // Флаг, указывающий, что запрос пришел от гостевого пользователя
+        public bool IsGuest { get; set; }
     }
 }

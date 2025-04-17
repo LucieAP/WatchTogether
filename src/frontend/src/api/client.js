@@ -12,6 +12,20 @@ const apiClient = axios.create({
   },
 });
 
+// // Перехватчик запросов для добавления токена авторизации
+// apiClient.interceptors.request.use((config) => {
+//   const token = localStorage.getItem('token');
+  
+//   // Если токен существует, добавляем его к запросу
+//   if (token) {
+//     config.headers.Authorization = `Bearer ${token}`;
+//   }
+  
+//   return config;
+// }, (error) => {
+//   return Promise.reject(error);
+// });
+
 // Перехватчик для обработки ошибок
 
 // Если запрос успешен, автоматически возвращаются только response.data (а не весь объект response)

@@ -9,6 +9,7 @@ import axios from "axios";
 import VideoPlayer from "../VideoPlayer/VideoPlayer";
 import { useDebouncedCallback } from "use-debounce";
 import { AddVideoModal } from "../AddVideoModal";
+import { useAuth } from "../../context/AuthContext";
 
 import {
   leaveRoom,
@@ -59,6 +60,7 @@ export default function RoomPage({
   const [connectionStatus, setConnectionStatus] = useState("disconnected"); // ref для отслеживания статуса соединения disconnected/connected/reconnecting/error
 
   const navigate = useNavigate();
+  const { isLoggedIn, isGuest } = useAuth();
 
   const [inactivityTimer, setInactivityTimer] = useState(null);
   const [lastActivity, setLastActivity] = useState(Date.now());
@@ -440,6 +442,13 @@ export default function RoomPage({
       }
     };
   }, [roomId, navigate, lastActivity]);
+
+  // Проверка авторизации при загрузке компонента
+  useEffect(() => {
+    if (!isLoggedIn && !isGuest) {
+      navigate('/'); // Перенаправляем на главную страницу, если пользователь не авторизован и не гость
+    }
+  }, [isLoggedIn, isGuest, navigate]);
 
   // Функция-обработчик кнопки "Выйти из комнаты"
   const handleLeaveRoom = () => {

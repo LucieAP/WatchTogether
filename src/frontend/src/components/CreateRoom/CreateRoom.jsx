@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { createRoom } from "../../api/rooms";
+import { useAuth } from "../../context/AuthContext";
 
 // Константа для общих атрибутов полей ввода
 const INPUT_PROPS = {
@@ -11,6 +12,7 @@ const INPUT_PROPS = {
 
 export default function CreateRoom() {
   const navigate = useNavigate();
+  const { isLoggedIn, userId } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -39,8 +41,20 @@ export default function CreateRoom() {
     setIsSubmitting(true);
 
     try {
-      const createdRoom = await createRoom(formData);
+      // Если пользователь не авторизован, создаем комнату для гостя
+      const dataToSend = {
+        ...formData,
+        // Если пользователь гость, передаем признак гостевой комнаты
+        isGuest: !isLoggedIn
+      };
+
+      const createdRoom = await createRoom(dataToSend);
       console.log("Комната создана:", createdRoom);
+
+      // Устанавливаем маркер только что созданной комнаты для гостей
+      if (!isLoggedIn) {
+        sessionStorage.setItem('just_created_room', 'true');
+      }
 
       // Переходим на страницу комнаты
       navigate(`/room/${createdRoom.roomId}`);
@@ -56,6 +70,11 @@ export default function CreateRoom() {
     <div className="wrapper">
       <div className="container mt-5">
         <h2 id="createNewRoom">Создать новую комнату</h2>
+        {!isLoggedIn && (
+          <div className="alert alert-info mt-3">
+            Вы создаете комнату как гость. Для сохранения и дополнительных возможностей рекомендуется <a href="/auth">авторизоваться</a>.
+          </div>
+        )}
         <div className="card mt-4">
           <div className="card-body">
             {/*Ошибки отображаются в UI*/}

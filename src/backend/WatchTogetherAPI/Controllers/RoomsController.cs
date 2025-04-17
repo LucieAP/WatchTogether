@@ -57,6 +57,14 @@ namespace WatchTogetherAPI.Controllers
 
                 // Получаем существующего пользователя по кукам или создаем нового гостевого пользователя
                 var currentUser = await GetOrCreateUserAsync(cancellationToken);
+                
+                // Если пользователь гостевой и запрос помечен как гостевой, делаем дополнительную обработку
+                if (request.IsGuest && currentUser.Status == UserStatus.UnAuthed)
+                {
+                    // Здесь можно добавить дополнительную обработку для гостевых комнат
+                    // Например, ограничить функционал или установить особые права
+                    _logger.LogInformation("Создание гостевой комнаты пользователем {UserId}", currentUser.UserId);
+                }
 
                 // Создаем комнату
                 var newRoom = new Room
