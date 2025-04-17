@@ -10,6 +10,7 @@ import RoomPage from "./components/RoomPage/RoomPage";
 import RoomHeader from "./components/RoomPage/RoomHeader";
 import GetRooms from "./components/GetRooms";
 import Auth from "./components/Auth/Auth";
+import Profile from "./components/Profile/Profile";
 import { useRoomData } from "./hooks/useRoomData";
 import { AuthProvider } from "./context/AuthContext";
 import {
@@ -69,6 +70,7 @@ export default function App() {
               <Route path="/create-room" element={<CreateRoom />} />
               <Route path="/room/:roomId" element={<RoomPageWithHeader />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/" element={<HomePage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

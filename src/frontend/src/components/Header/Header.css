@@ -35,8 +35,15 @@
 }
 
 .username {
-  font-size: 14px;
-  color: #333;
+  margin-right: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.username:hover {
+  color: #4a90e2;
+  text-decoration: underline;
 }
 
 .login-button, .logout-button {
