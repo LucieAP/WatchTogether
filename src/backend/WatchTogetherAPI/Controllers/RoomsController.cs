@@ -688,9 +688,21 @@ namespace WatchTogetherAPI.Controllers
             if (Request.Cookies.TryGetValue("X-User-Id", out var userIdCookie) &&
                 Guid.TryParse(userIdCookie, out var userId))
             {
+                _logger.LogInformation("Найден существующий идентификатор пользователя в cookie: {UserId}", userId);
                 var existingUser = await _context.Users.FindAsync(userId, cancellationToken);
                 if (existingUser != null)       // Если пользователь найден (user != null), метод сразу возвращает его.
+                {
+                    _logger.LogInformation("Найден существующий пользователь в базе данных: {UserId}, {Username}", existingUser.UserId, existingUser.Username);
                     return existingUser;
+                }
+                else
+                {
+                    _logger.LogWarning("Пользователь с ID {UserId} найден в cookie, но отсутствует в базе данных", userId);
+                }
+            }
+            else
+            {
+                _logger.LogInformation("Идентификатор пользователя не найден в cookie или невалиден");
             }
 
             // Если идентификатор отсутствует, невалиден или пользователь с таким Guid не найден в базе данных, создаётся новый объект User:
@@ -704,21 +716,29 @@ namespace WatchTogetherAPI.Controllers
 
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Создан новый пользователь: {UserId}, {Username}", newUser.UserId, newUser.Username);
 
             // Устанавливаем Cookie в ответе
-            Response.Cookies.Append(
-                "X-User-Id",
-                newUser.UserId.ToString(),
-                new CookieOptions
-                {
-                    Path = "/",                     // cookie будет доступно для всех страниц сайта
-                    MaxAge = TimeSpan.FromDays(7),  // Срок жизни куки
-                    SameSite = SameSiteMode.None,   
-                    HttpOnly = true,                // cookie недоступно из JavaScript, что защищает от XSS-атак
-                    Secure = true,                   // cookie передаётся только по HTTPS
-                    IsEssential = true              // Для соблюдения GDPR
-                }
-            );
+            var cookieOptions = new CookieOptions
+            {
+                Path = "/",                     // cookie будет доступно для всех страниц сайта
+                MaxAge = TimeSpan.FromDays(7),  // Срок жизни куки
+                HttpOnly = true,                // cookie недоступно из JavaScript, что защищает от XSS-атак
+                IsEssential = true              // Для соблюдения GDPR
+            };
+            
+            // Настраиваем SameSite и Secure в зависимости от окружения
+            if (HttpContext.Request.IsHttps)
+            {
+                cookieOptions.Secure = true;
+                cookieOptions.SameSite = SameSiteMode.None;
+            }
+            else
+            {
+                cookieOptions.SameSite = SameSiteMode.Lax;
+            }
+
+            Response.Cookies.Append("X-User-Id", newUser.UserId.ToString(), cookieOptions);
 
             return newUser;
         }

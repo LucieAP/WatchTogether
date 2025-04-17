@@ -84,7 +84,15 @@ namespace WatchTogetherAPI.Hubs
                     throw new ArgumentException("Неверный формат идентификатора комнаты", nameof(roomId));
                 }
 
+                // Используем безопасное преобразование строки в Guid
+                if (!Guid.TryParse(userId, out Guid parsedUserId))
+                {
+                    throw new ArgumentException("Неверный формат идентификатора пользователя", nameof(userId));
+                }
+
+                // Проверяем существование комнаты
                 var room = await _context.Rooms
+                    .Include(r => r.Participants)   // Включаем участников комнаты
                     .Include(r => r.VideoState)
                         .ThenInclude(vs => vs.CurrentVideo)
                     .FirstOrDefaultAsync(r => r.RoomId == parsedRoomId, cancellationToken);
@@ -92,6 +100,28 @@ namespace WatchTogetherAPI.Hubs
                 if (room == null)
                 {
                     throw new HubException("Комната не найдена");
+                }
+
+                // Проверяем существование пользователя в базе данных
+                var user = await _context.Users.FindAsync(parsedUserId, cancellationToken);
+                if (user == null)
+                {
+                    _logger.LogWarning("Пользователь с ID {UserId} не найден в базе данных при подключении через SignalR", userId);
+                    throw new HubException("Пользователь не найден. Обновите страницу.");
+                }
+
+                // Проверяем является ли пользователь участником комнаты
+                // Если нет, то добавляем его в комнату
+                if (!room.Participants.Any(p => p.UserId == parsedUserId))
+                {
+                    _logger.LogInformation("Добавляем пользователя {UserId} в комнату {RoomId} через SignalR", userId, roomId);
+                    room.Participants.Add(new Participant
+                    {
+                        UserId = parsedUserId,
+                        Role = ParticipantRole.Member,
+                        JoinedAt = DateTime.UtcNow
+                    });
+                    await _context.SaveChangesAsync(cancellationToken);
                 }
 
                 _connectionRooms[Context.ConnectionId] = roomId;
@@ -109,7 +139,7 @@ namespace WatchTogetherAPI.Hubs
                 
                 bool isNewUser = false;
 
-                // TryGetValue - пытается получить значение по ключу. Возвращает `true`, если ключ существует.
+                // TryGetValue - пытается получить значение по ключу. Возвращает `true`, если ключ существует.
                 if (!_userRooms.TryGetValue(userId, out var existingRoomId) || existingRoomId!= roomId)
                 {
                     _userRooms[userId] = roomId;
@@ -130,8 +160,6 @@ namespace WatchTogetherAPI.Hubs
                     }
 
                     // Отправляем текущее состояние видео новому пользователю
-                    // await Clients.Caller.SendAsync("InitialVideoState", room.VideoState);
-
                     await Clients.Caller.SendAsync("InitialVideoState", new {
                         CurrentVideoId = room.VideoState?.CurrentVideo?.VideoId,
                         IsPaused = room.VideoState?.IsPaused ?? true,

@@ -153,22 +153,6 @@ export const createConnection = (
           .invoke("JoinRoom", roomId, username, userId)
           .catch((err) => {
             console.error("JoinRoom error:", err);
-
-            // // Вывод полной информации об ошибке
-            // if (err.message) console.error("Error message:", err.message);
-            // if (err.stack) console.error("Stack trace:", err.stack);
-            // if (err.errorData) console.error("Error data:", err.errorData);
-
-            // // Показать ошибку пользователю
-            // onMessageReceived({
-            //   userId: null,
-            //   userName: "System",
-            //   message: `Ошибка при присоединении к комнате: ${
-            //     err.message || "Неизвестная ошибка"
-            //   }`,
-            //   isSystem: true,
-            //   timestamp: new Date(),
-            // });
           });
       }
     } catch (err) {

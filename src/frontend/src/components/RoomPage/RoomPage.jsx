@@ -6,6 +6,7 @@ import { updateRoom } from "../../api/rooms";
 import { getRoom } from "../../api/rooms";
 import { createConnection } from "../../api/media";
 import axios from "axios";
+import * as signalR from "@microsoft/signalr";
 import VideoPlayer from "../VideoPlayer/VideoPlayer";
 import { useDebouncedCallback } from "use-debounce";
 import { AddVideoModal } from "../AddVideoModal";
@@ -357,15 +358,44 @@ export default function RoomPage({
 
   // Загрузка данных комнаты и подключение к чату
   useEffect(() => {
+    // Проверяем, нет ли уже активного подключения
+    if (connectionRef.current?.connection && 
+        connectionRef.current.connection.state === signalR.HubConnectionState.Connected) {
+      console.log("Соединение уже установлено, пропускаем повторное подключение");
+      return;
+    }
+
     const setupChat = async () => {
       try {
-        const joinResponse = await axios.post(`/api/Rooms/${roomId}/join`);
-        console.log("Join response data:", joinResponse.data);
+        // Проверяем, есть ли сохраненный userId для этой комнаты
+        const savedUserInfo = sessionStorage.getItem(`room_${roomId}_user`);
+        let userInfoData;
 
-        setUserInfo({
-          userId: joinResponse.data.userId,
-          username: joinResponse.data.username,
-        });
+        if (savedUserInfo) {
+          try {
+            userInfoData = JSON.parse(savedUserInfo);
+            console.log("Использование сохраненных данных пользователя:", userInfoData);
+            setUserInfo(userInfoData);
+          } catch (e) {
+            console.error("Ошибка при разборе сохраненных данных пользователя:", e);
+          }
+        }
+
+        if (!userInfoData) {
+          // Если нет сохраненных данных, выполняем запрос к API
+          const joinResponse = await axios.post(`/api/Rooms/${roomId}/join`);
+          console.log("Join response data:", joinResponse.data);
+
+          userInfoData = {
+            userId: joinResponse.data.userId,
+            username: joinResponse.data.username,
+          };
+          
+          setUserInfo(userInfoData);
+          
+          // Сохраняем данные пользователя для этой комнаты
+          sessionStorage.setItem(`room_${roomId}_user`, JSON.stringify(userInfoData));
+        }
 
         // Подключаемся к SignalR
         const { connection, start, sendMessage, checkConnection, reconnect } =
@@ -374,8 +404,8 @@ export default function RoomPage({
             handleNewMessage,
             handleParticipantsUpdated,
             handleChatHistory,
-            joinResponse.data.username,
-            joinResponse.data.userId,
+            userInfoData.username,
+            userInfoData.userId,
             handleVideoStateUpdated,
             handleConnectionStateChanged
           );
@@ -386,6 +416,7 @@ export default function RoomPage({
           checkConnection,
           reconnect,
         };
+        
         await start();
       } catch (error) {
         console.error("Chat setup error:", error);
@@ -410,38 +441,17 @@ export default function RoomPage({
       }
     }, 30000); // Проверка каждые 30 секунд
 
-    // // Запускаем таймер проверки активности
-    // const activityCheckInterval = setInterval(() => {
-    //   const now = Date.now();
-    //   if (now - lastActivity > INACTIVITY_TIMEOUT) {
-    //     console.log("User inactive for too long, leaving room");
-    //     handleTimeoutLeave(roomId, connectionRef, navigate);
-    //   }
-    // }, 60000); // Проверка каждую минуту
-
-    // // Добавляем обработчики событий для отслеживания активности
-    // window.addEventListener("mousemove", registerActivity);
-    // window.addEventListener("keydown", registerActivity);
-    // window.addEventListener("click", registerActivity);
-    // window.addEventListener("scroll", registerActivity);
-
     return () => {
       // Очищаем все интервалы и обработчики событий
       cleanupBrowserClose();
       clearInterval(pingInterval); // 1. Останавливает ping-проверки
-      //clearInterval(activityCheckInterval);
-
-      // window.removeEventListener("mousemove", registerActivity);
-      // window.removeEventListener("keydown", registerActivity);
-      // window.removeEventListener("click", registerActivity);
-      // window.removeEventListener("scroll", registerActivity);
 
       // 2. Проверяет наличие соединения
       if (connectionRef.current?.connection) {
         connectionRef.current.connection.stop(); // 3. Корректно останавливает SignalR соединение
       }
     };
-  }, [roomId, navigate, lastActivity]);
+  }, [roomId, navigate]);
 
   // Проверка авторизации при загрузке компонента
   useEffect(() => {
