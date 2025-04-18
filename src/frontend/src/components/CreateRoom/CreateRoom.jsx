@@ -73,7 +73,15 @@ export default function CreateRoom() {
     <div className="wrapper">
       <div className="container mt-5">
         <h2 id="createNewRoom">Создать новую комнату</h2>
-        {!isLoggedIn && (
+        {/* Информация о режиме работы */}
+        {isLoggedIn ? (
+        <div className="alert alert-info mt-3">
+          <ul className="mt-2 mb-0">
+            <li>В авторизованном режиме можно создать неограниченное количество комнат</li>
+            <li>Время жизни комнаты - 24 часа</li>
+          </ul>
+        </div>
+        ) : (
           <div className="alert alert-info mt-3">
             Вы создаете комнату как гость. Для сохранения и дополнительных возможностей рекомендуется <a href="/auth">авторизоваться</a>.
             <ul className="mt-2 mb-0">
@@ -81,7 +89,7 @@ export default function CreateRoom() {
               <li>Время жизни гостевой комнаты - 3 часа</li>
             </ul>
           </div>
-        )}
+        )} 
         <div className="card mt-4">
           <div className="card-body">
             {/*Ошибки отображаются в UI*/}
