@@ -8,6 +8,9 @@ const HomePage = () => {
   const [publicRooms, setPublicRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState(null); // ID выбранной комнаты
+  const [selectedRoom, setSelectedRoom] = useState(null); // Выбранная комната
 
   // Загрузка публичных комнат при монтировании компонента
   useEffect(() => {
@@ -35,7 +38,23 @@ const HomePage = () => {
 
   // Обработчик перехода в комнату
   const handleJoinRoom = (roomId) => {
-    navigate(`/room/${roomId}`);
+    const room = publicRooms.find(r => r.roomId === roomId);
+    setSelectedRoom(room);
+    setSelectedRoomId(roomId);
+    setShowModal(true);
+  };
+
+  // Подтверждение входа в комнату
+  const confirmJoinRoom = () => {
+    navigate(`/room/${selectedRoomId}`);
+    setShowModal(false);
+  };
+
+  // Отмена входа в комнату
+  const cancelJoinRoom = () => {
+    setShowModal(false);
+    setSelectedRoomId(null);
+    setSelectedRoom(null);
   };
 
   // Форматирование даты
@@ -91,6 +110,30 @@ const HomePage = () => {
           )}
         </div>
       </div>
+
+      {/* Модальное окно предупреждения */}
+      {showModal && (
+        <div className="modalOverlay" onClick={cancelJoinRoom}>
+          <div className="modalContent" onClick={(e) => e.stopPropagation()}>
+            <h3>Подключение к комнате</h3>
+            {selectedRoom && (
+              <div className="modalBody">
+                <p>Вы собираетесь присоединиться к комнате "{selectedRoom.roomName}".</p>
+                <p>Создатель: {selectedRoom.createdByUsername}</p>
+                {selectedRoom.currentVideoTitle && (
+                  <p>Сейчас воспроизводится: {selectedRoom.currentVideoTitle}</p>
+                )}
+                <p>Количество участников: {selectedRoom.participantsCount}</p>
+                <p>Хотите продолжить?</p>
+              </div>
+            )}
+            <div className="modalActions">
+              <button className="cancelButton" onClick={cancelJoinRoom}>Отмена</button>
+              <button className="confirmButton" onClick={confirmJoinRoom}>Присоединиться</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
