@@ -43,6 +43,46 @@ namespace WatchTogetherAPI.Controllers
                 .ToListAsync(cancellationToken);
         }
 
+        // GET: api/Rooms/Public
+        [HttpGet("Public")]
+        public async Task<ActionResult<IEnumerable<Room>>> GetPublicRooms(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var publicRooms = await _context.Rooms
+                    .Where(r => r.Status == RoomStatus.Public)
+                    .Include(r => r.CreatedByUser)
+                    .Include(r => r.Participants)
+                        .ThenInclude(p => p.User)
+                    .Include(r => r.VideoState)
+                        .ThenInclude(vs => vs.CurrentVideo)
+                    .Select(r => new 
+                    {
+                        r.RoomId,
+                        r.RoomName,
+                        r.Description,
+                        r.Status,
+                        CreatedByUsername = r.CreatedByUser.Username,
+                        ParticipantsCount = r.Participants.Count,
+                        CurrentVideoTitle = r.VideoState.CurrentVideo != null ? r.VideoState.CurrentVideo.Title : null,
+                        r.CreatedAt
+                    })
+                    .ToListAsync(cancellationToken);
+                    
+                return Ok(publicRooms);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на получение публичных комнат был отменен");
+                return StatusCode(499, "Запрос был отменен");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении публичных комнат");
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
+        }
+
         // POST: api/Rooms/Create
         [HttpPost("Create")]
         public async Task<IActionResult> CreateRoom([FromBody] CreateRoomRequest request, CancellationToken cancellationToken = default)

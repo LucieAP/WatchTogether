@@ -10,6 +10,15 @@ export const getRooms = async () => {
   }
 };
 
+export const getPublicRooms = async () => {
+  try {
+    return await apiClient.get("/Rooms/Public"); // GET : api/Rooms/Public
+  } catch (error) {
+    console.error("Error fetching public rooms:", error);
+    throw error;
+  }
+};
+
 export const createRoom = async (roomData) => {
   try {
     const response = await apiClient.post("/Rooms/Create", roomData); // Отправляем roomData, которые получаем при вызове

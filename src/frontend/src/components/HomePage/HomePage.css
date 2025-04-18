@@ -1,9 +1,29 @@
 .homePageContainer {
   display: flex;
   justify-content: center;
-  align-items: center;
-  height: 100vh;
   margin: 0;
+  padding: 20px;
+}
+
+.homePage {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  font-size: 36px;
+  margin-bottom: 10px;
+  color: #007bff;
+}
+
+.description {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 30px;
+  text-align: center;
 }
 
 .createRoomButton {
@@ -15,9 +35,96 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
+  margin-bottom: 40px;
 }
 
 /* Дополнительное улучшение: эффект при наведении */
 .createRoomButton:hover {
   background-color: #0056b3;
+}
+
+.publicRoomsSection {
+  width: 100%;
+}
+
+.publicRoomsSection h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 20px;
+  color: #555;
+}
+
+.error {
+  color: #dc3545;
+}
+
+.roomsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.roomCard {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.roomCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.roomCard h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #007bff;
+}
+
+.roomDescription {
+  color: #555;
+  margin-bottom: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.roomCardFooter {
+  font-size: 14px;
+  color: #777;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.participantsCount {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.icon-user:before {
+  content: "👥";
+}
+
+.currentVideo {
+  font-style: italic;
+  margin: 5px 0;
+}
+
+.roomCreator, .roomDate {
+  font-size: 12px;
 }
