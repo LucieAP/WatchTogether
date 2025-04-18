@@ -56,3 +56,35 @@ export const getRoom = async (roomId) => {
 //     throw error;
 //   }
 // };
+
+// Получение списка комнат, созданных пользователем
+export const getUserRooms = async () => {
+  try {
+    const response = await apiClient.get("/Rooms/MyRooms"); // GET : api/Rooms/MyRooms
+    console.log("Список комнат пользователя:", response);
+    return response;
+  } catch (error) {
+    console.error("Ошибка при получении комнат пользователя:", error);
+    throw error;
+  }
+};
+
+// Удаление комнаты
+export const deleteRoom = async (roomId) => {
+  try {
+    return await apiClient.delete(`/Rooms/${roomId}`); // DELETE: api/Rooms/{roomId}
+  } catch (error) {
+    console.error("Ошибка при удалении комнаты:", error);
+    throw error;
+  }
+};
+
+// Удаление всех комнат пользователя
+export const deleteAllUserRooms = async () => {
+  try {
+    return await apiClient.delete("/Rooms/DeleteAllRooms"); // DELETE: api/Rooms/DeleteAllRooms
+  } catch (error) {
+    console.error("Ошибка при удалении всех комнат:", error);
+    throw error;
+  }
+};

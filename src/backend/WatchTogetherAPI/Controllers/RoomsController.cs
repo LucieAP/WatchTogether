@@ -722,6 +722,147 @@ namespace WatchTogetherAPI.Controllers
             }
         }
 
+        // GET: api/Rooms/MyRooms
+        // Получаем комнаты, созданные пользователем
+        [HttpGet("MyRooms")]
+        public async Task<ActionResult<IEnumerable<Room>>> GetUserRooms(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
+                
+                // Получаем комнаты, созданные пользователем
+                var userRooms = await _context.Rooms
+                    .Where(r => r.CreatedByUserId == currentUser.UserId)
+                    .Include(r => r.Participants)
+                        .ThenInclude(p => p.User)
+                    .Include(r => r.VideoState)
+                        .ThenInclude(vs => vs.CurrentVideo)
+                    .Select(r => new 
+                    {
+                        r.RoomId,
+                        r.RoomName,
+                        r.Description,
+                        r.Status,
+                        ParticipantsCount = r.Participants.Count,
+                        CurrentVideoTitle = r.VideoState.CurrentVideo != null ? r.VideoState.CurrentVideo.Title : null,
+                        r.CreatedAt
+                    })
+                    .ToListAsync(cancellationToken);
+                    
+                return Ok(userRooms);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на получение комнат пользователя был отменен");
+                return StatusCode(499, "Запрос был отменен");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении комнат пользователя");
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
+        }
+
+        // DELETE: api/Rooms/{roomId}
+        // Удаляет комнату
+        [HttpDelete("{roomId:guid}")]
+        public async Task<IActionResult> DeleteRoom(Guid roomId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var room = await _context.Rooms
+                    .Include(r => r.Participants)
+                    .Include(r => r.VideoState)
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
+                
+                if (room == null)
+                {
+                    return NotFound(new { Message = "Комната не найдена" });
+                }
+
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
+                
+                // Проверяем, является ли пользователь создателем комнаты
+                if (room.CreatedByUserId != currentUser.UserId)
+                {
+                    return StatusCode(403, new { Message = "Вы не являетесь создателем комнаты и не можете её удалить" });
+                }
+                
+                // Удаляем всех участников комнаты
+                _context.Participants.RemoveRange(room.Participants);
+                
+                // Удаляем комнату
+                _context.Rooms.Remove(room);
+                
+                await _context.SaveChangesAsync(cancellationToken);
+                
+                // Уведомляем всех участников о закрытии комнаты
+                await _hubContext.Clients.Group(roomId.ToString())
+                    .SendAsync("RoomClosed", new { RoomId = roomId }, cancellationToken);
+                
+                return Ok(new { Message = "Комната успешно удалена" });
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на удаление комнаты {RoomId} был отменен", roomId);
+                return StatusCode(499, "Запрос был отменен");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при удалении комнаты {RoomId}", roomId);
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
+        }
+        
+        // DELETE: api/Rooms/DeleteAll
+        // Удаляет все комнаты пользователя
+        [HttpDelete("DeleteAllRooms")]
+        public async Task<IActionResult> DeleteAllRooms(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
+                
+                // Получаем все комнаты, созданные пользователем
+                var userRooms = await _context.Rooms
+                    .Include(r => r.Participants)
+                    .Include(r => r.VideoState)
+                    .Where(r => r.CreatedByUserId == currentUser.UserId)
+                    .ToListAsync(cancellationToken);
+                
+                if (userRooms.Count == 0)
+                {
+                    return Ok(new { Message = "У вас нет комнат для удаления" });
+                }
+                
+                // Для каждой комнаты уведомляем всех участников о закрытии
+                foreach (var room in userRooms)
+                {
+                    // Удаляем всех участников комнаты
+                    _context.Participants.RemoveRange(room.Participants);
+                }
+                
+                // Удаляем все комнаты
+                _context.Rooms.RemoveRange(userRooms);
+                
+                // Сохраняем изменения в базе данных
+                await _context.SaveChangesAsync(cancellationToken);
+                
+                return Ok(new { Message = $"Все комнаты успешно удалены. Общее количество: {userRooms.Count}" });
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на удаление всех комнат пользователя был отменен");
+                return StatusCode(499, "Запрос был отменен");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при удалении всех комнат пользователя");
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
+        }
+
         private async Task<User> GetOrCreateUserAsync(CancellationToken cancellationToken = default)
         {
             // Пробуем получить UserId из Cookie
