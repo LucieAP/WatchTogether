@@ -25,6 +25,16 @@ export const createRoom = async (roomData) => {
     return response;
   } catch (error) {
     console.error("Error creating room:", error);
+    // Проверяем статус ошибки и передаем данные от сервера
+    if (error.response) {
+      // Сервер ответил с ошибкой
+      const errorMessage = error.response.data && (error.response.data.message || error.response.data.Message)
+        ? error.response.data.message || error.response.data.Message
+        : "Ошибка при создании комнаты";
+      const enhancedError = new Error(errorMessage);
+      enhancedError.response = error.response;
+      throw enhancedError;
+    }
     throw error;
   }
 };

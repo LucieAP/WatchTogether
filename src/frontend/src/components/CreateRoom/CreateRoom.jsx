@@ -57,7 +57,12 @@ export default function CreateRoom() {
       // Переходим на страницу комнаты
       navigate(`/room/${createdRoom.roomId}`);
     } catch (error) {
-      setError(error.message || "Ошибка при создании комнаты");
+      // Проверяем, содержит ли ошибка информацию о лимите комнат
+      if (error.response && error.response.data && (error.response.data.message || error.response.data.Message)) {
+        setError(error.response.data.message || error.response.data.Message);
+      } else {
+        setError(error.message || "Ошибка при создании комнаты");
+      }
       console.error("Ошибка создания комнаты:", error);
     } finally {
       setIsSubmitting(false);
@@ -71,6 +76,10 @@ export default function CreateRoom() {
         {!isLoggedIn && (
           <div className="alert alert-info mt-3">
             Вы создаете комнату как гость. Для сохранения и дополнительных возможностей рекомендуется <a href="/auth">авторизоваться</a>.
+            <ul className="mt-2 mb-0">
+              <li>В гостевом режиме можно создать только одну комнату</li>
+              <li>Время жизни гостевой комнаты - 3 часа</li>
+            </ul>
           </div>
         )}
         <div className="card mt-4">

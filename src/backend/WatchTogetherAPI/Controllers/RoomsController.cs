@@ -101,8 +101,17 @@ namespace WatchTogetherAPI.Controllers
                 // Если пользователь гостевой и запрос помечен как гостевой, делаем дополнительную обработку
                 if (request.IsGuest && currentUser.Status == UserStatus.UnAuthed)
                 {
-                    // Здесь можно добавить дополнительную обработку для гостевых комнат
-                    // Например, ограничить функционал или установить особые права
+                    // Проверяем, есть ли уже созданные комнаты у этого гостя
+                    var existingGuestRooms = await _context.Rooms
+                        .Where(r => r.CreatedByUserId == currentUser.UserId)
+                        .ToListAsync(cancellationToken);
+
+                    // Если у гостя уже есть хотя бы одна комната, запрещаем создание новой
+                    if (existingGuestRooms.Any())
+                    {
+                        return BadRequest(new { Message = "В гостевом режиме можно создать только одну комнату. Чтобы создать больше комнат, пожалуйста, авторизуйтесь." });
+                    }
+
                     _logger.LogInformation("Создание гостевой комнаты пользователем {UserId}", currentUser.UserId);
                 }
 
@@ -114,7 +123,10 @@ namespace WatchTogetherAPI.Controllers
                     Status = request.Status,
                     CreatedByUserId = currentUser.UserId,
                     CreatedAt = DateTime.UtcNow,
-                    ExpiresAt = DateTime.UtcNow.AddHours(24),
+                    // Для гостей устанавливаем меньшее время жизни комнаты
+                    ExpiresAt = currentUser.Status == UserStatus.UnAuthed 
+                        ? DateTime.UtcNow.AddHours(3)  // 3 часа для гостевых комнат
+                        : DateTime.UtcNow.AddHours(24), // 24 часа для авторизованных пользователей
                     InvitationLink = "",
                     CreatedByUser = currentUser
                 };

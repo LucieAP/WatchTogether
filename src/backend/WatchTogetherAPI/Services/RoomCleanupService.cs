@@ -6,66 +6,96 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using WatchTogetherAPI.Data.AppDbContext;
+using WatchTogetherAPI.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace WatchTogetherAPI.Services
 {
     public class RoomCleanupService : BackgroundService
     {
-        private readonly IServiceProvider _services;
+        private readonly IServiceScopeFactory _scopeFactory; // для создания областей в которых будет работать сервис
         private readonly ILogger<RoomCleanupService> _logger;
+        private readonly IHubContext<MediaHub> _hubContext;
+        private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(10); // Проверка каждые 10 минут
 
         public RoomCleanupService(
-            IServiceProvider services,
-            ILogger<RoomCleanupService> logger)
+            IServiceScopeFactory scopeFactory,
+            ILogger<RoomCleanupService> logger,
+            IHubContext<MediaHub> hubContext)
         {
-            _services = services;
+            _scopeFactory = scopeFactory;
             _logger = logger;
+            _hubContext = hubContext;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Room Cleanup Service is starting.");
+            _logger.LogInformation("Служба очистки комнат запущена");
 
-            try
+            while (!cancellationToken.IsCancellationRequested)
             {
-                while (!stoppingToken.IsCancellationRequested)
+                try
                 {
-                    try
-                    {
-                        using var scope = _services.CreateScope();
-                        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    await CleanupExpiredRoomsAsync(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ошибка при очистке просроченных комнат");
+                }
 
-                        var now = DateTime.UtcNow;
-                        var expiredRooms = await context.Rooms
-                            .Where(r => r.ExpiresAt < now)
-                            .ToListAsync(cancellationToken: stoppingToken); // Добавляем токен
+                await Task.Delay(_checkInterval, cancellationToken);
+            }
+        }
 
-                        if (expiredRooms.Count > 0)
-                        {
-                            _logger.LogInformation($"Deleting {expiredRooms.Count} expired rooms...");
-                            context.Rooms.RemoveRange(expiredRooms);
-                            await context.SaveChangesAsync(stoppingToken); // Передаем токен
-                            _logger.LogInformation($"Deleted {expiredRooms.Count} rooms");
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // Игнорируем, если это запрошенная отмена
-                        _logger.LogInformation("Cleanup operation was canceled");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error cleaning rooms");
-                    }
+        private async Task CleanupExpiredRoomsAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Начало проверки просроченных комнат");
 
-                    await Task.Delay(TimeSpan.FromMinutes(60), stoppingToken);      // Задержка между проверками 60 минут
+            using var scope = _scopeFactory.CreateScope();  // создаёт область в которой будет работать сервис
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>(); // получаем контекст базы данных
+
+            // Получаем текущее время в UTC
+            var utcNow = DateTime.UtcNow;
+
+            // Находим все просроченные комнаты
+            var expiredRooms = await dbContext.Rooms
+                .Include(r => r.Participants)
+                .Where(r => r.ExpiresAt < utcNow)
+                .ToListAsync(cancellationToken);
+
+            if (!expiredRooms.Any())
+            {
+                _logger.LogInformation("Просроченных комнат не найдено");
+                return;
+            }
+
+            _logger.LogInformation("Найдено {Count} просроченных комнат", expiredRooms.Count);
+
+            foreach (var room in expiredRooms)
+            {
+                try
+                {
+                    // // Уведомляем всех участников о закрытии комнаты
+                    // await _hubContext.Clients.Group(room.RoomId.ToString())
+                    //     .SendAsync("RoomClosed", "Комната была автоматически закрыта по истечении срока действия", cancellationToken);
+
+                    // Удаляем всех участников комнаты
+                    dbContext.Participants.RemoveRange(room.Participants);
+                    
+                    // Удаляем комнату
+                    dbContext.Rooms.Remove(room);
+                    
+                    _logger.LogInformation("Комната {RoomId} удалена по истечении срока действия", room.RoomId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ошибка при удалении просроченной комнаты {RoomId}", room.RoomId);
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogCritical(ex, "Background service crashed");
-                throw;
-            }
+
+            // Сохраняем изменения в базе данных
+            await dbContext.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Завершено удаление {Count} просроченных комнат", expiredRooms.Count);
         }
     }
 }
