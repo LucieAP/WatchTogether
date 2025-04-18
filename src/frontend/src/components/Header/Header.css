@@ -13,11 +13,6 @@
   cursor: pointer;
 }
 
-.header .room-info {
-  display: flex;
-  align-items: center;
-}
-
 .header h1 {
   margin-right: 15px;
   font-size: 1.2em;

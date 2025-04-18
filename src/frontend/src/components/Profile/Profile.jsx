@@ -119,13 +119,13 @@ const Profile = () => {
     <div className="profile-container">
       {/* Модальное окно подтверждения */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="profile-modal-overlay">
+          <div className="profile-modal-content">
             <h3>{modalData.title}</h3>
             <p>{modalData.message}</p>
-            <div className="modal-actions">
+            <div className="profile-modal-actions">
               <button 
-                className="modal-btn confirm-btn" 
+                className="profile-modal-btn profile-modal-confirm-btn" 
                 onClick={() => {
                   modalData.onConfirm();
                   setShowModal(false);
@@ -134,7 +134,7 @@ const Profile = () => {
                 Подтвердить
               </button>
               <button 
-                className="modal-btn cancel-btn" 
+                className="profile-modal-btn profile-modal-cancel-btn" 
                 onClick={() => setShowModal(false)}
               >
                 Отмена
@@ -168,7 +168,7 @@ const Profile = () => {
 
       {/* Компонент для отображения комнат пользователя */}
       <div className="user-rooms-card">
-        <div className="rooms-header">
+        <div className="rooms-profile-header">
           <h3>Мои комнаты</h3>
           {userRooms.length > 0 && (
             <button 
@@ -184,23 +184,23 @@ const Profile = () => {
         {userRooms.length === 0 ? (
           <p className="no-rooms-message">У вас пока нет созданных комнат</p>
         ) : (
-          <div className="rooms-list">
+          <div className="rooms-profile-list">
             {userRooms.map(room => (
-              <div key={room.roomId} className="room-item">
-                <div className="room-info">
-                  <div className="room-name">{room.roomName}</div>
-                  <div className="room-description">{room.description}</div>
-                  <div className="room-meta">
-                    <span className="participants-count">Участников: {room.participantsCount}</span>
+              <div key={room.roomId} className="room-profile-item">
+                <div className="room-profile-info">
+                  <div className="room-profile-name">{room.roomName}</div>
+                  <div className="room-profile-description">{room.description}</div>
+                  <div className="room-profile-meta">
+                    <span className="room-profile-participants-count">Участников: {room.participantsCount}</span>
                     {room.currentVideoTitle && (
-                      <span className="current-video">Видео: {room.currentVideoTitle}</span>
+                      <span className="room-profile-current-video">Видео: {room.currentVideoTitle}</span>
                     )}
                   </div>
                 </div>
-                <div className="room-actions">
-                  <a href={`/room/${room.roomId}`} className="enter-room-btn">Войти</a>
+                <div className="room-profile-actions">
+                  <a href={`/room/${room.roomId}`} className="room-profile-enter-room-btn">Войти</a>
                   <button 
-                    className="delete-room-btn" 
+                    className="room-profile-delete-room-btn" 
                     onClick={() => handleDeleteRoom(room.roomId)} 
                     disabled={deleteStatus.loading}
                   >
@@ -212,7 +212,7 @@ const Profile = () => {
           </div>
         )}
         {deleteStatus.error && (
-          <div className="delete-error-message">
+          <div className="room-profile-delete-error-message">
             Ошибка при удалении: {deleteStatus.error}
           </div>
         )}
