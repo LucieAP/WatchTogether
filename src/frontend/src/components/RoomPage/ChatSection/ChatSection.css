@@ -1,0 +1,219 @@
+/* Чат */
+.chat-section {
+  flex: 2;
+  padding: 20px;
+  border-left: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Контейнер компонента */
+.leave-room-container {
+  display: flex;
+  flex-direction: column;
+  /* align-items: center;
+  padding: 2rem; */
+}
+
+.chat-toolbar {
+  display: flex;
+  /* margin-bottom: 10px; */
+}
+
+.messages-container {
+  height: calc(100vh - 57px);
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+.chat-form {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input {
+  flex-grow: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.invite-btn {
+  font-size: 18px;
+  cursor: pointer;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+}
+
+.invite-btn:hover {
+  background-color: #45a049;
+}
+
+/* Текущие участники комнаты */
+
+/* Стили для заголовка чата */
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  padding: 10px 0;
+  flex-direction: column;
+  border-bottom: 1px solid #eee;
+}
+
+/* Стили для контейнера участников */
+.participants-container {
+  position: relative;
+  flex-grow: 1;
+  margin-left: 0;
+  width: 100%;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  /* overflow: hidden; */
+  overflow: visible; /* Меняем на visible, чтобы выпадающий список мог выходить за пределы */
+}
+
+/* Заголовок списка участников */
+.participants-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #e9ecef;
+  font-size: 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.participants-header:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Стрелка для сворачивания/разворачивания списка */
+.toggle-participants {
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+/* Список участников */
+.participants-list {
+  position: absolute; /* Абсолютное позиционирование */
+  top: 100%; /* Размещаем под заголовком */
+  left: 0;
+  right: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+
+  background-color: #f8f9fa; /* Добавляем фоновый цвет */
+  border-radius: 0 0 6px 6px; /* Закругляем нижние углы */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Добавляем тень */
+  z-index: 1000; /* Высокий z-index, чтобы быть поверх других элементов */
+}
+
+/* Элемент списка участников */
+.participants-list li {
+  padding: 6px 12px;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 0.9em;
+}
+
+.participants-list li:last-child {
+  border-bottom: none;
+}
+
+/* Стиль для текущего пользователя */
+.participants-list .current-user {
+  font-weight: bold;
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* Кнопка "Покинуть комнату" */
+.leave-button,
+.close-video-button {
+  background-color: #ef4444;
+  color: white;
+  font-size: 18px;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.close-video-button {
+  width: 100%;
+}
+
+.leave-button:hover,
+.close-video-button:hover {
+  background-color: #dc2626;
+}
+
+/* Стиль для контейнера сообщения */
+.message {
+  padding: 2px 6px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+/* Эффект при наведении на сообщение */
+.message:hover {
+  background-color: rgba(0, 0, 0, 0.05); /* Светло-серый цвет при наведении */
+}
+
+/* Заголовок сообщения с именем пользователя и временем */
+.message-header {
+  display: flex;
+  justify-content: space-between; /* Распределяет элементы по краям */
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+/* Стиль для имени пользователя */
+.message-username {
+  flex-grow: 0; /* Не растягивается */
+}
+
+/* Стиль для временной метки */
+.message-timestamp {
+  color: #888;
+  font-size: 0.8em;
+  margin-left: auto; /* Прижимает метку времени к правому краю */
+}
+
+/* Стиль для содержимого сообщения */
+.message-content {
+  word-break: break-word; /* Предотвращает выход длинных слов за границы */
+}
+
+/* Дополнительные стили для системных и собственных сообщений */
+.system-message {
+  background-color: rgba(0, 0, 0, 0.03);
+  font-style: italic;
+}
+
+.own-message {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* При наведении на системные и собственные сообщения */
+.system-message:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.own-message:hover {
+  background-color: rgba(0, 123, 255, 0.15);
+}
