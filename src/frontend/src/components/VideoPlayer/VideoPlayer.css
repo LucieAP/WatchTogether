@@ -47,6 +47,12 @@
   vertical-align: top;
 }
 
+/* Плеер */
+.player-wrapper {
+  position: relative;
+  padding-top: 56.25%; /* 16:9 соотношение */
+}
+
 h1 {
   font-size: clamp(1.5rem, 3vw, 2rem);
   margin-bottom: 1rem;

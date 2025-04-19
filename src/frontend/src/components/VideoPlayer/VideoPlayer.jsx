@@ -12,7 +12,7 @@ import Duration from "./Duration";
 
 // Оборачиваем компонент в forwardRef, что позволяет родительскому компоненту получить доступ к DOM-элементу или методам компонента.
 
-const VideoPlayer = forwardRef(
+export const VideoPlayer = forwardRef(
   (
     {
       roomId,

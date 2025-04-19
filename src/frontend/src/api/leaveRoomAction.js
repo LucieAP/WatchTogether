@@ -114,7 +114,7 @@ export const setupBrowserCloseHandler = (roomId, connectionRef) => {
 //   return leaveRoom(roomId, connectionRef, navigate, "Timeout");
 // };
 
-// // Обработчик для выхода из-за проблем с сетью
-// export const handleNetworkDisconnect = (roomId, connectionRef) => {
-//   return leaveRoom(roomId, connectionRef, null, "NetworkDisconnect");
-// };
+// Обработчик для выхода из-за проблем с сетью
+export const handleNetworkDisconnect = (roomId, connectionRef) => {
+  return leaveRoom(roomId, connectionRef, null, "NetworkDisconnect");
+};
