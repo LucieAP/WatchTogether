@@ -267,5 +267,10 @@ export const useVideoSync = (roomId, roomData, setRoomData, playerRef) => {
     });
   };
 
-  return { handleTimeUpdate, handlePlayPause, handleVideoStateUpdated };
+  return {
+    handleTimeUpdate,
+    handlePlayPause,
+    handleVideoStateUpdated,
+    playPauseDebounceTimeoutRef,
+  };
 };

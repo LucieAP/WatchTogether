@@ -3,9 +3,9 @@ import { useAuth } from "../../context/AuthContext";
 import "./Header.css";
 
 // Базовый компонент заголовка, содержащий общую логику
-export default function BaseHeader({ 
+export default function BaseHeader({
   children, // Дополнительный контент, который будет отображаться между лого и блоком авторизации
-  logoText = "WatchTogether" // Текст логотипа по умолчанию
+  logoText = "WatchTogether", // Текст логотипа по умолчанию
 }) {
   const navigate = useNavigate(); // Возвращает объект navigate, который используется для перенаправления на другие страницы
   const { isLoggedIn, username, logout } = useAuth();
@@ -58,4 +58,4 @@ export default function BaseHeader({
       </div>
     </header>
   );
-} 
+}

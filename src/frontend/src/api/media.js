@@ -59,6 +59,61 @@ export const createConnection = (
     onParticipantsUpdated();
   });
 
+  // Обработчик удаления участника
+  connection.on("ParticipantRemoved", (removedUserId, removedUserName) => {
+    console.log(
+      "Получено событие ParticipantRemoved для пользователя:",
+      removedUserId
+    );
+
+    // Проверяем, является ли текущий пользователь удаленным
+    if (removedUserId === userId) {
+      console.log(
+        "Текущий пользователь был удален из комнаты, перенаправление на главную страницу"
+      );
+
+      // Отправляем системное сообщение
+      onMessageReceived({
+        userId: null,
+        userName: "System",
+        message: "Вы были удалены из комнаты администратором",
+        isSystem: true,
+        timestamp: new Date(),
+      });
+
+      // Устанавливаем флаг в sessionStorage, чтобы предотвратить возврат в комнату
+      sessionStorage.setItem("userRemoved", "true");
+      sessionStorage.setItem("removedFromRoom", roomId);
+
+      // Перенаправляем на главную страницу
+      // Используем replace вместо href, чтобы предотвратить возможность вернуться назад
+      window.location.replace("/");
+    } else {
+      // Для всех остальных участников отображаем сообщение о том, что пользователь был исключен
+      onMessageReceived({
+        userId: null,
+        userName: "System",
+        message: `Пользователь ${removedUserName} был исключен из комнаты администратором`,
+        isSystem: true,
+        timestamp: new Date(),
+      });
+    }
+  });
+
+  // Обработчик выхода пользователя из комнаты
+  connection.on("UserLeft", (leftUserId, leftUserName) => {
+    console.log("Получено событие UserLeft для пользователя:", leftUserId);
+
+    // Отображаем системное сообщение о выходе пользователя
+    onMessageReceived({
+      userId: null,
+      userName: "System",
+      message: `Пользователь ${leftUserName} покинул комнату`,
+      isSystem: true,
+      timestamp: new Date(),
+    });
+  });
+
   // Обработчик получения начального состояния видео
   connection.on("InitialVideoState", (videoState) => {
     onVideoStateUpdated(videoState);

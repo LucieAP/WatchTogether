@@ -1,8 +1,11 @@
 import { InviteModal } from "../Modals/InviteModal";
 import { LeaveRoomModal } from "../Modals/LeaveRoomModal";
 import { formatMessageTime } from "../utils/chatHelpers";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./ChatSection.css";
+import trashIcon from "../../../assets/trash-icon.png";
+import { toast } from "react-hot-toast";
+import { removeParticipant } from "../../../api/participants";
 export const ChatSection = ({
   roomId,
   roomData,
@@ -13,7 +16,6 @@ export const ChatSection = ({
   isInviteModalOpen,
   setIsInviteModalOpen,
   mouseDownOnContentRef,
-  messagesEndRef,
   handleManualReconnect,
   handleCloseModal,
   handleManualLeave,
@@ -25,6 +27,8 @@ export const ChatSection = ({
   const [isLeaveRoomModalOpen, setIsLeaveRoomModalOpen] = useState(false);
   const openLeaveRoomModal = () => setIsLeaveRoomModalOpen(true);
   const closeLeaveRoomModal = () => setIsLeaveRoomModalOpen(false);
+
+  const messagesEndRef = useRef(null); // Ref для автопрокрутки чата
 
   // Обработчик копирования ссылки
   const handleCopy = async () => {
@@ -71,6 +75,30 @@ export const ChatSection = ({
     }
   }, [messages]);
 
+  const handleRemoveParticipant = async (userId) => {
+    try {
+      const response = await removeParticipant(roomId, userId);
+      console.log("handleRemoveParticipant response: ", response);
+
+      // Axios возвращает данные напрямую в response.data
+      toast.success(response.message || "Участник успешно удален из комнаты");
+
+      // Если удаляемый пользователь - текущий пользователь, перенаправляем на главную страницу
+      console.log("Проверка перенаправления:", {
+        deletedUserId: userId,
+        currentUserId: userInfo?.userId,
+        match: userId === userInfo?.userId,
+      });
+    } catch (error) {
+      console.error("Ошибка при удалении участника:", error);
+      // Получаем сообщение об ошибке из ответа axios
+      const errorMessage =
+        error.response?.data?.message ||
+        "Не удалось удалить участника из комнаты";
+      toast.error(errorMessage);
+    }
+  };
+
   return (
     <section className="chat-section">
       <div className="chat-toolbar">
@@ -107,6 +135,30 @@ export const ChatSection = ({
                 >
                   {participant.username}
                   {participant.userId === userInfo?.userId && " (вы)"}
+
+                  {console.log(
+                    "id текущего пользователя: ",
+                    userInfo?.userId,
+                    "\nusername: ",
+                    userInfo?.username
+                  )}
+                  {/* Кнопка удаления участника (видна только создателю комнаты и не для себя) */}
+                  {participant.userId !== userInfo?.userId &&
+                    userInfo?.userId === roomData?.createdByUserId && (
+                      <button
+                        className="remove-participant-button"
+                        onClick={() =>
+                          handleRemoveParticipant(participant.userId)
+                        }
+                      >
+                        <img
+                          src={trashIcon}
+                          alt="Удалить"
+                          width="16"
+                          height="16"
+                        />
+                      </button>
+                    )}
                 </li>
               ))}
             </ul>

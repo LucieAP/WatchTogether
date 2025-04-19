@@ -29,10 +29,7 @@ export default function RoomPage({
   const mouseDownOnContentRef = useRef(false);
 
   const { roomId } = useParams();
-  const messagesEndRef = useRef(null); // Ref для автопрокрутки чата
   const playerRef = useRef(null); // Ref для получения методов плеер проброшенного из VideoPlayer.jsx
-
-  const playPauseDebounceTimeoutRef = useRef(null);
 
   const navigate = useNavigate();
   const { isLoggedIn, isGuest } = useAuth();
@@ -68,15 +65,6 @@ export default function RoomPage({
       roomData.currentVideo
     );
   }, [roomData.currentVideoId]);
-
-  /* Очистка таймаутов при размонтировании компонента */
-  useEffect(() => {
-    return () => {
-      if (playPauseDebounceTimeoutRef.current) {
-        clearTimeout(playPauseDebounceTimeoutRef.current);
-      }
-    };
-  }, []);
 
   /* Синхронизируем только при изменении initialRoomData */
   useEffect(() => {
@@ -123,8 +111,12 @@ export default function RoomPage({
   };
 
   // Используем хук синхронизации видео
-  const { handleTimeUpdate, handlePlayPause, handleVideoStateUpdated } =
-    useVideoSync(roomId, roomData, setRoomData, playerRef);
+  const {
+    handleTimeUpdate,
+    handlePlayPause,
+    handleVideoStateUpdated,
+    playPauseDebounceTimeoutRef,
+  } = useVideoSync(roomId, roomData, setRoomData, playerRef);
 
   // Хук для подключения к SignalR
   const { userInfo, connectionStatus, connectionRef, handleManualReconnect } =
@@ -137,6 +129,15 @@ export default function RoomPage({
       handleConnectionStateChanged,
       setupBrowserCloseHandler
     );
+
+  /* Очистка таймаутов при размонтировании компонента */
+  useEffect(() => {
+    return () => {
+      if (playPauseDebounceTimeoutRef.current) {
+        clearTimeout(playPauseDebounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <main className="room-container">
@@ -168,7 +169,6 @@ export default function RoomPage({
         isInviteModalOpen={isInviteModalOpen}
         setIsInviteModalOpen={setIsInviteModalOpen}
         mouseDownOnContentRef={mouseDownOnContentRef}
-        messagesEndRef={messagesEndRef}
         handleManualReconnect={handleManualReconnect}
         handleCloseModal={handleCloseModal}
         handleManualLeave={handleManualLeave}

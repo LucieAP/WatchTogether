@@ -122,6 +122,18 @@
   z-index: 1000; /* Высокий z-index, чтобы быть поверх других элементов */
 }
 
+/* Кнопка удаления участника */
+.remove-participant-button {
+  position: absolute; /* Абсолютное позиционирование */
+  margin-left: auto; /* Отодвигает кнопку вправо */
+  float: right; /* Альтернативный способ выравнивания вправо */
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  right: 10px; /* Отступ справа */
+  user-select: none;
+}
+
 /* Элемент списка участников */
 .participants-list li {
   padding: 6px 12px;

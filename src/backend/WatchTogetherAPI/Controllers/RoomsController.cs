@@ -250,6 +250,7 @@ namespace WatchTogetherAPI.Controllers
                         room.RoomName,
                         room.Description,
                         room.InvitationLink,
+                        room.CreatedByUserId,
                         room.VideoState.CurrentVideo,
                         room.VideoState.IsPaused,
                         room.VideoState.CurrentTime,
@@ -478,12 +479,8 @@ namespace WatchTogetherAPI.Controllers
                     //     PreviousOwnerId = participant.UserId
                     // });
                     
-                    // await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("UserLeft", new 
-                    // {
-                    //     UserId = participant.UserId,
-                    //     Username = participant.User?.Username ?? "Unknown",
-                    //     WasOwner = true
-                    // });
+                    // Уведомляем всех участников о выходе пользователя
+                    await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("UserLeft", participant.UserId.ToString(), participant.User?.Username.ToString() ?? "Unknown", cancellationToken);
                     
                     return Ok(new { 
                         Message = "Вы вышли из комнаты. Права владельца переданы другому участнику.",
@@ -504,14 +501,8 @@ namespace WatchTogetherAPI.Controllers
                 await _context.SaveChangesAsync(cancellationToken);
                 await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated", cancellationToken);
 
-
-                // Уведомляем всех об уходе пользователя
-                // await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("UserLeft", new 
-                // {
-                //     UserId = participant.UserId,
-                //     Username = participant.User?.Username ?? "Unknown",
-                //     WasOwner = false
-                // });
+                // Уведомляем всех участников о выходе пользователя
+                await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("UserLeft", participant.UserId.ToString(), participant.User?.Username.ToString() ?? "Unknown", cancellationToken);
                 
                 return Ok(new { Message = "Вы успешно вышли из комнаты." });
             }
@@ -527,9 +518,12 @@ namespace WatchTogetherAPI.Controllers
                 // Обычный участник выходит
                 _context.Participants.Remove(participant);
                 await _context.SaveChangesAsync(cancellationToken);
+                
                 await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated", cancellationToken);
 
-                // Уведомляем всех об уходе пользователя
+                // Уведомляем всех участников о выходе пользователя
+                await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("UserLeft", participant.UserId.ToString(), participant.User?.Username.ToString() ?? "Unknown", cancellationToken);
+
                 return Ok(new { Message = "Вы успешно вышли из комнаты." });
             }
         }
@@ -871,6 +865,82 @@ namespace WatchTogetherAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при удалении всех комнат пользователя");
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
+        }
+
+        // DELETE: api/Rooms/{roomId}/participants/{userId}
+        // Удаляет участника из комнаты (только для создателя комнаты)
+        [HttpDelete("{roomId:guid}/participants/{userId:guid}")]
+        public async Task<IActionResult> RemoveParticipant(Guid roomId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                // Получаем текущего пользователя
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
+                
+                // Получаем комнату со всеми участниками
+                var room = await _context.Rooms
+                    .Include(r => r.Participants)
+                        .ThenInclude(p => p.User)
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
+                
+                if (room == null)
+                {
+                    return NotFound(new { Message = "Комната не найдена" });
+                }
+                
+                // Проверяем, является ли текущий пользователь создателем комнаты
+                if (room.CreatedByUserId != currentUser.UserId)
+                {
+                    return StatusCode(403, new { Message = "Только создатель комнаты может удалять участников" });
+                }
+
+                // Проверяем, не пытается ли создатель удалить сам себя
+                if (userId == currentUser.UserId)
+                {
+                    return BadRequest(new { Message = "Вы не можете удалить себя из комнаты. Используйте выход из комнаты вместо этого." });
+                }
+                
+                // Ищем участника, которого нужно удалить
+                var participantToRemove = room.Participants.FirstOrDefault(p => p.UserId == userId);
+                
+                if (participantToRemove == null)
+                {
+                    return NotFound(new { Message = "Указанный пользователь не найден в комнате" });
+                }
+
+                // Сохраняем имя участника для уведомления
+                var username = participantToRemove.User?.Username ?? "Неизвестный пользователь";
+                
+                // Удаляем участника
+                _context.Participants.Remove(participantToRemove);
+                await _context.SaveChangesAsync(cancellationToken);
+                
+                // Уведомляем всех участников через SignalR
+                await _hubContext.Clients.Group(roomId.ToString())
+                    .SendAsync("ParticipantsUpdated", cancellationToken);
+                
+                // Добавляем новое событие ParticipantRemoved для всех клиентов в группе
+                await _hubContext.Clients.Group(roomId.ToString())
+                    .SendAsync("ParticipantRemoved", userId.ToString(), username.ToString(), cancellationToken);
+                
+                // Уведомляем всех участников о выходе пользователя
+                await _hubContext.Clients.Group(roomId.ToString()).SendAsync("UserLeft", userId.ToString(), username.ToString(), cancellationToken);
+
+                return Ok(new { 
+                    Message = $"Участник {username} успешно удален из комнаты",
+                    RemovedUserId = userId
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на удаление участника из комнаты {RoomId} был отменен", roomId);
+                return StatusCode(499, "Запрос был отменен");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при удалении участника из комнаты {RoomId}", roomId);
                 return StatusCode(500, "Внутренняя ошибка сервера");
             }
         }
