@@ -191,6 +191,25 @@ export const createConnection = (
     });
   });
 
+  // Обработчик события закрытия комнаты
+  connection.on("RoomClosed", (message) => {
+    console.log("Комната закрыта:", message);
+
+    // Отображаем системное сообщение о закрытии комнаты
+    onMessageReceived({
+      userId: null,
+      userName: "System",
+      message: message,
+      isSystem: true,
+      timestamp: new Date(),
+    });
+
+    // Перенаправляем пользователя на главную страницу
+    setTimeout(() => {
+      window.location.replace("/");
+    }, 3000); // Даем 3 секунды, чтобы пользователь увидел сообщение
+  });
+
   const start = async () => {
     try {
       // Проверяем состояние соединения перед запуском

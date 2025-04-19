@@ -75,9 +75,9 @@ namespace WatchTogetherAPI.Services
             {
                 try
                 {
-                    // // Уведомляем всех участников о закрытии комнаты
-                    // await _hubContext.Clients.Group(room.RoomId.ToString())
-                    //     .SendAsync("RoomClosed", "Комната была автоматически закрыта по истечении срока действия", cancellationToken);
+                    // Уведомляем всех участников о закрытии комнаты
+                    await _hubContext.Clients.Group(room.RoomId.ToString())
+                        .SendAsync("RoomClosed", "Комната была автоматически закрыта по истечении срока действия", cancellationToken);
 
                     // Удаляем всех участников комнаты
                     dbContext.Participants.RemoveRange(room.Participants);
