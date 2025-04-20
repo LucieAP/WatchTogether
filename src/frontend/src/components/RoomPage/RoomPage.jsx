@@ -95,7 +95,8 @@ export default function RoomPage({
     onSettingsClose
   );
 
-  const { messages, handleNewMessage, handleChatHistory } = useChatHandlers();
+  const { messages, setMessages, handleNewMessage, handleChatHistory } =
+    useChatHandlers();
 
   const { handleConnectionStateChanged, handleParticipantsUpdated } =
     useConnectionHandlers(roomId, setRoomData, handleNetworkDisconnect);
@@ -164,6 +165,7 @@ export default function RoomPage({
         roomData={roomData}
         userInfo={userInfo}
         messages={messages}
+        setMessages={setMessages}
         connectionRef={connectionRef}
         connectionStatus={connectionStatus}
         isInviteModalOpen={isInviteModalOpen}

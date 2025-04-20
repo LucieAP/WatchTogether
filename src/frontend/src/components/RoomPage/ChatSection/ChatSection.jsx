@@ -6,11 +6,14 @@ import "./ChatSection.css";
 import trashIcon from "../../../assets/trash-icon.png";
 import { toast } from "react-hot-toast";
 import { removeParticipant } from "../../../api/participants";
+import EmojiPickerButton from "./EmojiPicker";
+
 export const ChatSection = ({
   roomId,
   roomData,
   userInfo,
   messages,
+  setMessages,
   connectionRef,
   connectionStatus,
   isInviteModalOpen,
@@ -29,6 +32,7 @@ export const ChatSection = ({
   const closeLeaveRoomModal = () => setIsLeaveRoomModalOpen(false);
 
   const messagesEndRef = useRef(null); // Ref для автопрокрутки чата
+  const [showPicker, setShowPicker] = useState(false);
 
   // Обработчик копирования ссылки
   const handleCopy = async () => {
@@ -96,6 +100,26 @@ export const ChatSection = ({
         error.response?.data?.message ||
         "Не удалось удалить участника из комнаты";
       toast.error(errorMessage);
+    }
+  };
+
+  // Обработчик клика по эмодзи
+  const handleEmojiClick = (emoji) => {
+    const input = document.querySelector(".chat-input");
+    if (input) {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const text = input.value;
+      const newValue = text.substring(0, start) + emoji + text.substring(end);
+      input.value = newValue;
+
+      // Устанавливаем курсор после вставленного эмодзи
+      const newCursorPos = start + emoji.length;
+      input.selectionStart = newCursorPos;
+      input.selectionEnd = newCursorPos;
+
+      // Фокусируем поле ввода
+      input.focus();
     }
   };
 
@@ -238,14 +262,27 @@ export const ChatSection = ({
       </div>
 
       <form className="chat-form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          className="chat-input"
-          name="chatInput"
-          placeholder="Введите сообщение..."
-          autoComplete="off" // отключить автозаполнение (логины, пароли и т.д.)
-        />
-        <button type="submit" className="btn">
+        <div className="input-container">
+          <input
+            type="text"
+            className="chat-input"
+            name="chatInput"
+            placeholder="Введите сообщение..."
+            autoComplete="off" // отключить автозаполнение (логины, пароли и т.д.)
+          />
+          <div className="emoji-picker-container">
+            <EmojiPickerButton
+              onEmojiClick={handleEmojiClick}
+              showPicker={showPicker}
+              setShowPicker={setShowPicker}
+            />
+          </div>
+        </div>
+        <button
+          type="submit"
+          onClick={() => setShowPicker(false)}
+          className="chat-button"
+        >
           Отправить
         </button>
       </form>
