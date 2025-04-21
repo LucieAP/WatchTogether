@@ -45,20 +45,24 @@ export default function CreateRoom() {
       const dataToSend = {
         ...formData,
         // Если пользователь гость, передаем признак гостевой комнаты
-        isGuest: !isLoggedIn
+        isGuest: !isLoggedIn,
       };
 
       const createdRoom = await createRoom(dataToSend);
       console.log("Комната создана:", createdRoom);
 
       // Устанавливаем маркер только что созданной комнаты для всех пользователей
-      sessionStorage.setItem('just_created_room', 'true');
+      sessionStorage.setItem("just_created_room", "true");
 
       // Переходим на страницу комнаты
       navigate(`/room/${createdRoom.roomId}`);
     } catch (error) {
       // Проверяем, содержит ли ошибка информацию о лимите комнат
-      if (error.response && error.response.data && (error.response.data.message || error.response.data.Message)) {
+      if (
+        error.response &&
+        error.response.data &&
+        (error.response.data.message || error.response.data.Message)
+      ) {
         setError(error.response.data.message || error.response.data.Message);
       } else {
         setError(error.message || "Ошибка при создании комнаты");
@@ -75,21 +79,25 @@ export default function CreateRoom() {
         <h2 id="createNewRoom">Создать новую комнату</h2>
         {/* Информация о режиме работы */}
         {isLoggedIn ? (
-        <div className="alert alert-info mt-3">
-          <ul className="mt-2 mb-0">
-            <li>В авторизованном режиме можно создать неограниченное количество комнат</li>
-            <li>Время жизни комнаты - 24 часа</li>
-          </ul>
-        </div>
+          <div className="alert alert-info mt-3">
+            <ul className="mt-2 mb-0">
+              <li>
+                В авторизованном режиме можно создать неограниченное количество
+                комнат
+              </li>
+              <li>Время жизни комнаты - 24 часа</li>
+            </ul>
+          </div>
         ) : (
           <div className="alert alert-info mt-3">
-            Вы создаете комнату как гость. Для сохранения и дополнительных возможностей рекомендуется <a href="/auth">авторизоваться</a>.
+            Вы создаете комнату как гость. Для сохранения и дополнительных
+            возможностей рекомендуется <a href="/auth">авторизоваться</a>.
             <ul className="mt-2 mb-0">
               <li>В гостевом режиме можно создать только одну комнату</li>
               <li>Время жизни гостевой комнаты - 3 часа</li>
             </ul>
           </div>
-        )} 
+        )}
         <div className="card mt-4">
           <div className="card-body">
             {/*Ошибки отображаются в UI*/}

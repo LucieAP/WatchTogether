@@ -6,12 +6,13 @@ import {
   useEffect,
   forwardRef,
   useImperativeHandle,
+  useCallback,
+  useMemo,
 } from "react";
 import ReactPlayer from "react-player";
 import Duration from "./Duration";
 
 // Оборачиваем компонент в forwardRef, что позволяет родительскому компоненту получить доступ к DOM-элементу или методам компонента.
-
 export const VideoPlayer = forwardRef(
   (
     {
@@ -53,6 +54,29 @@ export const VideoPlayer = forwardRef(
     const mutedRef = useRef(muted);
     const seekPreviewRef = useRef(null);
 
+    // Cостояние для временных метаданных названия видео и его продолжительности
+    const [videoMetadata, setVideoMetadata] = useState({
+      title: "",
+      duration: 0,
+    });
+
+    // Мемоизируем конфигурацию YouTube-плеера
+    const youtubeConfig = useMemo(
+      () => ({
+        youtube: {
+          playerVars: {
+            modestbranding: 1,
+            rel: 0,
+            iv_load_policy: 3,
+            cc_load_policy: 0,
+            subtitles: 0,
+            hl: "ru",
+          },
+        },
+      }),
+      []
+    );
+
     // Внутренняя ссылка на ReactPlayer
     // Экспортируем методы наружу через ref
     useImperativeHandle(ref, () => ({
@@ -74,17 +98,12 @@ export const VideoPlayer = forwardRef(
       isPlaying: () => playing,
     }));
 
-    // Cостояние для временных метаданных названия видео и его продолжительности
-    const [videoMetadata, setVideoMetadata] = useState({
-      title: "",
-      duration: 0,
-    });
-
     // Синхронизируем пропс propPlaying с локальным состоянием setPlaying
     useEffect(() => {
       setPlaying(propPlaying);
     }, [propPlaying]);
 
+    // Синхронизируем пропс currentTime с локальным состоянием currentTimeRef
     useEffect(() => {
       if (currentTime > 0 && playerRef.current) {
         playerRef.current.seekTo(currentTime, "seconds");
@@ -111,8 +130,21 @@ export const VideoPlayer = forwardRef(
 
     /* Обработчики */
 
+    // Функция для сброса таймера скрытия элементов управления
+    const resetTimeout = useCallback(() => {
+      // Очищаем предыдущий таймер, если он есть
+      if (hideControlsTimerRef.current) {
+        clearTimeout(hideControlsTimerRef.current);
+      }
+      // Запускаем таймер, по истечении которого контролы скроются (например, через 3 секунды)
+      hideControlsTimerRef.current = setTimeout(() => {
+        setControlsVisible(false);
+      }, 3000);
+    }, []);
+
+    // Мемоизируем pauseVideo и playVideo, так как они вызываются часто при воспроизведении
     // Добавим функции для паузы и воспроизведения
-    const pauseVideo = () => {
+    const pauseVideo = useCallback(() => {
       setPlaying(false);
       // Если есть обработчик onPlayPause, вызываем его
       onPlayPause && onPlayPause("pause");
@@ -121,9 +153,9 @@ export const VideoPlayer = forwardRef(
       setControlsVisible(true);
 
       console.log("VideoPlayer: pauseVideo вызван, плеер поставлен на паузу");
-    };
+    }, [onPlayPause, resetTimeout]);
 
-    const playVideo = () => {
+    const playVideo = useCallback(() => {
       setPlaying(true);
       // Если есть обработчик onPlayPause, вызываем его
       onPlayPause && onPlayPause("play");
@@ -132,7 +164,7 @@ export const VideoPlayer = forwardRef(
       resetTimeout();
 
       console.log("VideoPlayer: playVideo вызван, плеер запущен");
-    };
+    }, [onPlayPause, resetTimeout]);
 
     // Обработчик включения контролсов (значок замка)
     const handleToggleControls = () => {
@@ -209,15 +241,18 @@ export const VideoPlayer = forwardRef(
     };
 
     // Обработчик изменения значения ползунка
-    const handleSeekChange = (e) => {
-      const value = parseFloat(e.target.value); // Получаем текущее значение ползунка
-      setPlayed(value);
+    const handleSeekChange = useCallback(
+      (e) => {
+        const value = parseFloat(e.target.value); // Получаем текущее значение ползунка
+        setPlayed(value);
 
-      // Для согласованности также обновляем время и позицию предпросмотра
-      const exactSeconds = value * duration;
-      setSeekPreviewTime(exactSeconds);
-      setSeekPreviewPosition(value * 100);
-    };
+        // Для согласованности также обновляем время и позицию предпросмотра
+        const exactSeconds = value * duration;
+        setSeekPreviewTime(exactSeconds);
+        setSeekPreviewPosition(value * 100);
+      },
+      [duration, onTimeUpdate]
+    );
 
     // Обработчик для предпросмотра перемотки (показ времени при наведении на прогресс-бар)
     const handleSeekPreview = (e) => {
@@ -255,27 +290,31 @@ export const VideoPlayer = forwardRef(
     // Обработчик для скрытия превью перемотки (например, при уходе курсора с прогресс-бара)
     const handleSeekPreviewHide = () => setIsSeekPreviewVisible(false);
 
+    // Мемоизируем handleProgress, так как он вызывается часто при воспроизведении
     // Обработчик изменения прогресса воспроизведения
-    const handleProgress = (state) => {
-      if (!seeking) {
-        setPlayed(state.played);
+    const handleProgress = useCallback(
+      (state) => {
+        if (!seeking) {
+          setPlayed(state.played);
 
-        // Вычисляем текущее время в секундах
-        const currentSeconds = state.playedSeconds;
-        currentTimeRef.current = currentSeconds;
+          // Вычисляем текущее время в секундах
+          const currentSeconds = state.playedSeconds;
+          currentTimeRef.current = currentSeconds;
 
-        // Вызываем onTimeUpdate только если время значительно изменилось (например, более 1 секунды)
-        // и не находимся в режиме перемотки
-        if (
-          onTimeUpdate &&
-          Math.abs(currentSeconds - lastReportedTime) >= 1.0 &&
-          !isSeekingRef.current
-        ) {
-          onTimeUpdate(currentSeconds);
-          setLastReportedTime(currentSeconds);
+          // Вызываем onTimeUpdate только если время значительно изменилось (например, более 1 секунды)
+          // и не находимся в режиме перемотки
+          if (
+            onTimeUpdate &&
+            Math.abs(currentSeconds - lastReportedTime) >= 1.0 &&
+            !isSeekingRef.current
+          ) {
+            onTimeUpdate(currentSeconds);
+            setLastReportedTime(currentSeconds);
+          }
         }
-      }
-    };
+      },
+      [seeking, onTimeUpdate, lastReportedTime]
+    );
 
     // Обработчик начала воспроизведения
     const handlePlay = () => {
@@ -296,7 +335,7 @@ export const VideoPlayer = forwardRef(
     };
 
     // Обработчик переключения между воспроизведением и паузой
-    const handlePlayPause = () => {
+    const handlePlayPause = useCallback(() => {
       const newPlayingState = !playing;
       setPlaying(newPlayingState);
 
@@ -304,10 +343,10 @@ export const VideoPlayer = forwardRef(
       onPlayPause && onPlayPause(newPlayingState ? "play" : "pause");
 
       resetTimeout();
-    };
+    }, [playing, onPlayPause, resetTimeout]);
 
     // Обработчик переключения в полноэкранный режим
-    const toggleFullscreen = () => {
+    const toggleFullscreen = useCallback(() => {
       if (!document.fullscreenElement) {
         const element = document.querySelector(".video-container");
         if (element.requestFullscreen) {
@@ -338,7 +377,7 @@ export const VideoPlayer = forwardRef(
         }
         setIsFullscreen(false);
       }
-    };
+    }, []);
 
     useEffect(() => {
       const handleFullscreenChange = () => {
@@ -377,18 +416,6 @@ export const VideoPlayer = forwardRef(
     const handleActivity = () => {
       setControlsVisible(true);
       resetTimeout();
-    };
-
-    // Функция для сброса таймера скрытия элементов управления
-    const resetTimeout = () => {
-      // Очищаем предыдущий таймер, если он есть
-      if (hideControlsTimerRef.current) {
-        clearTimeout(hideControlsTimerRef.current);
-      }
-      // Запускаем таймер, по истечении которого контролы скроются (например, через 3 секунды)
-      hideControlsTimerRef.current = setTimeout(() => {
-        setControlsVisible(false);
-      }, 3000);
     };
 
     // Эффект для отслеживания движения мыши или клика в контейнере видеоплеера
@@ -521,26 +548,30 @@ export const VideoPlayer = forwardRef(
       setRewindInterval(interval);
     };
 
+    // Мемоизируем seek, так как он вызывается часто при перемотке
     // Функция перемотки
-    const seek = (step) => {
-      // Вычисляем новое время воспроизведения
-      const newTime = currentTimeRef.current + step;
-      // Ограничиваем время в пределах от 0 до длительности медиафайла
-      const clampedTime = Math.max(0, Math.min(newTime, duration));
+    const seek = useCallback(
+      (step) => {
+        // Вычисляем новое время воспроизведения
+        const newTime = currentTimeRef.current + step;
+        // Ограничиваем время в пределах от 0 до длительности медиафайла
+        const clampedTime = Math.max(0, Math.min(newTime, duration));
 
-      // Если доступен playerRef, перематываем плеер
-      if (playerRef.current) {
-        playerRef.current.seekTo(clampedTime, "seconds"); // Перематываем на указанное время
-        currentTimeRef.current = clampedTime; // Обновляем ref с текущим временем
-        setPlayed(clampedTime / duration); // Обновляем состояние played
-      }
+        // Если доступен playerRef, перематываем плеер
+        if (playerRef.current) {
+          playerRef.current.seekTo(clampedTime, "seconds"); // Перематываем на указанное время
+          currentTimeRef.current = clampedTime; // Обновляем ref с текущим временем
+          setPlayed(clampedTime / duration); // Обновляем состояние played
+        }
 
-      // Вызываем onTimeUpdate после перемотки
-      if (onTimeUpdate) {
-        onTimeUpdate(clampedTime);
-        setLastReportedTime(clampedTime);
-      }
-    };
+        // Вызываем onTimeUpdate после перемотки
+        if (onTimeUpdate) {
+          onTimeUpdate(clampedTime);
+          setLastReportedTime(clampedTime);
+        }
+      },
+      [duration, onTimeUpdate, setLastReportedTime]
+    );
 
     // Убедимся, что контейнер в фокусе (чтобы обработчики клавиш работали)
     useEffect(() => {
@@ -586,20 +617,7 @@ export const VideoPlayer = forwardRef(
             onProgress={handleProgress}
             onDuration={setDuration}
             onError={(e) => console.error("Ошибка плеера:", e)}
-            config={{
-              // Кастомные настройки YouTube-плеера
-              youtube: {
-                playerVars: {
-                  modestbranding: 1, // Скрыть лого YouTube
-                  rel: 0, // Не показывать похожие видео в конце
-                  iv_load_policy: 3, // Скрывает аннотации поверх видео
-                  cc_load_policy: 0, // Отключает автоматическое включение субтитров
-                  subtitles: 0, // Отключает субтитры
-
-                  hl: "ru", // Язык интерфейса плеера (код языка)
-                },
-              },
-            }}
+            config={youtubeConfig}
           />
 
           {/* Невидимый оверлей для правильного перехвата движения мыши */}

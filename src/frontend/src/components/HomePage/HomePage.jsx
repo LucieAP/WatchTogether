@@ -18,7 +18,7 @@ const HomePage = () => {
       try {
         setLoading(true);
         const response = await getPublicRooms();
-        console.log("Public rooms:", response);
+        console.log("Ререндеринг страницы. Public rooms:", response);
         setPublicRooms(response);
       } catch (err) {
         console.error("Ошибка при загрузке публичных комнат:", err);
@@ -38,7 +38,7 @@ const HomePage = () => {
 
   // Обработчик перехода в комнату
   const handleJoinRoom = (roomId) => {
-    const room = publicRooms.find(r => r.roomId === roomId);
+    const room = publicRooms.find((r) => r.roomId === roomId);
     setSelectedRoom(room);
     setSelectedRoomId(roomId);
     setShowModal(true);
@@ -60,12 +60,12 @@ const HomePage = () => {
   // Форматирование даты
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -73,15 +73,17 @@ const HomePage = () => {
     <div className="homePageContainer">
       <div className="homePage">
         <h1 className="title">Watch Together</h1>
-        <p className="description">Смотрите видео вместе с друзьями в реальном времени</p>
-        
+        <p className="description">
+          Смотрите видео вместе с друзьями в реальном времени
+        </p>
+
         <button onClick={handleCreateRoom} className="createRoomButton">
           Создать комнату
         </button>
 
         <div className="publicRoomsSection">
           <h2>Публичные комнаты</h2>
-          
+
           {loading ? (
             <p className="loading">Загрузка комнат...</p>
           ) : error ? (
@@ -90,8 +92,12 @@ const HomePage = () => {
             <p>Публичных комнат пока нет. Создайте первую!</p>
           ) : (
             <div className="roomsGrid">
-              {publicRooms.map(room => (
-                <div key={room.roomId} className="roomCard" onClick={() => handleJoinRoom(room.roomId)}>
+              {publicRooms.map((room) => (
+                <div
+                  key={room.roomId}
+                  className="roomCard"
+                  onClick={() => handleJoinRoom(room.roomId)}
+                >
                   <h3>{room.roomName}</h3>
                   <p className="roomDescription">{room.description}</p>
                   <div className="roomCardFooter">
@@ -99,10 +105,16 @@ const HomePage = () => {
                       <i className="icon-user"></i> {room.participantsCount}
                     </span>
                     {room.currentVideoTitle && (
-                      <p className="currentVideo">Сейчас: {room.currentVideoTitle}</p>
+                      <p className="currentVideo">
+                        Сейчас: {room.currentVideoTitle}
+                      </p>
                     )}
-                    <span className="roomCreator">Создатель: {room.createdByUsername}</span>
-                    <span className="roomDate">Создана: {formatDate(room.createdAt)}</span>
+                    <span className="roomCreator">
+                      Создатель: {room.createdByUsername}
+                    </span>
+                    <span className="roomDate">
+                      Создана: {formatDate(room.createdAt)}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -118,18 +130,27 @@ const HomePage = () => {
             <h3>Подключение к комнате</h3>
             {selectedRoom && (
               <div className="modalBody">
-                <p>Вы собираетесь присоединиться к комнате "{selectedRoom.roomName}".</p>
+                <p>
+                  Вы собираетесь присоединиться к комнате "
+                  {selectedRoom.roomName}".
+                </p>
                 <p>Создатель: {selectedRoom.createdByUsername}</p>
                 {selectedRoom.currentVideoTitle && (
-                  <p>Сейчас воспроизводится: {selectedRoom.currentVideoTitle}</p>
+                  <p>
+                    Сейчас воспроизводится: {selectedRoom.currentVideoTitle}
+                  </p>
                 )}
                 <p>Количество участников: {selectedRoom.participantsCount}</p>
                 <p>Хотите продолжить?</p>
               </div>
             )}
             <div className="modalActions">
-              <button className="cancelButton" onClick={cancelJoinRoom}>Отмена</button>
-              <button className="confirmButton" onClick={confirmJoinRoom}>Присоединиться</button>
+              <button className="cancelButton" onClick={cancelJoinRoom}>
+                Отмена
+              </button>
+              <button className="confirmButton" onClick={confirmJoinRoom}>
+                Присоединиться
+              </button>
             </div>
           </div>
         </div>

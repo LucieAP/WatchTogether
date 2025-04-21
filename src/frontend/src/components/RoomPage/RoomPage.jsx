@@ -1,6 +1,6 @@
 // RoomPage.jsx:
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { VideoSection } from "./VideoSection/VideoSection";
 import { ChatSection } from "./ChatSection/ChatSection";
@@ -101,15 +101,23 @@ export default function RoomPage({
   const { handleConnectionStateChanged, handleParticipantsUpdated } =
     useConnectionHandlers(roomId, setRoomData, handleNetworkDisconnect);
 
-  // Закрытие модалок при клике на фон
-  const handleCloseModal = (e) => {
-    if (e.target === e.currentTarget && !mouseDownOnContentRef.current) {
-      setIsInviteModalOpen(false);
-      setIsAddVideoModalOpen(false);
-      onSettingsClose();
-    }
-    mouseDownOnContentRef.current = false;
-  };
+  // Закрытие модалок при клике на фон - мемоизируем эту функцию
+  const handleCloseModal = useCallback(
+    (e) => {
+      if (e.target === e.currentTarget && !mouseDownOnContentRef.current) {
+        setIsInviteModalOpen(false);
+        setIsAddVideoModalOpen(false);
+        onSettingsClose();
+      }
+      mouseDownOnContentRef.current = false;
+    },
+    [
+      mouseDownOnContentRef,
+      setIsInviteModalOpen,
+      setIsAddVideoModalOpen,
+      onSettingsClose,
+    ]
+  );
 
   // Используем хук синхронизации видео
   const {
@@ -140,9 +148,9 @@ export default function RoomPage({
     };
   }, []);
 
-  return (
-    <main className="room-container">
-      {/* Видео-плеер */}
+  // Мемоизируем VideoSection для предотвращения ненужных ререндеров
+  const memoizedVideoSection = useMemo(
+    () => (
       <VideoSection
         roomId={roomId}
         roomData={roomData}
@@ -158,8 +166,26 @@ export default function RoomPage({
         isAddVideoModalOpen={isAddVideoModalOpen}
         setIsAddVideoModalOpen={setIsAddVideoModalOpen}
       />
+    ),
+    [
+      roomId,
+      roomData,
+      handlePlayPause,
+      handleTimeUpdate,
+      handleCloseVideo,
+      videoUrl,
+      tempMetadata,
+      setVideoUrl,
+      setTempMetadata,
+      handleAddVideoModal,
+      isAddVideoModalOpen,
+      setIsAddVideoModalOpen,
+    ]
+  );
 
-      {/* Чат */}
+  // Мемоизируем ChatSection
+  const memoizedChatSection = useMemo(
+    () => (
       <ChatSection
         roomId={roomId}
         roomData={roomData}
@@ -176,8 +202,24 @@ export default function RoomPage({
         handleManualLeave={handleManualLeave}
         navigate={navigate}
       />
+    ),
+    [
+      roomId,
+      roomData,
+      userInfo,
+      messages,
+      connectionRef,
+      connectionStatus,
+      isInviteModalOpen,
+      handleManualReconnect,
+      handleCloseModal,
+      navigate,
+    ]
+  );
 
-      {/* Модалка настроек комнаты, при нажатии на шестеренку */}
+  // Мемоизируем SettingsModal
+  const memoizedSettingsModal = useMemo(
+    () => (
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={handleCloseModal}
@@ -187,6 +229,27 @@ export default function RoomPage({
         roomName={roomData?.roomName}
         description={roomData?.description}
       />
+    ),
+    [
+      isSettingsModalOpen,
+      handleCloseModal,
+      handleSaveSettings,
+      onSettingsClose,
+      roomData?.roomName,
+      roomData?.description,
+    ]
+  );
+
+  return (
+    <main className="room-container">
+      {/* Видео-плеер */}
+      {memoizedVideoSection}
+
+      {/* Чат */}
+      {memoizedChatSection}
+
+      {/* Модалка настроек комнаты, при нажатии на шестеренку */}
+      {memoizedSettingsModal}
     </main>
   );
 }

@@ -1,5 +1,5 @@
 // hooks/useRoomData.js
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 
 export const useRoomData = (roomId) => {
@@ -7,7 +7,8 @@ export const useRoomData = (roomId) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchRoomData = async () => {
+  // Мемоизация функции fetchRoomData с useCallback
+  const fetchRoomData = useCallback(async () => {
     if (!roomId) return;
 
     setIsLoading(true);
@@ -24,13 +25,21 @@ export const useRoomData = (roomId) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchRoomData();
   }, [roomId]);
 
-  // console.log("useRoomData roomData: ", roomData);
+  // Запрос на получение данных комнаты при монтировании компонента
+  useEffect(() => {
+    fetchRoomData();
+  }, [fetchRoomData]);
 
-  return { roomData, isLoading, error, refetch: fetchRoomData };
+  // Мемоизация возвращаемого объекта с результатами
+  return useMemo(
+    () => ({
+      roomData,
+      isLoading,
+      error,
+      refetch: fetchRoomData,
+    }),
+    [roomData, isLoading, error, fetchRoomData]
+  );
 };
