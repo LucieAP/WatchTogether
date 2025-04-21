@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { createRoom } from "../../api/rooms";
+import { createRoom, getUserRooms } from "../../api/rooms";
 import { useAuth } from "../../context/AuthContext";
 
 // Константа для общих атрибутов полей ввода
@@ -23,6 +23,26 @@ export default function CreateRoom() {
 
   // Деструктуризация для упрощения чтения кода
   const { roomName, description, status } = formData;
+
+  // Проверка наличия существующих комнат для гостя перед созданием новой
+  useEffect(() => {
+    if (!isLoggedIn) {
+      const checkExistingRooms = async () => {
+        try {
+          const userRooms = await getUserRooms();
+          if (userRooms && userRooms.length > 0) {
+            setError(
+              "В гостевом режиме вы можете создать только одну активную комнату. Пожалуйста, удалите существующую комнату, прежде чем создавать новую."
+            );
+          }
+        } catch (error) {
+          console.error("Ошибка при проверке существующих комнат:", error);
+        }
+      };
+
+      checkExistingRooms();
+    }
+  }, [isLoggedIn]);
 
   // Обработчик изменения формы (динамически обновляет состояние формы)
   const handleChange = (e) => {
@@ -64,6 +84,11 @@ export default function CreateRoom() {
         (error.response.data.message || error.response.data.Message)
       ) {
         setError(error.response.data.message || error.response.data.Message);
+      } else if (!isLoggedIn) {
+        // Если пользователь гость и получена неспецифическая ошибка, предполагаем, что это может быть связано с ограничением комнат
+        setError(
+          "В гостевом режиме вы можете создать только одну активную комнату. Пожалуйста, удалите существующую комнату, прежде чем создавать новую."
+        );
       } else {
         setError(error.message || "Ошибка при создании комнаты");
       }
@@ -153,7 +178,7 @@ export default function CreateRoom() {
               <button
                 type="submit"
                 className="btn btn-primary mt-4"
-                disabled={isSubmitting} // Кнопка блокируется во время отправки формы
+                disabled={isSubmitting || (!isLoggedIn && error)} // Блокируем кнопку если есть ошибка о лимите комнат для гостя
               >
                 {isSubmitting ? (
                   <>
