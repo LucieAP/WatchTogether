@@ -752,7 +752,8 @@ namespace WatchTogetherAPI.Controllers
                         r.Status,
                         ParticipantsCount = r.Participants.Count,
                         CurrentVideoTitle = r.VideoState.CurrentVideo != null ? r.VideoState.CurrentVideo.Title : null,
-                        r.CreatedAt
+                        r.CreatedAt,
+                        CreatedByUserId = r.CreatedByUserId
                     })
                     .ToListAsync(cancellationToken);
                     

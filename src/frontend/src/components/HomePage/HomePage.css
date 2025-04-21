@@ -55,7 +55,8 @@
   padding-bottom: 10px;
 }
 
-.loading, .error {
+.loading,
+.error {
   text-align: center;
   padding: 20px;
   color: #555;
@@ -127,7 +128,8 @@
   margin: 5px 0;
 }
 
-.roomCreator, .roomDate {
+.roomCreator,
+.roomDate {
   font-size: 12px;
 }
 
@@ -172,7 +174,8 @@
   gap: 10px;
 }
 
-.cancelButton, .confirmButton {
+.cancelButton,
+.confirmButton {
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
@@ -197,4 +200,74 @@
 
 .confirmButton:hover {
   background-color: #3367d6;
+}
+
+/* Добавляем новые стили для раздела пользовательских комнат */
+.userRoomsSection {
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.userRoomCard {
+  position: relative;
+  border: 2px solid #3f51b5;
+  background-color: rgba(63, 81, 181, 0.05);
+}
+
+.roomActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.joinButton,
+.leaveButton,
+.deleteButton {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.joinButton {
+  background-color: #4caf50;
+  color: white;
+}
+
+.joinButton:hover {
+  background-color: #45a049;
+}
+
+.leaveButton {
+  background-color: #f44336;
+  color: white;
+}
+
+.leaveButton:hover {
+  background-color: #d32f2f;
+}
+
+.deleteButton {
+  background-color: #f44336;
+  color: white;
+}
+
+.deleteButton:hover {
+  background-color: #d32f2f;
+}
+
+/* Стили для модальных окон */
+.warningText {
+  color: #f44336;
+  font-weight: 500;
+}
+
+.dangerButton {
+  background-color: #f44336;
+}
+
+.dangerButton:hover {
+  background-color: #d32f2f;
 }
