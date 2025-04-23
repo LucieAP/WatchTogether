@@ -354,23 +354,32 @@ namespace WatchTogetherAPI.Controllers
 
                 if (room == null) return NotFound(new { Message = "Комната не найдена" });
 
-                if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
-                {
-                    room.Participants.Add(new Participant
-                    {
-                        UserId = currentUser.UserId,
-                        Role = ParticipantRole.Member,
-                        JoinedAt = DateTime.UtcNow
-                    });
-                    await _context.SaveChangesAsync(cancellationToken); 
-                }
+                // Проверяем, является ли пользователь участником комнаты
+                var existingParticipant = await _context.Participants
+                    .FirstOrDefaultAsync(p => p.RoomId == roomId && p.UserId == currentUser.UserId, cancellationToken);
 
-                // // Уведомление остальных участников о выходе пользователя
-                // await _hubContext.Clients.Group(roomId.ToString()).SendAsync("UserJoined", new 
-                // {
-                //     UserId = currentUser.UserId,
-                //     Username = currentUser.Username
-                // });
+                if (existingParticipant == null)
+                {
+                    try
+                    {
+                        var newParticipant = new Participant
+                        {
+                            RoomId = roomId,
+                            UserId = currentUser.UserId,
+                            Role = ParticipantRole.Member,
+                            JoinedAt = DateTime.UtcNow
+                        };
+                        
+                        _context.Participants.Add(newParticipant);
+                        await _context.SaveChangesAsync(cancellationToken);
+                    }
+                    catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("PK_Participants") == true)
+                    {
+                        _logger.LogWarning("Пользователь {UserId} уже присоединен к комнате {RoomId}. Возможна гонка условий.", 
+                            currentUser.UserId, roomId);
+                        // Участник уже существует, игнорируем ошибку и продолжаем
+                    }
+                }
 
                 return Ok(new 
                 { 
@@ -612,67 +621,6 @@ namespace WatchTogetherAPI.Controllers
             {
                 _logger.LogError(error, "Ошибка добавления видео");
                 await transaction.RollbackAsync(cancellationToken);
-                return StatusCode(500, "Внутренняя ошибка сервера");
-            }
-        }
-
-        [HttpPatch("{roomId:guid}/player")]
-        public async Task<IActionResult> UpdateVideoState(Guid roomId, [FromBody] UpdateVideoStateRequest request, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var room = await _context.Rooms
-                    .Include(p => p.Participants)
-                    .Include(r => r.VideoState)
-                        .ThenInclude(vs => vs.CurrentVideo) // Загружаем связанное видео 
-                    .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
-                
-                if (room == null) return NotFound("Комната не найдена");
-
-                var currentUser = await GetOrCreateUserAsync(cancellationToken);
-
-                // if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
-                // {
-                //     return Forbid();
-                // }
-                
-                if (request.IsPaused.HasValue) 
-                {
-                    room.VideoState.IsPaused = request.IsPaused.Value;
-                }
-
-                if (request.CurrentTimeInSeconds.HasValue)
-                {
-                    room.VideoState.CurrentTime = TimeSpan.FromSeconds(request.CurrentTimeInSeconds.Value);  // Конвертация времени в секундах в формат 00:00
-                }
-                
-                room.VideoState.LastUpdated = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync(cancellationToken);
-
-                await _hubContext.Clients.Group(roomId.ToString())
-                    .SendAsync("VideoStateUpdated", new 
-                    {
-                        CurrentVideoId = room.VideoState?.CurrentVideo?.VideoId,
-                        IsPaused = room.VideoState?.IsPaused ?? true,
-                        CurrentTime = room.VideoState?.CurrentTime.TotalSeconds ?? 0,
-                        CurrentVideo = room.VideoState?.CurrentVideo
-                    }, cancellationToken);
-                
-                return Ok(new {
-                    room.VideoState.IsPaused,
-                    CurrentTimeInSeconds = room.VideoState.CurrentTime.TotalSeconds,    // Возвращаем секунды
-                    room.VideoState.LastUpdated
-                }); 
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogInformation("Запрос на обновление состояния плеера в комнате {RoomId} был отменен", roomId);
-                return StatusCode(499, "Запрос был отменен");
-            }
-            catch (Exception error)
-            {
-                _logger.LogError(error, "Ошибка обновления состояния плеера");
                 return StatusCode(500, "Внутренняя ошибка сервера");
             }
         }

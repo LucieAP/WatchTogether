@@ -119,25 +119,56 @@ export default function RoomPage({
     ]
   );
 
-  // Используем хук синхронизации видео
-  const {
-    handleTimeUpdate,
-    handlePlayPause,
-    handleVideoStateUpdated,
-    playPauseDebounceTimeoutRef,
-  } = useVideoSync(roomId, roomData, setRoomData, playerRef);
+  // Создаем заглушку для handleVideoStateUpdated, чтобы разорвать циклическую зависимость
+  const handleVideoStateUpdatedStub = useCallback(
+    (videoState) => {
+      console.log("Стабовый обработчик состояния видео вызван:", videoState);
+      // Базовая обработка состояния видео, которая будет заменена реальной функцией
+      if (videoState) {
+        setRoomData((prev) => ({
+          ...prev,
+          isPaused: videoState.isPaused ?? prev.isPaused,
+          currentTime: videoState.currentTime ?? prev.currentTime,
+          currentVideoId: videoState.currentVideoId ?? prev.currentVideoId,
+        }));
+      }
+    },
+    [setRoomData]
+  );
 
-  // Хук для подключения к SignalR
+  // Хук для подключения к SignalR, используем заглушку вместо реального обработчика
   const { userInfo, connectionStatus, connectionRef, handleManualReconnect } =
     useSignalRConnection(
       roomId,
       handleNewMessage,
       handleParticipantsUpdated,
       handleChatHistory,
-      handleVideoStateUpdated,
+      handleVideoStateUpdatedStub, // Используем заглушку здесь
       handleConnectionStateChanged,
       setupBrowserCloseHandler
     );
+
+  // Используем хук синхронизации видео
+  const {
+    handleTimeUpdate,
+    handlePlayPause,
+    handleVideoStateUpdated, // Получаем реальную функцию
+    playPauseDebounceTimeoutRef,
+  } = useVideoSync(roomId, roomData, setRoomData, playerRef, connectionRef);
+
+  // Обновляем обработчик в SignalR после инициализации
+  useEffect(() => {
+    // Заменяем стабовый обработчик на реальный в connection
+    if (connectionRef.current && connectionRef.current.connection) {
+      // Переопределяем обработчик видео-событий на реальный
+      connectionRef.current.connection.off("ReceiveVideoState");
+      connectionRef.current.connection.on(
+        "ReceiveVideoState",
+        handleVideoStateUpdated
+      );
+      console.log("Обработчик видео-событий SignalR обновлен на реальный");
+    }
+  }, [connectionRef, handleVideoStateUpdated]);
 
   /* Очистка таймаутов при размонтировании компонента */
   useEffect(() => {

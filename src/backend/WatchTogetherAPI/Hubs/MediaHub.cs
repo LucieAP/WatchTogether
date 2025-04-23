@@ -260,5 +260,117 @@ namespace WatchTogetherAPI.Hubs
                 throw new HubException($"Ошибка при отправке сообщения: {ex.Message}");
             }
         }
+
+        // Обновляет время видео в комнате
+        public async Task UpdateVideoTime(string roomId, int currentTimeInSeconds)
+        {
+            try
+            {
+                _logger.LogInformation("Получен запрос на обновление времени видео в комнате {RoomId}: {CurrentTime} секунд", 
+                    roomId, currentTimeInSeconds);
+
+                var cancellationToken = Context.ConnectionAborted;
+
+                // Используем безопасное преобразование строки в Guid
+                if (!Guid.TryParse(roomId, out Guid parsedRoomId))
+                {
+                    throw new ArgumentException("Неверный формат идентификатора комнаты", nameof(roomId));
+                }
+
+                // Получаем комнату из базы данных
+                var room = await _context.Rooms
+                    .Include(r => r.VideoState)
+                        .ThenInclude(vs => vs.CurrentVideo)
+                    .FirstOrDefaultAsync(r => r.RoomId == parsedRoomId, cancellationToken);
+
+                if (room == null)
+                {
+                    throw new HubException("Комната не найдена");
+                }
+
+                // Обновляем время видео
+                room.VideoState.CurrentTime = TimeSpan.FromSeconds(currentTimeInSeconds);
+                room.VideoState.LastUpdated = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                // Отправляем обновление всем клиентам в группе, кроме отправителя
+                await Clients.OthersInGroup(roomId).SendAsync("VideoStateUpdated", new
+                {
+                    CurrentVideoId = room.VideoState?.CurrentVideo?.VideoId,
+                    IsPaused = room.VideoState?.IsPaused ?? true,
+                    CurrentTime = currentTimeInSeconds,
+                    CurrentVideo = room.VideoState?.CurrentVideo
+                }, cancellationToken);
+
+                _logger.LogInformation("Время видео в комнате {RoomId} успешно обновлено до {CurrentTime} секунд", 
+                    roomId, currentTimeInSeconds);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Операция обновления времени видео в комнате {RoomId} была отменена", roomId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при обновлении времени видео в комнате {RoomId}", roomId);
+                throw new HubException($"Ошибка при обновлении времени видео: {ex.Message}");
+            }
+        }
+
+        // Обновляет состояние паузы в комнате
+        public async Task UpdateVideoPauseState(string roomId, bool isPaused)
+        {
+            try
+            {
+                _logger.LogInformation("Получен запрос на изменение состояния паузы в комнате {RoomId}: IsPaused = {IsPaused}", 
+                    roomId, isPaused);
+
+                var cancellationToken = Context.ConnectionAborted;
+
+                // Используем безопасное преобразование строки в Guid
+                if (!Guid.TryParse(roomId, out Guid parsedRoomId))
+                {
+                    throw new ArgumentException("Неверный формат идентификатора комнаты", nameof(roomId));
+                }
+
+                // Получаем комнату из базы данных
+                var room = await _context.Rooms
+                    .Include(r => r.VideoState)
+                        .ThenInclude(vs => vs.CurrentVideo)
+                    .FirstOrDefaultAsync(r => r.RoomId == parsedRoomId, cancellationToken);
+
+                if (room == null)
+                {
+                    throw new HubException("Комната не найдена");
+                }
+
+                // Обновляем состояние паузы
+                room.VideoState.IsPaused = isPaused;
+                room.VideoState.LastUpdated = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                // Отправляем обновление всем клиентам в группе, кроме отправителя
+                await Clients.OthersInGroup(roomId).SendAsync("VideoStateUpdated", new
+                {
+                    CurrentVideoId = room.VideoState?.CurrentVideo?.VideoId,
+                    IsPaused = isPaused,
+                    CurrentTime = room.VideoState?.CurrentTime.TotalSeconds ?? 0,
+                    CurrentVideo = room.VideoState?.CurrentVideo
+                }, cancellationToken);
+
+                _logger.LogInformation("Состояние паузы в комнате {RoomId} успешно обновлено до {IsPaused}", 
+                    roomId, isPaused);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Операция обновления состояния паузы в комнате {RoomId} была отменена", roomId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при обновлении состояния паузы в комнате {RoomId}", roomId);
+                throw new HubException($"Ошибка при обновлении состояния паузы: {ex.Message}");
+            }
+        }
     }
 }

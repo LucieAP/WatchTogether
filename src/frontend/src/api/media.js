@@ -214,20 +214,45 @@ export const createConnection = (
     try {
       // Проверяем состояние соединения перед запуском
       if (connection.state === signalR.HubConnectionState.Disconnected) {
-        await connection.start();
-        console.log("SignalR connected. State:", connection.state);
-
-        // Оповещаем UI о подключении
-        if (onConnectionStateChanged) {
-          onConnectionStateChanged("connected", null);
+        // Проверяем, не идет ли уже процесс запуска соединения
+        if (connection._startPromise) {
+          console.log("Соединение уже в процессе запуска, ожидаем...");
+          try {
+            await connection._startPromise;
+            console.log("Ожидающий запуск завершен");
+            return;
+          } catch (e) {
+            console.warn(
+              "Ожидающий запуск завершился с ошибкой, пробуем заново",
+              e
+            );
+          }
         }
 
-        // Вызываем JoinRoom только после успешного подключения
-        await connection
-          .invoke("JoinRoom", roomId, username, userId)
-          .catch((err) => {
-            console.error("JoinRoom error:", err);
-          });
+        // Сохраняем promise запуска, чтобы можно было отследить состояние
+        connection._startPromise = connection.start();
+
+        try {
+          await connection._startPromise;
+          console.log("SignalR connected. State:", connection.state);
+
+          // Оповещаем UI о подключении
+          if (onConnectionStateChanged) {
+            onConnectionStateChanged("connected", null);
+          }
+
+          // Вызываем JoinRoom только после успешного подключения
+          if (connection.state === signalR.HubConnectionState.Connected) {
+            await connection
+              .invoke("JoinRoom", roomId, username, userId)
+              .catch((err) => {
+                console.error("JoinRoom error:", err);
+              });
+          }
+        } finally {
+          // Очищаем сохраненный promise после завершения
+          connection._startPromise = null;
+        }
       }
     } catch (err) {
       console.error("SignalR Connection Error:", err);
@@ -237,10 +262,18 @@ export const createConnection = (
         onConnectionStateChanged("error", err);
       }
 
-      // Останавливаем соединение перед повторной попыткой
+      // Останавливаем соединение перед повторной попыткой, только если оно не в состоянии Disconnected
       if (connection.state !== signalR.HubConnectionState.Disconnected) {
-        await connection.stop();
+        try {
+          await connection.stop();
+        } catch (stopErr) {
+          console.warn("Ошибка при остановке соединения:", stopErr);
+          // Игнорируем ошибку остановки, так как это не критично
+        }
       }
+
+      // Очищаем сохраненный promise в случае ошибки
+      connection._startPromise = null;
     }
   };
 
@@ -288,9 +321,38 @@ export const createConnection = (
 
   // Ручное переподключение
   const reconnect = async () => {
-    if (connection.state !== signalR.HubConnectionState.Connected) {
-      await connection.stop();
-      return start();
+    try {
+      // Проверяем текущее состояние соединения
+      if (connection.state !== signalR.HubConnectionState.Connected) {
+        // Если соединение не в состоянии Disconnected, останавливаем его
+        if (connection.state !== signalR.HubConnectionState.Disconnected) {
+          try {
+            await connection.stop();
+            console.log("Соединение остановлено перед переподключением");
+          } catch (stopErr) {
+            console.warn("Ошибка при остановке соединения:", stopErr);
+            // Игнорируем ошибку остановки, так как сейчас пытаемся переподключиться
+          }
+        }
+
+        // Проверяем, что соединение действительно остановлено перед повторным запуском
+        if (connection.state === signalR.HubConnectionState.Disconnected) {
+          console.log("Попытка переподключения...");
+          return start();
+        } else {
+          console.warn(
+            `Переподключение отменено: неожиданное состояние ${connection.state}`
+          );
+        }
+      } else {
+        console.log("Соединение уже активно, переподключение не требуется");
+      }
+    } catch (err) {
+      console.error("Ошибка в процессе переподключения:", err);
+      // Оповещаем UI об ошибке
+      if (onConnectionStateChanged) {
+        onConnectionStateChanged("error", err);
+      }
     }
     return Promise.resolve();
   };

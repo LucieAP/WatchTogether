@@ -18,9 +18,16 @@ const useSignalRConnection = (
   });
   const [connectionStatus, setConnectionStatus] = useState("disconnected");
   const connectionRef = useRef(null);
+  // Добавляем флаг для отслеживания процесса подключения
+  const isConnectingRef = useRef(false);
+  // Добавляем флаг для отслеживания размонтирования компонента
+  const isMountedRef = useRef(true);
 
   // Загрузка данных комнаты и подключение к чату
   useEffect(() => {
+    // Устанавливаем флаг монтирования
+    isMountedRef.current = true;
+
     // Проверяем, нет ли уже активного подключения
     if (
       connectionRef.current?.connection &&
@@ -33,7 +40,16 @@ const useSignalRConnection = (
       return;
     }
 
+    // Проверяем, не идет ли процесс подключения сейчас
+    if (isConnectingRef.current) {
+      console.log("Процесс подключения уже запущен, пропускаем");
+      return;
+    }
+
     const setupChat = async () => {
+      // Устанавливаем флаг, что начат процесс подключения
+      isConnectingRef.current = true;
+
       try {
         // Проверяем, есть ли сохраненный userId для этой комнаты
         const savedUserInfo = sessionStorage.getItem(`room_${roomId}_user`);
@@ -79,11 +95,14 @@ const useSignalRConnection = (
         // Вызывает внешний обработчик из компонента RoomPage, если он был предоставлен
         const internalHandleConnectionStateChanged = (state, error) => {
           console.log(`Connection state changed to: ${state}`, error);
-          setConnectionStatus(state);
+          // Проверяем, монтирован ли еще компонент
+          if (isMountedRef.current) {
+            setConnectionStatus(state);
 
-          // Вызываем внешний обработчик, если он был предоставлен
-          if (handleConnectionStateChanged) {
-            handleConnectionStateChanged(state, error);
+            // Вызываем внешний обработчик, если он был предоставлен
+            if (handleConnectionStateChanged) {
+              handleConnectionStateChanged(state, error);
+            }
           }
         };
 
@@ -100,6 +119,14 @@ const useSignalRConnection = (
             internalHandleConnectionStateChanged
           );
 
+        // Проверяем, не размонтирован ли компонент за время асинхронной операции
+        if (!isMountedRef.current) {
+          console.log(
+            "Компонент размонтирован до завершения подключения, прерываем"
+          );
+          return;
+        }
+
         connectionRef.current = {
           connection,
           sendMessage,
@@ -107,10 +134,18 @@ const useSignalRConnection = (
           reconnect,
         };
 
-        await start();
+        // Проверяем, не размонтирован ли компонент перед запуском соединения
+        if (isMountedRef.current) {
+          await start();
+        }
       } catch (error) {
         console.error("Chat setup error:", error);
-        setConnectionStatus("error");
+        if (isMountedRef.current) {
+          setConnectionStatus("error");
+        }
+      } finally {
+        // Сбрасываем флаг подключения в любом случае
+        isConnectingRef.current = false;
       }
     };
 
@@ -119,12 +154,14 @@ const useSignalRConnection = (
     // Настраиваем обработчик закрытия браузера/вкладки
     const cleanupBrowserClose = setupBrowserCloseHandler(roomId, connectionRef);
 
-    // Запускает проверку  каждые 30 секунд (30000 мс)
+    // Запускает проверку каждые 30 секунд (30000 мс)
     // При каждом срабатывании выполняется проверка состояния соединения
     const pingInterval = setInterval(() => {
       if (
+        isMountedRef.current && // Проверяем, не размонтирован ли компонент
         connectionRef.current?.checkConnection && // Проверка существование метода checkConnection
-        !connectionRef.current.checkConnection() // Вызываем метод,если false (соединение разорвано), если true то все норм
+        !connectionRef.current.checkConnection() && // Вызываем метод, если false (соединение разорвано), если true то все норм
+        !isConnectingRef.current // Проверяем, что процесс подключения не идет в данный момент
       ) {
         console.log("Connection check failed, attempting to reconnect");
         connectionRef.current?.reconnect?.();
@@ -132,12 +169,15 @@ const useSignalRConnection = (
     }, 30000); // Проверка каждые 30 секунд
 
     return () => {
+      // Устанавливаем флаг размонтирования компонента
+      isMountedRef.current = false;
+
       // Очищаем все интервалы и обработчики событий
       cleanupBrowserClose();
       clearInterval(pingInterval); // 1. Останавливает ping-проверки
 
-      // 2. Проверяет наличие соединения
-      if (connectionRef.current?.connection) {
+      // 2. Проверяем наличие соединения и то, что процесс установки соединения завершен
+      if (connectionRef.current?.connection && !isConnectingRef.current) {
         connectionRef.current.connection.stop(); // 3. Корректно останавливает SignalR соединение
       }
     };
@@ -145,13 +185,18 @@ const useSignalRConnection = (
 
   // Функция для ручного переподключения
   const handleManualReconnect = async () => {
-    if (connectionRef.current?.reconnect) {
+    if (connectionRef.current?.reconnect && !isConnectingRef.current) {
+      isConnectingRef.current = true;
       setConnectionStatus("reconnecting");
       try {
         await connectionRef.current.reconnect();
       } catch (error) {
         console.error("Manual reconnection failed:", error);
-        setConnectionStatus("error");
+        if (isMountedRef.current) {
+          setConnectionStatus("error");
+        }
+      } finally {
+        isConnectingRef.current = false;
       }
     }
   };
