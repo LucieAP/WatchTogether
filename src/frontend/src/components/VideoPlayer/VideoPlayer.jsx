@@ -767,10 +767,7 @@ export const VideoPlayer = forwardRef(
                       {<Duration seconds={duration} />}
                     </span>
                   </div>
-                </div>
 
-                {/* Правая группа - остальные элементы управления */}
-                <div className="controls-right-group">
                   <div className="volume-container">
                     <button className="volume-btn" onClick={handleToggleMuted}>
                       {!muted ? (
@@ -815,7 +812,10 @@ export const VideoPlayer = forwardRef(
                       onChange={handleVolumeChange}
                     />
                   </div>
+                </div>
 
+                {/* Правая группа - остальные элементы управления */}
+                <div className="controls-right-group">
                   {/* Элемент для отображения текущей скорости */}
                   <div className="playback-rate-display">
                     {playbackRate.toFixed(2)}x

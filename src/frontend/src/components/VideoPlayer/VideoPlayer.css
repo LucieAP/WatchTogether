@@ -27,6 +27,8 @@
   --z-center-controls: 3;
   --z-bottom-controls: 4;
   --z-settings: 5;
+  --z-progress-bar: 5;
+  --z-volume-controls: 6;
 }
 
 .app {
@@ -148,13 +150,13 @@ h1 {
 .controls-left-group {
   display: flex;
   align-items: center;
-  /*gap: 8px; /* Отступ между элементами в левой группе */
+  gap: 8px; /* Добавляем отступ между элементами в левой группе */
 }
 
 .controls-right-group {
   display: flex;
   align-items: center;
-  /*gap: 4px; /* Отступ между элементами в правой группе */
+  gap: 8px; /* Добавляем отступ между элементами в правой группе */
 }
 
 /* Контейнер для кнопок нижней панели */
@@ -215,12 +217,6 @@ h1 {
 }
 
 /* Контейнер для полоски видео */
-/* .player-progress-bar-container {
-  position: relative;
-  width: 100%;
-  flex: 1; /* занимает оставшееся пространство 
-  margin: 0 10px; /* отступы между кнопками 
-} */
 
 /* Новые стили для прогресс-бара над элементами управления */
 .player-progress-bar-container {
@@ -229,14 +225,10 @@ h1 {
   right: 0;
   bottom: auto;
   height: 15px;
-  /*bottom: calc(
-    var(--control-size) + var(--gutter-width)
-  ); /* Располагаем над controls */
-  /* width: calc(100% - var(--gutter-width)); /* Учитываем отступы контейнера */
   width: 100%;
   margin: 0 auto;
   padding: 0 calc(var(--gutter-width) * 0.3);
-  z-index: calc(var(--z-bottom-controls) + 1); /* Поверх элементов управления */
+  z-index: var(--z-progress-bar); /* Поверх элементов управления */
 }
 
 .progress-bar-wrapper {
@@ -311,21 +303,51 @@ h1 {
   display: flex;
   position: relative;
   align-items: center;
-  margin: 0 4px;
+  margin-left: 8px; /* Отступ слева */
+  z-index: var(--z-volume-controls);
 }
 
 .volume-change-bar {
-  /* width: 0; */
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 80px;
   height: 6px;
-  /* appearance: none;
-      -webkit-appearance: none; */
   background: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
   outline: none;
   cursor: pointer;
-  margin-left: 4px;
-  transition: width var(--transition-normal), height var(--transition-fast);
-  /* overflow: hidden; */
+  opacity: 0;
+  pointer-events: auto; /* Изменяем на auto, чтобы полоска всегда принимала события мыши */
+  transition: opacity var(--transition-normal);
+  z-index: var(--z-volume-controls); /* Поверх элементов управления */
+}
+
+.volume-container:hover .volume-change-bar,
+.volume-container:focus-within .volume-change-bar,
+.volume-change-bar:hover {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Корректируем стили для ползунка в горизонтальном режиме */
+.volume-change-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.volume-change-bar::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--primary-color);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
 .playback-rate-display {
@@ -338,11 +360,6 @@ h1 {
   font-size: 14px;
   z-index: var(--z-bottom-controls);
 }
-
-/* .settings-button:hover,
-    .fullscreen-button:hover {
-      opacity: 1;
-    } */
 
 /*Убрать круги вокруг кнопок*/
 .play-pause-btn:hover,
@@ -480,19 +497,19 @@ h1 {
     font-size: 11px;
   }
 
-  /* .time-current,
-  .time-separator,
-  .time-duration time {
-    user-select: none;
-  } */
-
   .player-progress-bar-container {
     margin: 0 6px;
+    z-index: var(--z-progress-bar); /* 5 */
   }
 
   .volume-container:hover .volume-change-bar,
   .volume-container:focus-within .volume-change-bar {
-    width: 40px;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .volume-change-bar {
+    width: 60px; /* Меньшая ширина на мобильных устройствах */
   }
 
   .speed-settings-values {
