@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://localhost:7143",
+        target: import.meta.env.VITE_API_URL,
         secure: false, // отключить проверку самоподписанного сертификата https
       },
     },
