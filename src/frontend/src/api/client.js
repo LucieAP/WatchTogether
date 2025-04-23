@@ -12,20 +12,6 @@ const apiClient = axios.create({
   },
 });
 
-// // Перехватчик запросов для добавления токена авторизации
-// apiClient.interceptors.request.use((config) => {
-//   const token = localStorage.getItem('token');
-  
-//   // Если токен существует, добавляем его к запросу
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`;
-//   }
-  
-//   return config;
-// }, (error) => {
-//   return Promise.reject(error);
-// });
-
 // Перехватчик для обработки ошибок
 
 // Если запрос успешен, автоматически возвращаются только response.data (а не весь объект response)
@@ -35,8 +21,15 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response.data, // Автоматически возвращаем данные
   (error) => {
-    const serverError = error.response?.data?.title || "Ошибка сервера";
-    throw new Error(serverError);
+    // Получаем сообщение об ошибке из разных возможных мест в ответе
+    const errorMessage =
+      error.response?.data?.message || // Проверяем наличие поля message
+      error.response?.data?.Message || // Проверяем наличие поля Message (с большой буквы)
+      error.response?.data?.title ||
+      error.message ||
+      "Ошибка сервера";
+
+    throw new Error(errorMessage);
   }
 );
 
