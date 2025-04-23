@@ -11,6 +11,7 @@ import {
 } from "react";
 import ReactPlayer from "react-player";
 import Duration from "./Duration";
+import "./VideoPlayer.css"; // Убедимся, что подключен CSS файл
 
 // Оборачиваем компонент в forwardRef, что позволяет родительскому компоненту получить доступ к DOM-элементу или методам компонента.
 export const VideoPlayer = forwardRef(
@@ -23,6 +24,7 @@ export const VideoPlayer = forwardRef(
       onVideoAdded, // Пропс для обработки добавления видео
       onPlayPause, // Пропс для управления воспроизведением
       onTimeUpdate, // Пропс для обновления времени
+      isRoomCreator, // Флаг, определяющий, является ли пользователь создателем комнаты
     },
     ref
   ) => {
@@ -168,10 +170,14 @@ export const VideoPlayer = forwardRef(
 
     // Обработчик включения контролсов (значок замка)
     const handleToggleControls = () => {
+      // Проверяем, является ли пользователь создателем комнаты
+      if (!isRoomCreator) {
+        console.log("Только создатель комнаты может управлять контролами");
+        return; // Прерываем выполнение функции, если пользователь не является создателем
+      }
+
       console.log("Toggling controls:", !controls);
-
       setControls((prev) => !prev);
-
       resetTimeout();
     };
 
@@ -909,7 +915,16 @@ export const VideoPlayer = forwardRef(
             )}
           </div>
 
-          <button className="lock-button" onClick={handleToggleControls}>
+          <button
+            className={`lock-button ${!isRoomCreator ? "disabled" : ""}`}
+            onClick={handleToggleControls}
+            title={
+              isRoomCreator
+                ? "Переключить управление"
+                : "Только создатель комнаты может изменить это"
+            }
+            disabled={!isRoomCreator}
+          >
             {controls ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"

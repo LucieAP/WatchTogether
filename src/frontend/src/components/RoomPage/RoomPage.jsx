@@ -163,6 +163,9 @@ export default function RoomPage({
     playPauseDebounceTimeoutRef,
   } = useVideoSync(roomId, roomData, setRoomData, playerRef, connectionRef);
 
+  // Определяем, является ли текущий пользователь создателем комнаты
+  const isRoomCreator = userInfo?.userId === roomData?.createdByUserId;
+
   // Обновляем обработчик в SignalR после инициализации
   useEffect(() => {
     // Заменяем стабовый обработчик на реальный в connection
@@ -205,6 +208,7 @@ export default function RoomPage({
         setIsAddVideoModalOpen={setIsAddVideoModalOpen}
         isChatVisible={isChatVisible}
         toggleChatVisibility={toggleChatVisibility}
+        isRoomCreator={isRoomCreator}
       />
     ),
     [
@@ -222,6 +226,7 @@ export default function RoomPage({
       setIsAddVideoModalOpen,
       isChatVisible,
       toggleChatVisibility,
+      isRoomCreator,
     ]
   );
 

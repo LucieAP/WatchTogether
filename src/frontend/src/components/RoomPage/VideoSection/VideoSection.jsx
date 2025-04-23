@@ -21,6 +21,7 @@ export const VideoSection = memo(
     setIsAddVideoModalOpen,
     isChatVisible,
     toggleChatVisibility,
+    isRoomCreator,
   }) => {
     const [isCloseVideoModalOpen, setIsCloseVideoModalOpen] = useState(false);
 
@@ -103,6 +104,7 @@ export const VideoSection = memo(
               onVideoAdded={handleVideoAdded}
               onPlayPause={handlePlayPause}
               onTimeUpdate={handleTimeUpdate}
+              isRoomCreator={isRoomCreator}
             />
 
             {/* Компактная кнопка закрытия видео */}

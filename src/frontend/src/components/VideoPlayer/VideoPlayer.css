@@ -459,6 +459,17 @@ h1 {
   height: calc(var(--control-size) * 0.5);
 }
 
+/* Стиль для отключенной кнопки блокировки */
+.lock-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Добавляем стиль для тултипа при наведении на отключенную кнопку */
+.lock-button.disabled:hover {
+  opacity: 0.6;
+}
+
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
   .player-controls {
