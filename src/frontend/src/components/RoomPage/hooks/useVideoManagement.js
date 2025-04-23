@@ -11,7 +11,13 @@ export function useVideoManagement(roomId, setRoomData) {
   const [isAddVideoModalOpen, setIsAddVideoModalOpen] = useState(false);
 
   // Обработчик добавления видео
-  const handleAddVideoModal = async () => {
+  const handleAddVideoModal = async (event) => {
+    // Предотвращаем всплытие события, если оно есть
+    if (event && event.stopPropagation) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
     console.log("Вызвана функция handleAddVideoModal");
     console.log("videoUrl:", videoUrl);
     const videoId = extractYouTubeVideoId(videoUrl); // id видео ютуба (11 цифр)

@@ -44,15 +44,42 @@ export const VideoSection = memo(
     }, [setIsAddVideoModalOpen, setVideoUrl, setTempMetadata]);
 
     // Выносим обработчик нажатия на кнопку добавления видео
-    const handleAddVideoButtonClick = useCallback(() => {
-      console.log("Нажата кнопка добавления видео");
-      setIsAddVideoModalOpen(true);
-    }, [setIsAddVideoModalOpen]);
+    const handleAddVideoButtonClick = useCallback(
+      (e) => {
+        e && e.stopPropagation();
+        console.log("Нажата кнопка добавления видео");
+        setIsAddVideoModalOpen(true);
+      },
+      [setIsAddVideoModalOpen]
+    );
 
     // Оптимизируем обработчик onVideoAdded
-    const handleVideoAdded = useCallback(() => {
-      setIsAddVideoModalOpen(true);
-    }, [setIsAddVideoModalOpen]);
+    const handleVideoAdded = useCallback(
+      (e) => {
+        e && e.stopPropagation();
+        setIsAddVideoModalOpen(true);
+      },
+      [setIsAddVideoModalOpen]
+    );
+
+    // Остановка всплытия для обработчика handleAddVideoModal
+    const wrappedHandleAddVideoModal = useCallback(
+      (e) => {
+        e && e.stopPropagation();
+        handleAddVideoModal(e);
+      },
+      [handleAddVideoModal]
+    );
+
+    // Обработчик для CloseVideoModal
+    const wrappedHandleCloseVideo = useCallback(
+      (e) => {
+        e && e.stopPropagation();
+        handleCloseVideo(e);
+        setIsCloseVideoModalOpen(false); // Закрываем модальное окно
+      },
+      [handleCloseVideo, setIsCloseVideoModalOpen]
+    );
 
     return (
       <section className="video-section">
@@ -90,7 +117,7 @@ export const VideoSection = memo(
             <CloseVideoModal
               isOpen={isCloseVideoModalOpen}
               onClose={closeVideoModal}
-              onConfirm={handleCloseVideo}
+              onConfirm={wrappedHandleCloseVideo}
             />
           </>
         ) : (
@@ -109,7 +136,7 @@ export const VideoSection = memo(
           onUrlChange={setVideoUrl}
           onMetadataChange={setTempMetadata}
           onClose={closeAddVideoModal}
-          onSubmit={handleAddVideoModal}
+          onSubmit={wrappedHandleAddVideoModal}
         />
       </section>
     );
