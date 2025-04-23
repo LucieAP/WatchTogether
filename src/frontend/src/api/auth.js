@@ -21,13 +21,23 @@ export const login = async (username, password) => {
   }
 };
 
+// Аутентификация через Google
+export const loginWithGoogle = async (token) => {
+  try {
+    return await apiClient.post("/auth/google", { token });
+  } catch (error) {
+    console.error("Error logging in with Google:", error);
+    throw error;
+  }
+};
+
 // Регистрация пользователя
 export const register = async (username, password, confirmPassword) => {
   try {
-    return await apiClient.post("/auth/register", { 
-      username, 
+    return await apiClient.post("/auth/register", {
+      username,
       password,
-      confirmPassword 
+      confirmPassword,
     });
   } catch (error) {
     console.error("Error registering user:", error);
@@ -43,4 +53,4 @@ export const logout = async () => {
     console.error("Error during logout:", error);
     throw error;
   }
-}; 
+};

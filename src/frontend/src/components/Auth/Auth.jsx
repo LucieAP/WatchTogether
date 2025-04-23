@@ -1,65 +1,70 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import './Auth.css';
-import { login as apiLogin, register as apiRegister } from '../../api/auth';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import "./Auth.css";
+import {
+  login as apiLogin,
+  register as apiRegister,
+  loginWithGoogle,
+} from "../../api/auth";
+import { signInWithGoogle } from "../../firebase/firebase";
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://localhost:7143';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true); // true - авторизация, false - регистрация
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   const navigate = useNavigate();
   const { login } = useAuth();
 
   // Переключаем между авторизацией и регистрацией
-  const toggleForm = () => {  
+  const toggleForm = () => {
     setIsLogin(!isLogin); // Переключаем между авторизацией и регистрацией
-    setError(''); // Очищаем ошибку
+    setError(""); // Очищаем ошибку
   };
 
   // Проверяем, заполнены ли все поля
-  const validateForm = () => {  
+  const validateForm = () => {
     if (!username.trim()) {
-      setError('Имя пользователя обязательно');
+      setError("Имя пользователя обязательно");
       return false;
     }
-    
+
     if (!password.trim()) {
-      setError('Пароль обязателен');
+      setError("Пароль обязателен");
       return false;
     }
-    
+
     if (!isLogin && password !== confirmPassword) {
-      setError('Пароли не совпадают');
+      setError("Пароли не совпадают");
       return false;
     }
-    
+
     if (!isLogin && password.length < 6) {
-      setError('Пароль должен содержать минимум 6 символов');
+      setError("Пароль должен содержать минимум 6 символов");
       return false;
     }
-    
+
     return true;
   };
 
   // Обрабатываем отправку формы
   const handleSubmit = async (e) => {
     e.preventDefault(); // Предотвращает перезагрузку страницы при отправке формы
-    
+
     if (!validateForm()) return; // Если форма не валидна, то ничего не делаем
-    
+
     try {
       setLoading(true); // Устанавливаем состояние загрузки
-      setError('');
-      
+      setError("");
+
       let userData;
-      
+
       if (isLogin) {
         // Используем функцию из auth.js для входа
         userData = await apiLogin(username, password);
@@ -74,28 +79,63 @@ const Auth = () => {
 
         // Используем контекст для сохранения данных авторизации
         login(userData);
-        
+
         // Перенаправляем на главную страницу
-        navigate('/');
+        navigate("/");
       }
     } catch (err) {
-      console.error('Ошибка аутентификации:', err);
+      console.error("Ошибка аутентификации:", err);
       setError(
-        err.message || 
-        'Произошла ошибка при аутентификации. Пожалуйста, попробуйте снова.'
+        err.message ||
+          "Произошла ошибка при аутентификации. Пожалуйста, попробуйте снова."
       );
     } finally {
       setLoading(false); // Снимаем состояние загрузки
     }
   };
 
+  // Обработчик входа через Google
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      // Вход через Firebase Google Authentication
+      const googleResult = await signInWithGoogle(); // Возвращает объект с user и token
+
+      // Если получен токен, отправляем его на наш бэкенд
+      if (googleResult && googleResult.token) {
+        // Отправляем токен на наш бэкенд для валидации и создания сессии
+        const userData = await loginWithGoogle(googleResult.token);
+
+        if (userData) {
+          console.log("Google авторизация прошла успешно", userData);
+
+          // Сохраняем данные авторизации
+          login(userData);
+
+          // Перенаправляем на главную страницу
+          navigate("/");
+        }
+      }
+    } catch (err) {
+      console.error("Ошибка при входе через Google:", err);
+      setError(
+        err.message ||
+          "Произошла ошибка при входе через Google. Пожалуйста, попробуйте снова."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1 className="auth-title">{isLogin ? 'Вход' : 'Регистрация'}</h1>
-        
+        <h1 className="auth-title">{isLogin ? "Вход" : "Регистрация"}</h1>
+
         {error && <div className="auth-error">{error}</div>}
-        
+
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="username">Имя пользователя</label>
@@ -108,7 +148,7 @@ const Auth = () => {
               disabled={loading}
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password">Пароль</label>
             <input
@@ -120,7 +160,7 @@ const Auth = () => {
               disabled={loading}
             />
           </div>
-          
+
           {!isLogin && (
             <div className="form-group">
               <label htmlFor="confirmPassword">Подтверждение пароля</label>
@@ -134,16 +174,32 @@ const Auth = () => {
               />
             </div>
           )}
-          
+
           <button type="submit" className="auth-button" disabled={loading}>
-            {loading ? 'Загрузка...' : isLogin ? 'Войти' : 'Зарегистрироваться'}
+            {loading ? "Загрузка..." : isLogin ? "Войти" : "Зарегистрироваться"}
+          </button>
+
+          <div className="google-auth-divider">или</div>
+
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            className="google-auth-button"
+            disabled={loading}
+          >
+            Войти с помощью Google
           </button>
         </form>
-        
+
         <p className="auth-toggle">
-          {isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}{' '}
-          <button type="button" onClick={toggleForm} className="toggle-button" disabled={loading}>
-            {isLogin ? 'Зарегистрироваться' : 'Войти'}
+          {isLogin ? "Нет аккаунта?" : "Уже есть аккаунт?"}{" "}
+          <button
+            type="button"
+            onClick={toggleForm}
+            className="toggle-button"
+            disabled={loading}
+          >
+            {isLogin ? "Зарегистрироваться" : "Войти"}
           </button>
         </p>
       </div>
@@ -151,4 +207,4 @@ const Auth = () => {
   );
 };
 
-export default Auth; 
+export default Auth;

@@ -27,6 +27,12 @@ namespace WatchTogetherAPI.Models.DTO
         public required string ConfirmPassword { get; set; }
     }
 
+    public class GoogleLoginRequest
+    {
+        [Required(ErrorMessage = "Токен обязателен")]
+        public required string Token { get; set; }
+    }
+
     public class AuthResponse
     {
         public Guid UserId { get; set; }

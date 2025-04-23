@@ -6,6 +6,8 @@ using System.Text.Json.Serialization;
 using WatchTogetherAPI.Data.AppDbContext;
 using WatchTogetherAPI.Hubs;
 using WatchTogetherAPI.Services;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 namespace WatchTogetherAPI
 {
@@ -14,6 +16,34 @@ namespace WatchTogetherAPI
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Добавляем поддержку пользовательских секретов
+            builder.Configuration
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .AddUserSecrets<Program>(optional: true);
+
+            // Инициализация Firebase Admin SDK
+            if (FirebaseAdmin.FirebaseApp.DefaultInstance == null)
+            {
+                // Вариант 1: Инициализация с помощью JSON файла с сервисным аккаунтом
+                // (файл должен быть создан в Firebase Console и добавлен в проект)
+                string firebaseCredPath = builder.Configuration["FirebaseAdmin:CredentialPath"];
+                if (!string.IsNullOrEmpty(firebaseCredPath))
+                {
+                    FirebaseApp.Create(new AppOptions
+                    {
+                        Credential = GoogleCredential.FromFile(firebaseCredPath)
+                    });
+                }
+                // Вариант 2: Инициализация с настройками по умолчанию 
+                // (работает в Google Cloud если проект запущен с нужными разрешениями)
+                else
+                {
+                    FirebaseApp.Create();
+                }
+            }
 
             // Add services to the container.
 

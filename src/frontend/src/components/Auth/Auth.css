@@ -2,104 +2,89 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 80vh;
-  padding: 20px;
+  min-height: 100vh;
+  background-color: #f5f5f5;
 }
 
 .auth-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 30px;
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: white;
 }
 
 .auth-title {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 24px;
   text-align: center;
+  margin-bottom: 2rem;
   color: #333;
-}
-
-.auth-error {
-  background-color: #ffebee;
-  color: #d32f2f;
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  font-size: 14px;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.5rem;
 }
 
 .form-group label {
-  font-size: 14px;
-  color: #555;
-  font-weight: 500;
+  font-weight: 600;
+  color: #333;
 }
 
 .form-group input {
-  padding: 12px;
+  padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 14px;
-  transition: border-color 0.2s;
-}
-
-.form-group input:focus {
-  border-color: #2196f3;
-  outline: none;
+  font-size: 1rem;
 }
 
 .auth-button {
-  background-color: #2196f3;
+  padding: 0.75rem;
+  background-color: #0066cc;
   color: white;
   border: none;
   border-radius: 4px;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
-  margin-top: 10px;
 }
 
 .auth-button:hover {
-  background-color: #1976d2;
+  background-color: #0052a3;
 }
 
 .auth-button:disabled {
-  background-color: #90caf9;
+  background-color: #cccccc;
   cursor: not-allowed;
 }
 
-.auth-toggle {
+.auth-error {
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  background-color: #ffebee;
+  color: #c62828;
+  border-radius: 4px;
   text-align: center;
-  margin-top: 20px;
-  font-size: 14px;
-  color: #666;
+}
+
+.auth-toggle {
+  margin-top: 1rem;
+  text-align: center;
 }
 
 .toggle-button {
   background: none;
   border: none;
-  color: #2196f3;
-  font-size: 14px;
-  font-weight: 500;
+  color: #0066cc;
   cursor: pointer;
-  padding: 0;
+  font-weight: 600;
 }
 
 .toggle-button:hover {
@@ -107,7 +92,67 @@
 }
 
 .toggle-button:disabled {
-  color: #90caf9;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Стили для кнопки входа через Google */
+.google-auth-divider {
+  margin: 1rem 0;
+  text-align: center;
+  position: relative;
+}
+
+.google-auth-divider:before,
+.google-auth-divider:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background-color: #ddd;
+}
+
+.google-auth-divider:before {
+  left: 0;
+}
+
+.google-auth-divider:after {
+  right: 0;
+}
+
+.google-auth-button {
+  padding: 0.75rem;
+  background-color: #ffffff;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.google-auth-button:before {
+  content: "";
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px"><path fill="%23FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="%23FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="%234CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="%231976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>');
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.google-auth-button:hover {
+  background-color: #f8f8f8;
+}
+
+.google-auth-button:disabled {
+  background-color: #f5f5f5;
+  color: #999;
   cursor: not-allowed;
 }
 
@@ -115,8 +160,8 @@
   .auth-card {
     padding: 20px;
   }
-  
+
   .auth-title {
     font-size: 20px;
   }
-} 
+}

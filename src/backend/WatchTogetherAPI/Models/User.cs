@@ -26,6 +26,12 @@ namespace WatchTogetherAPI.Models
 
         public string PasswordHash { get; set; } = "default-hash";
 
+        [MaxLength(100)]
+        public string? Email { get; set; }
+
+        // Идентификатор пользователя в Google
+        public string? GoogleId { get; set; }
+
         [Required]
         public UserStatus Status { get; set; }
 

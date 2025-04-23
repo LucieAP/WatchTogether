@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using WatchTogetherAPI.Data.AppDbContext;
 using WatchTogetherAPI.Models;
 using WatchTogetherAPI.Models.DTO;
+using FirebaseAdmin.Auth;
 
 namespace WatchTogetherAPI.Controllers
 {
@@ -157,6 +158,106 @@ namespace WatchTogetherAPI.Controllers
             }
         }
 
+        // /api/auth/google
+        [HttpPost("google")]
+        public async Task<IActionResult> LoginWithGoogle([FromBody] GoogleLoginRequest request, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                // Проверяем Firebase ID токен вместо Google токена
+                FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(request.Token, cancellationToken);
+                if (decodedToken == null)
+                {
+                    return BadRequest(new { Message = "Неверный токен Firebase" });
+                }
+
+                // Получаем данные пользователя из токена
+                string email = decodedToken.Claims.TryGetValue("email", out object emailObj) ? emailObj.ToString() : null;
+                string name = decodedToken.Claims.TryGetValue("name", out object nameObj) ? nameObj.ToString() : "Пользователь";
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    return BadRequest(new { Message = "Токен не содержит email пользователя" });
+                }
+
+                // Ищем пользователя по email
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+
+                // Если пользователь не найден, создаем нового
+                if (user == null)
+                {
+                    user = new User
+                    {
+                        Username = name ?? "Пользователь " + decodedToken.Uid.Substring(0, 6),
+                        Email = email,
+                        GoogleId = decodedToken.Uid,
+                        Status = UserStatus.Authed,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                else
+                {
+                    // Обновляем информацию существующего пользователя
+                    user.Status = UserStatus.Authed;
+                    
+                    // Обновляем GoogleId если он не был установлен ранее
+                    if (string.IsNullOrEmpty(user.GoogleId))
+                    {
+                        user.GoogleId = decodedToken.Uid;
+                    }
+                    
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+
+                // Генерируем JWT токен
+                var token = GenerateJwtToken(user);
+                var tokenExpires = DateTime.UtcNow.AddDays(7);
+
+                // Устанавливаем Cookie в ответе
+                Response.Cookies.Append(
+                    "X-User-Id",
+                    user.UserId.ToString(),
+                    new CookieOptions
+                    {
+                        Path = "/",
+                        MaxAge = TimeSpan.FromDays(7),
+                        SameSite = SameSiteMode.None,
+                        HttpOnly = true,
+                        Secure = true,
+                        IsEssential = true
+                    }
+                );
+
+                // Возвращаем информацию о пользователе и токен
+                return Ok(new AuthResponse
+                {
+                    UserId = user.UserId,
+                    Username = user.Username,
+                    Token = token,
+                    TokenExpires = tokenExpires,
+                    Status = user.Status
+                });
+            }
+            catch (FirebaseAuthException fbEx)
+            {
+                _logger.LogError(fbEx, "Ошибка при проверке токена Firebase: {Error}", fbEx.Message);
+                return BadRequest(new { Message = "Ошибка проверки токена: " + fbEx.Message });
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Запрос на вход через Google был отменен");
+                return StatusCode(499, "Запрос был отменен");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при входе через Google: {Error}", ex.Message);
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
+        }
+
         // /api/auth/logout
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(CancellationToken cancellationToken = default)
@@ -284,8 +385,8 @@ namespace WatchTogetherAPI.Controllers
                     SecurityAlgorithms.HmacSha256Signature)
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);  // `CreateToken()` создает JWT на основе `tokenDescriptor
-            return tokenHandler.WriteToken(token);  // `WriteToken()` преобразует JWT в строку
+            var token = tokenHandler.CreateToken(tokenDescriptor);  // `CreateToken()` создает JWT на основе `tokenDescriptor
+            return tokenHandler.WriteToken(token);  // `WriteToken()` преобразует JWT в строку
         }
     }
 } 

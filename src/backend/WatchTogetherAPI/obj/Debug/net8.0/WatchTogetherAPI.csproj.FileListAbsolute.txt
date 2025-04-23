@@ -278,3 +278,13 @@ C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Formats.Asn1.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Apis.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Apis.Auth.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Apis.Core.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\System.Management.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Management.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\appsettings.template.json
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\firebase-credentials.json
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\FirebaseAdmin.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Api.Gax.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Api.Gax.Rest.dll
