@@ -50,27 +50,21 @@
 /* Плеер */
 .player-wrapper {
   position: relative;
-  padding-top: 56.25%; /* 16:9 соотношение */
+  width: 100%;
+  max-width: var(--column-width);
+  height: 100%;
+  padding-top: 0;
+  background-color: var(--background-color);
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  margin: 0 auto;
 }
 
 h1 {
   font-size: clamp(1.5rem, 3vw, 2rem);
   margin-bottom: 1rem;
   font-weight: 600;
-}
-
-/* Контейнер плеера с адаптивной высотой */
-.player-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: var(--column-width);
-  height: 0;
-  padding-top: 56.25%; /*16:9 соотношение*/
-  background-color: var(--background-color);
-  overflow: hidden;
-  border-radius: var(--border-radius);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  margin: 0 auto;
 }
 
 .video-container {
@@ -86,6 +80,8 @@ h1 {
   position: absolute;
   top: 0;
   left: 0;
+  width: 100% !important;
+  height: 100% !important;
   z-index: var(--z-video);
 }
 

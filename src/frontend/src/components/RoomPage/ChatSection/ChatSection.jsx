@@ -23,6 +23,8 @@ export const ChatSection = ({
   handleCloseModal,
   handleManualLeave,
   navigate,
+  isChatVisible,
+  toggleChatVisibility,
 }) => {
   const [showNotification, setShowNotification] = useState(false);
   const [showParticipants, setShowParticipants] = useState(false);
@@ -283,7 +285,7 @@ export const ChatSection = ({
           onClick={() => setShowPicker(false)}
           className="chat-button"
         >
-          Отправить
+          Чат
         </button>
       </form>
     </section>

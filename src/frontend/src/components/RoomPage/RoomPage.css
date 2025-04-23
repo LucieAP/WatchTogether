@@ -21,7 +21,22 @@
 /* Основной контент */
 .room-container {
   display: flex;
-  height: calc(100vh - 57px); /* Вычитаем высоту шапки и футера */
+  height: calc(100vh - 57px); /* Вычитаем высоту хедера */
+  position: absolute; /* Используем absolute вместо fixed */
+  top: 57px; /* Располагаем ниже хедера */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1; /* Меньший z-index, чтобы хедер был сверху */
+  background-color: #fff;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden; /* Предотвращаем прокрутку внутри комнаты */
+  border-top: 3px solid #eee; /* Добавляем полоску-разделитель сверху */
+}
+
+/* Стили для комнаты со скрытым чатом */
+.room-container.chat-hidden .chat-section {
+  display: none;
 }
 
 /* Скролл-бар */

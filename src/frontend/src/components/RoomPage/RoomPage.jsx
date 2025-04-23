@@ -25,6 +25,8 @@ export default function RoomPage({
   refetchRoomData,
 }) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  // Состояние для показа/скрытия чата
+  const [isChatVisible, setIsChatVisible] = useState(true);
   // Отслеживаем взаимодействие с мышью, чтобы решить проблему закрытия модального окна при копировании текста и выходе курсора за его границы
   const mouseDownOnContentRef = useRef(false);
 
@@ -47,6 +49,11 @@ export default function RoomPage({
 
     ...initialRoomData, // Добавляем начальные значения
   });
+
+  // Функция для переключения видимости чата
+  const toggleChatVisibility = useCallback(() => {
+    setIsChatVisible((prev) => !prev);
+  }, []);
 
   console.log("roomData RoomPage: ", roomData);
 
@@ -196,6 +203,8 @@ export default function RoomPage({
         handleAddVideoModal={handleAddVideoModal}
         isAddVideoModalOpen={isAddVideoModalOpen}
         setIsAddVideoModalOpen={setIsAddVideoModalOpen}
+        isChatVisible={isChatVisible}
+        toggleChatVisibility={toggleChatVisibility}
       />
     ),
     [
@@ -211,6 +220,8 @@ export default function RoomPage({
       handleAddVideoModal,
       isAddVideoModalOpen,
       setIsAddVideoModalOpen,
+      isChatVisible,
+      toggleChatVisibility,
     ]
   );
 
@@ -232,6 +243,8 @@ export default function RoomPage({
         handleCloseModal={handleCloseModal}
         handleManualLeave={handleManualLeave}
         navigate={navigate}
+        isChatVisible={isChatVisible}
+        toggleChatVisibility={toggleChatVisibility}
       />
     ),
     [
@@ -245,6 +258,8 @@ export default function RoomPage({
       handleManualReconnect,
       handleCloseModal,
       navigate,
+      isChatVisible,
+      toggleChatVisibility,
     ]
   );
 
@@ -272,12 +287,12 @@ export default function RoomPage({
   );
 
   return (
-    <main className="room-container">
+    <main className={`room-container ${isChatVisible ? "" : "chat-hidden"}`}>
       {/* Видео-плеер */}
       {memoizedVideoSection}
 
       {/* Чат */}
-      {memoizedChatSection}
+      {isChatVisible && memoizedChatSection}
 
       {/* Модалка настроек комнаты, при нажатии на шестеренку */}
       {memoizedSettingsModal}

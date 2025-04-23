@@ -5,6 +5,10 @@
   border-left: 1px solid #ddd;
   display: flex;
   flex-direction: column;
+  transition: flex 0.3s ease-in-out, width 0.3s ease-in-out;
+  height: 100%; /* Заменяем 100vh на 100% для соответствия высоте родителя */
+  overflow-y: auto; /* Добавляем прокрутку для чата */
+  padding-bottom: 0px;
 }
 
 /* Контейнер компонента */
@@ -21,16 +25,19 @@
 }
 
 .messages-container {
-  height: calc(100vh - 57px);
+  flex-grow: 1; /* Позволяем сообщениям занимать всё доступное пространство */
   overflow-y: auto;
   border: 1px solid #ccc;
   margin-bottom: 10px;
+  /* Адаптивная высота с учетом остальных элементов */
+  /* max-height: calc(
+    100% - 230px
+  );  */
 }
 
 .chat-form {
   display: flex;
-  padding: 10px;
-  border-top: 1px solid #e0e0e0;
+  padding-bottom: 10px;
   background: white;
   position: relative;
   align-items: center;
@@ -45,7 +52,7 @@
 .chat-input {
   width: 100%;
   border: 1px solid #ddd;
-  border-radius: 20px;
+  border-radius: 5px;
   padding: 8px 12px;
   padding-right: 40px; /* Освобождаем место для кнопки эмодзи */
   outline: none;
@@ -71,13 +78,14 @@
 }
 
 .chat-button {
-  font-size: 18px;
+  font-size: 14px;
+  padding: 0.5rem 0.8rem;
+  width: auto; /* Уменьшаем ширину кнопки до содержимого */
   cursor: pointer;
   background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 5px;
-  padding: 0.5rem 1rem;
 }
 
 .chat-button:hover {
@@ -113,7 +121,7 @@
 /* Заголовок списка участников */
 .participants-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 8px 12px;
   background-color: #e9ecef;

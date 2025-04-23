@@ -19,6 +19,8 @@ export const VideoSection = memo(
     handleAddVideoModal,
     isAddVideoModalOpen,
     setIsAddVideoModalOpen,
+    isChatVisible,
+    toggleChatVisibility,
   }) => {
     const [isCloseVideoModalOpen, setIsCloseVideoModalOpen] = useState(false);
 
@@ -54,6 +56,15 @@ export const VideoSection = memo(
 
     return (
       <section className="video-section">
+        {/* Кнопка скрытия/показа чата */}
+        <button
+          className="toggle-chat-button"
+          onClick={toggleChatVisibility}
+          title={isChatVisible ? "Скрыть чат" : "Показать чат"}
+        >
+          {isChatVisible ? "→" : "←"}
+        </button>
+
         {roomData?.currentVideo?.videoId ? (
           <>
             <VideoPlayer
@@ -67,22 +78,20 @@ export const VideoSection = memo(
               onTimeUpdate={handleTimeUpdate}
             />
 
-            {/* Модалка подтверждения закрытия видео */}
-            <div className="close-video-container">
-              {/* Кнопка закрытия плеера */}
-              <button
-                className="close-video-button"
-                onClick={openCloseVideoModal}
-              >
-                Закрыть видео
-              </button>
+            {/* Компактная кнопка закрытия видео */}
+            <button
+              className="mini-close-video-button"
+              onClick={openCloseVideoModal}
+              title="Закрыть видео"
+            >
+              ✕
+            </button>
 
-              <CloseVideoModal
-                isOpen={isCloseVideoModalOpen}
-                onClose={closeVideoModal}
-                onConfirm={handleCloseVideo}
-              />
-            </div>
+            <CloseVideoModal
+              isOpen={isCloseVideoModalOpen}
+              onClose={closeVideoModal}
+              onConfirm={handleCloseVideo}
+            />
           </>
         ) : (
           <button

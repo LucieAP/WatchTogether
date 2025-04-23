@@ -2,15 +2,38 @@
   flex: 7;
   padding: 20px;
   position: relative;
-}
-
-.close-video-container {
+  transition: flex 0.3s ease-in-out;
+  height: 100%; /* Заменяем 100vh на 100% для соответствия высоте родителя */
   display: flex;
   flex-direction: column;
-  /* align-items: center; */
-  padding: 1rem;
-  padding-left: 0;
-  width: 200px;
+}
+
+.chat-hidden .video-section {
+  flex: 12; /* Увеличиваем пропорцию при скрытом чате */
+}
+
+/* Стили для компактной кнопки закрытия видео */
+.mini-close-video-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  z-index: 5;
+}
+
+.mini-close-video-button:hover {
+  background-color: rgba(0, 0, 0, 0.9);
 }
 
 /* Центрирование круглой кнопки внутри видеоплеера */
@@ -30,4 +53,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Стили для кнопки скрытия/показа чата */
+.toggle-chat-button {
+  position: absolute;
+  right: -16px; /* Размещаем кнопку справа от видео-секции */
+  top: 50%; /* Центрируем по вертикали */
+  transform: translateY(
+    -50%
+  ); /* Корректировка для вертикального центрирования */
+  z-index: 10;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50% 0 0 50%; /* Скругляем только левую сторону */
+  width: 32px;
+  height: 60px; /* Увеличиваем высоту кнопки */
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2); /* Добавляем тень слева */
+}
+
+.toggle-chat-button:hover {
+  background-color: rgba(0, 0, 0, 0.9);
 }
