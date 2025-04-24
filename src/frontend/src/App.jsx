@@ -3,7 +3,6 @@ import { matchPath, useParams } from "react-router";
 import "./App.css";
 import CreateRoom from "./components/CreateRoom/CreateRoom";
 import Header from "./components/Header/Header";
-import Footer from "./components/Footer/Footer";
 import NotFoundPage from "./components/NotFoundPage/NotFoundPage";
 import HomePage from "./components/HomePage/HomePage";
 import RoomPage from "./components/RoomPage/RoomPage";

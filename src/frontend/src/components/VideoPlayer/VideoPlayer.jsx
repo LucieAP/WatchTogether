@@ -715,7 +715,9 @@ export const VideoPlayer = forwardRef(
               <div className="player-progress-bar-container">
                 <div
                   className="progress-bar-wrapper"
-                  onMouseMove={handleSeekPreview}
+                  onMouseMove={(e) =>
+                    seeking ? handleSeekChange(e) : handleSeekPreview(e)
+                  }
                   onMouseEnter={handleSeekPreviewShow}
                   onMouseLeave={handleSeekPreviewHide}
                   onClick={handleSeekMouseUp}
