@@ -603,7 +603,7 @@ namespace WatchTogetherAPI.Controllers
                         CurrentVideoId = room.VideoState?.CurrentVideo?.VideoId,
                         IsPaused = room.VideoState?.IsPaused ?? true,
                         CurrentTime = room.VideoState?.CurrentTime.TotalSeconds ?? 0,
-                        // CurrentVideo = room.VideoState?.CurrentVideo
+                        CurrentVideo = room.VideoState?.CurrentVideo
                     }, cancellationToken);
 
                 return Ok(new{ 
