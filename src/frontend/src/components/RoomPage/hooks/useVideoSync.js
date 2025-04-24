@@ -34,11 +34,19 @@ export const useVideoSync = (
     // Если видео на паузе или идет перемотка - не отправляем обновления
     if (roomData.isPaused || isSeekingRef.current) return;
 
+    console.log("window.lastManualSeekTime:", window.lastManualSeekTime);
+    // Проверяем, была ли недавно ручная перемотка (в течение 5 секунд)
+    const wasRecentlyManuallySeek =
+      window.lastManualSeekTime &&
+      Date.now() - window.lastManualSeekTime < 5000;
+
     // Добавляем состояние последнего отправленного времени
     // Проверяем, достаточно ли значительное изменение
     const lastReportedTime = lastReportedTimeRef.current || 0;
-    // Отправляем на сервер только при изменении > 1 секунды
-    if (Math.abs(lastReportedTime - seconds) > 1) {
+
+    // Для обычного обновления требуется разница > 1 секунды
+    // Для случая после ручной перемотки - отправляем в любом случае
+    if (wasRecentlyManuallySeek || Math.abs(lastReportedTime - seconds) > 1) {
       // Проверяем, активно ли соединение SignalR
       if (connectionRef.current?.connection?.state === "Connected") {
         try {
@@ -50,6 +58,13 @@ export const useVideoSync = (
           );
           lastReportedTimeRef.current = seconds;
           console.log("SignalR отправка времени:", Math.floor(seconds));
+
+          // Если это было обновление после ручной перемотки, обновляем метку времени
+          if (wasRecentlyManuallySeek) {
+            console.log("Успешно отправлено время после ручной перемотки");
+            // Очищаем метку - синхронизация выполнена
+            window.lastManualSeekTime = null;
+          }
         } catch (error) {
           console.error("Ошибка отправки времени через SignalR:", error);
           checkConnectionHealth();
@@ -105,6 +120,56 @@ export const useVideoSync = (
         `lastPlayPauseActionRef.current: ${lastPlayPauseActionRef.current}`
       );
 
+      // Получаем текущее время воспроизведения при постановке на паузу
+      let currentPlayerTime = 0;
+      if (action === "pause" && playerRef.current) {
+        currentPlayerTime = playerRef.current.getCurrentTime?.() || 0;
+        console.log(
+          `Текущее время при постановке на паузу: ${currentPlayerTime} сек.`
+        );
+      }
+
+      // Проверяем, была ли недавно ручная перемотка (в течение 5 секунд)
+      const wasRecentlyManuallySeek =
+        window.lastManualSeekTime &&
+        Date.now() - window.lastManualSeekTime < 5000;
+
+      // Если недавно была перемотка и мы снимаем с паузы, немедленно отправляем текущее время
+      if (wasRecentlyManuallySeek && action === "play" && playerRef.current) {
+        const currentTime = playerRef.current.getCurrentTime?.() || 0;
+
+        // Обновляем локальное состояние
+        setRoomData((prev) => ({
+          ...prev,
+          currentTime,
+          isPaused: false,
+        }));
+
+        console.log(`Снятие с паузы после перемотки на ${currentTime} сек.`);
+
+        // Немедленно отправляем обновление времени на сервер
+        if (connectionRef.current?.connection?.state === "Connected") {
+          try {
+            await connectionRef.current.connection.invoke(
+              "UpdateVideoTime",
+              roomId,
+              Math.floor(currentTime)
+            );
+            lastReportedTimeRef.current = currentTime;
+            console.log(
+              `Отправлено время после перемотки и снятия с паузы: ${Math.floor(
+                currentTime
+              )} сек.`
+            );
+          } catch (error) {
+            console.error(
+              "Ошибка отправки времени после снятия с паузы:",
+              error
+            );
+          }
+        }
+      }
+
       // Устанавливаем короткую задержку перед отправкой
       playPauseDebounceTimeoutRef.current = setTimeout(async () => {
         // Проверяем, не изменилось ли действие с момента последнего запроса
@@ -112,7 +177,14 @@ export const useVideoSync = (
 
         try {
           // Немедленно обновляем локальное состояние для отзывчивости UI
-          setRoomData((prev) => ({ ...prev, isPaused: isPaused }));
+          setRoomData((prev) => ({
+            ...prev,
+            isPaused: isPaused,
+            // Если ставим на паузу, сохраняем текущее время воспроизведения
+            ...(isPaused && currentPlayerTime > 0
+              ? { currentTime: currentPlayerTime }
+              : {}),
+          }));
 
           // Проверяем, активно ли соединение SignalR
           if (connectionRef.current?.connection?.state === "Connected") {
@@ -123,6 +195,26 @@ export const useVideoSync = (
               isPaused
             );
             console.log("SignalR отправка isPaused:", isPaused);
+
+            // Если ставим на паузу, сразу отправляем и текущее время отдельным вызовом
+            if (isPaused && currentPlayerTime > 0) {
+              try {
+                await connectionRef.current.connection.invoke(
+                  "UpdateVideoTime",
+                  roomId,
+                  Math.floor(currentPlayerTime)
+                );
+                console.log(
+                  `SignalR отправка времени при паузе: ${Math.floor(
+                    currentPlayerTime
+                  )}`
+                );
+                lastReportedTimeRef.current = currentPlayerTime;
+              } catch (timeError) {
+                console.error("Ошибка отправки времени при паузе:", timeError);
+              }
+            }
+
             connectionHealthRef.current.lastPingTime = Date.now(); // Обновление времени последней успешной коммуникации
           } else {
             console.warn(
@@ -139,7 +231,7 @@ export const useVideoSync = (
         }
       }, 300); // Задержка 300мс для дебаунса множественных нажатий
     },
-    [roomId, setRoomData, connectionRef]
+    [roomId, setRoomData, connectionRef, playerRef]
   );
 
   // Обработчик обновления состояния видео, получаемого через SignalR
@@ -175,31 +267,6 @@ export const useVideoSync = (
         lastPlayPauseTimeRef.current &&
         now - lastPlayPauseTimeRef.current < 2000;
 
-      // // Если это состояние получено после недавнего действия, проверим, совпадает ли оно с нашим
-      // if (hasRecentPlayPauseAction) {
-      //   const ourAction = lastPlayPauseActionRef.current;
-      //   const ourIsPaused = ourAction === "pause";
-      //   const serverIsPaused = videoState.isPaused ?? true;
-
-      //   console.log(
-      //     "Недавнее действие:",
-      //     ourAction,
-      //     "локальное isPaused:",
-      //     ourIsPaused,
-      //     "серверное isPaused:",
-      //     serverIsPaused
-      //   );
-
-      //   // Если сервер вернул противоположное состояние, то другой участник, вероятно, изменил состояние
-      //   if (ourIsPaused !== serverIsPaused) {
-      //     console.log(
-      //       "Обнаружен конфликт состояний, принимаем серверное состояние"
-      //     );
-      //     // Сбрасываем наш флаг последнего действия, так как мы принимаем состояние сервера
-      //     lastPlayPauseTimeRef.current = null;
-      //   }
-      // }
-
       console.log(
         `Синхронизация: локальное ${currentTime}, серверное ${serverTime}, разница ${timeDifference.toFixed(
           2
@@ -207,18 +274,52 @@ export const useVideoSync = (
         `hasRecentPlayPauseAction: ${hasRecentPlayPauseAction}`
       );
 
-      // Добавляем проверку на недавнюю ручную перемотку (5 секунд)
+      console.log("window.lastManualSeekTime:", window.lastManualSeekTime);
+      // Проверяем, была ли недавно ручная перемотка (в течение 5 секунд)
       const wasRecentlyManuallySeek =
-        window.lastManualSeekTime && now - window.lastManualSeekTime < 3000;
+        window.lastManualSeekTime && now - window.lastManualSeekTime < 5000;
 
       console.log("wasRecentlyManuallySeek: ", wasRecentlyManuallySeek);
+
+      // Если была ручная перемотка, но мы еще не отправили обновление на сервер,
+      // делаем это немедленно - отправляем текущее время на сервер
+      if (
+        wasRecentlyManuallySeek &&
+        player &&
+        !roomData.isPaused &&
+        connectionRef.current?.connection?.state === "Connected"
+      ) {
+        const currentPlayerTime = player.getCurrentTime?.() || 0;
+        try {
+          // Отправляем новое время на сервер сразу после ручной перемотки
+          console.log(
+            `Отправка времени после ручной перемотки: ${Math.floor(
+              currentPlayerTime
+            )} сек.`
+          );
+          connectionRef.current.connection.invoke(
+            "UpdateVideoTime",
+            roomId,
+            Math.floor(currentPlayerTime)
+          );
+          lastReportedTimeRef.current = currentPlayerTime;
+        } catch (error) {
+          console.error("Ошибка отправки времени после перемотки:", error);
+        }
+      }
 
       // Сначала обработать синхронизацию времени
       // Проверка на расскождение текущего времени на клиенте с серверным
       // Если разница больше 5 секунд (> 5), происходит принудительная перемотка (seekTo) к времени сервера
       // isSeekingRef: Блокирует синхронизацию во время перемотки, предотвращая конфликты. Сбрасывается через 2 секунды, давая время на стабилизацию
 
-      if (player && !isSeekingRef.current && !wasRecentlyManuallySeek) {
+      // Пропускаем принудительную синхронизацию при наличии недавних действий с плеером
+      if (
+        player &&
+        !isSeekingRef.current &&
+        !wasRecentlyManuallySeek &&
+        !hasRecentPlayPauseAction
+      ) {
         if (Math.abs(serverTime - currentTime) > 5) {
           console.log(
             `Большое расхождение (${timeDifference.toFixed(
@@ -234,6 +335,10 @@ export const useVideoSync = (
             isSeekingRef.current = false;
           }, 2000);
         }
+      } else if (hasRecentPlayPauseAction) {
+        console.log(
+          "Пропускаем синхронизацию времени из-за недавнего play/pause действия"
+        );
       }
 
       // Если изменение инициировано сервером, обновляем локальное состояние

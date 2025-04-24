@@ -216,12 +216,14 @@ export const VideoPlayer = forwardRef(
     // Обработчик нажатия кнопки мыши на ползунке (Начинает процесс перемотки)
     const handleSeekMouseDown = (e) => {
       setSeeking(true); // Устанавливаем состояние seeking в true, чтобы указать, что началась перемотка
+      isSeekingRef.current = true; // Добавляем установку флага для блокировки синхронизации
       e.stopPropagation(); // Предотвращаем всплытие события, чтобы не срабатывал клик на фоне
     };
 
     // Обработчик отпускания кнопки мыши на ползунке (Завершает процесс перемотки)
     const handleSeekMouseUp = (e) => {
       setSeeking(false); // Устанавливаем состояние seeking в false, чтобы указать, что перемотка завершена
+      // Не сбрасываем isSeekingRef.current здесь, чтобы избежать ранней синхронизации
 
       // Получаем контейнер прогресс-бара
       const container = e.currentTarget.closest(".progress-bar-wrapper");
@@ -238,18 +240,31 @@ export const VideoPlayer = forwardRef(
       setSeekPreviewTime(result.exactTime);
       setSeekPreviewPosition(result.percentage * 100);
 
-      // Добавляем блокировку синхронизации на несколько секунд
+      // Запоминаем время последней ручной перемотки
       window.lastManualSeekTime = Date.now();
+
+      // Сбрасываем флаг перемотки через короткое время
+      setTimeout(() => {
+        isSeekingRef.current = false;
+      }, 1000);
 
       // Вызываем onTimeUpdate после перемотки
       if (onTimeUpdate) {
-        console.log(
-          `Вызываем метод handleTimeUpdate, обновляем на время: ${result.exactTime} сек.`
-        );
         onTimeUpdate(result.exactTime);
         if (typeof onTimeUpdate.flush === "function") {
           onTimeUpdate.flush(); // Принудительно моментально выполняем дебаунс, если есть отложенные вызовы
         }
+      }
+
+      // Добавляем небольшую задержку перед отправкой команды play, чтобы позволить
+      // времени перемотки синхронизироваться с сервером
+      if (playing) {
+        setTimeout(() => {
+          if (onTimeUpdate && typeof onTimeUpdate.flush === "function") {
+            onTimeUpdate(result.exactTime);
+            onTimeUpdate.flush(); // Повторно отправляем время для гарантии
+          }
+        }, 500);
       }
     };
 
@@ -328,6 +343,10 @@ export const VideoPlayer = forwardRef(
       setPlaying(true);
       resetTimeout();
 
+      // Обновляем текущее время перед отправкой события play
+      const currentSeconds = playerRef.current?.getCurrentTime() || 0;
+      currentTimeRef.current = currentSeconds;
+
       // Добавляем вызов пропса onPlayPause с действием "play"
       onPlayPause && onPlayPause("play");
     };
@@ -336,6 +355,10 @@ export const VideoPlayer = forwardRef(
     const handlePause = () => {
       setPlaying(false);
       setControlsVisible(true);
+
+      // Обновляем текущее время перед отправкой события pause
+      const currentSeconds = playerRef.current?.getCurrentTime() || 0;
+      currentTimeRef.current = currentSeconds;
 
       // Добавляем вызов пропса onPlayPause с действием "pause"
       onPlayPause && onPlayPause("pause");
