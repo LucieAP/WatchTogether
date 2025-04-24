@@ -1,5 +1,11 @@
-import { useState, memo, useCallback } from "react";
-import { matchPath, useParams } from "react-router";
+import { useState, memo, useCallback, useEffect } from "react";
+import {
+  matchPath,
+  useParams,
+  useLocation,
+  Navigate,
+  useNavigate,
+} from "react-router";
 import "./App.css";
 import CreateRoom from "./components/CreateRoom/CreateRoom";
 import Header from "./components/Header/Header";
@@ -12,13 +18,7 @@ import Auth from "./components/Auth/Auth";
 import Profile from "./components/Profile/Profile";
 import { useRoomData } from "./hooks/useRoomData";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Оптимизируем HeaderSelector с помощью React.memo
 const HeaderSelector = memo(function HeaderSelector() {
@@ -98,6 +98,14 @@ function RoomPageWithHeader() {
 
   const { roomId } = useParams();
   const { roomData, isLoading, error, refetch } = useRoomData(roomId);
+  const navigate = useNavigate();
+
+  // Перенаправляем на NotFoundPage, если комната не найдена
+  useEffect(() => {
+    if (error && error.notFound) {
+      navigate("/not-found");
+    }
+  }, [error, navigate]);
 
   // Оптимизируем функцию с помощью useCallback
   const handleSettingsClick = useCallback(() => {
@@ -166,6 +174,7 @@ export default function App() {
                 }
               />
               <Route path="/" element={<HomePage />} />
+              <Route path="/not-found" element={<NotFoundPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>

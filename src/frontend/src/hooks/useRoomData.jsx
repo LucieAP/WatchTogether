@@ -20,7 +20,18 @@ export const useRoomData = (roomId) => {
 
       setError(null);
     } catch (err) {
-      setError(err.message);
+      console.error("Ошибка при получении данных комнаты:", err);
+
+      // Проверяем, является ли ошибка 404 Not Found (комната не найдена/удалена)
+      if (err.response && err.response.status === 404) {
+        setError({
+          notFound: true,
+          message: "Комната не найдена или была удалена",
+        });
+      } else {
+        setError({ message: err.message });
+      }
+
       setRoomData(null);
     } finally {
       setIsLoading(false);
