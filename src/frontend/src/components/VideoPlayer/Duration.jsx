@@ -1,6 +1,10 @@
 import React from "react";
 
 export default function Duration({ className, seconds }) {
+  if (seconds === undefined || seconds === null || isNaN(seconds)) {
+    return <time className={className}>0:00</time>;
+  }
+
   return (
     <time dateTime={`P${Math.round(seconds)}S`} className={className}>
       {format(seconds)}
@@ -9,6 +13,8 @@ export default function Duration({ className, seconds }) {
 }
 
 function format(seconds) {
+  if (isNaN(seconds) || seconds < 0) seconds = 0;
+
   const date = new Date(seconds * 1000);
   const hh = date.getUTCHours();
   const mm = date.getUTCMinutes();

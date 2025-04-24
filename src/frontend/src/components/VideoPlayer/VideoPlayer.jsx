@@ -12,6 +12,7 @@ import {
 import ReactPlayer from "react-player";
 import Duration from "./Duration";
 import "./VideoPlayer.css"; // Убедимся, что подключен CSS файл
+import { calculateSeekPosition } from "../RoomPage/utils/videoHelpers";
 
 // Оборачиваем компонент в forwardRef, что позволяет родительскому компоненту получить доступ к DOM-элементу или методам компонента.
 export const VideoPlayer = forwardRef(
@@ -213,23 +214,29 @@ export const VideoPlayer = forwardRef(
     };
 
     // Обработчик нажатия кнопки мыши на ползунке (Начинает процесс перемотки)
-    const handleSeekMouseDown = () => {
+    const handleSeekMouseDown = (e) => {
       setSeeking(true); // Устанавливаем состояние seeking в true, чтобы указать, что началась перемотка
-      // isSeekingRef.current = true;
+      e.stopPropagation(); // Предотвращаем всплытие события, чтобы не срабатывал клик на фоне
     };
 
     // Обработчик отпускания кнопки мыши на ползунке (Завершает процесс перемотки)
     const handleSeekMouseUp = (e) => {
       setSeeking(false); // Устанавливаем состояние seeking в false, чтобы указать, что перемотка завершена
-      // isSeekingRef.current = false;
 
-      const value = parseFloat(e.target.value);
+      // Получаем контейнер прогресс-бара
+      const container = e.currentTarget.closest(".progress-bar-wrapper");
 
-      // Перемотка на точное значение в секундах
-      const exactSeconds = value * duration; // Вычисляем точное время в секундах на основе значения ползунка и общей длительности
+      // Используем utility функцию для расчета
+      const result = calculateSeekPosition(e, container, duration);
+      if (!result.isValid) return;
 
-      console.log(`handleSeekMouseUp: Перематываем на, ${exactSeconds} с.`);
-      playerRef.current.seekTo(exactSeconds, "seconds"); // Перематываем плеер на указанное время
+      console.log(`handleSeekMouseUp: Перематываем на ${result.exactTime} с.`);
+      playerRef.current.seekTo(result.exactTime, "seconds"); // Перематываем плеер на указанное время
+
+      // Обновляем состояние плеера и превью
+      setPlayed(result.percentage);
+      setSeekPreviewTime(result.exactTime);
+      setSeekPreviewPosition(result.percentage * 100);
 
       // Добавляем блокировку синхронизации на несколько секунд
       window.lastManualSeekTime = Date.now();
@@ -237,9 +244,9 @@ export const VideoPlayer = forwardRef(
       // Вызываем onTimeUpdate после перемотки
       if (onTimeUpdate) {
         console.log(
-          `Вызываем метод handleTimeUpdate, обновляем на время: ${exactSeconds} сек.`
+          `Вызываем метод handleTimeUpdate, обновляем на время: ${result.exactTime} сек.`
         );
-        onTimeUpdate(exactSeconds);
+        onTimeUpdate(result.exactTime);
         if (typeof onTimeUpdate.flush === "function") {
           onTimeUpdate.flush(); // Принудительно моментально выполняем дебаунс, если есть отложенные вызовы
         }
@@ -249,15 +256,19 @@ export const VideoPlayer = forwardRef(
     // Обработчик изменения значения ползунка
     const handleSeekChange = useCallback(
       (e) => {
-        const value = parseFloat(e.target.value); // Получаем текущее значение ползунка
-        setPlayed(value);
+        // Используем тот же метод, что и в handleSeekPreview
+        const container = e.currentTarget.closest(".progress-bar-wrapper");
 
-        // Для согласованности также обновляем время и позицию предпросмотра
-        const exactSeconds = value * duration;
-        setSeekPreviewTime(exactSeconds);
-        setSeekPreviewPosition(value * 100);
+        // Используем utility функцию для расчета
+        const result = calculateSeekPosition(e, container, duration);
+        if (!result.isValid) return;
+
+        // Обновляем состояние
+        setPlayed(result.percentage);
+        setSeekPreviewTime(result.exactTime);
+        setSeekPreviewPosition(result.percentage * 100);
       },
-      [duration, onTimeUpdate]
+      [duration] // Убрали calculateSeekPosition из зависимостей
     );
 
     // Обработчик для предпросмотра перемотки (показ времени при наведении на прогресс-бар)
@@ -265,29 +276,19 @@ export const VideoPlayer = forwardRef(
       // Получаем контейнер прогресс-бара
       const container = e.currentTarget;
 
-      // Находим непосредственно элемент input[type="range"]
-      const progressBar = container.querySelector(".player-progress-bar");
+      // Для предпросмотра нам важен элемент превью
       const seekPreview = seekPreviewRef.current;
+      if (!seekPreview) return;
 
-      if (!progressBar || !duration || !seekPreview) return;
-
-      // Получаем реальные размеры и позицию полосы прогресса
-      const barRect = progressBar.getBoundingClientRect(); // getBoundingClientRect() возвращает размеры и координаты элемента относительно окна браузера
-
-      // Вычисляем позицию курсора относительно полосы прогресса
-      let offsetX = e.clientX - barRect.left; // e.clientX — координата курсора по оси X относительно окна.
-
-      offsetX = Math.max(0, Math.min(offsetX, barRect.width)); // Ограничиваем смещение диапазоном [0, barRect.width], чтобы избежать выхода за границы.
-
-      // Рассчитываем процент и время
-      const percentage = offsetX / barRect.width;
-      const exactTime = percentage * duration;
+      // Используем utility функцию для расчета
+      const result = calculateSeekPosition(e, container, duration);
+      if (!result.isValid) return;
 
       // Сохраняем точное значение в секундах
-      setSeekPreviewTime(exactTime);
+      setSeekPreviewTime(result.exactTime);
 
       // Вычисляем процентную позицию на основе того же значения
-      setSeekPreviewPosition(percentage * 100);
+      setSeekPreviewPosition(result.percentage * 100);
     };
 
     // Обработчик для показа превью перемотки (например, при наведении на прогресс-бар)
@@ -694,6 +695,7 @@ export const VideoPlayer = forwardRef(
                   onMouseMove={handleSeekPreview}
                   onMouseEnter={handleSeekPreviewShow}
                   onMouseLeave={handleSeekPreviewHide}
+                  onClick={handleSeekMouseUp}
                 >
                   <input
                     className="player-progress-bar"
