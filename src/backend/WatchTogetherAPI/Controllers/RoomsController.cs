@@ -143,7 +143,8 @@ namespace WatchTogetherAPI.Controllers
                 {
                     RoomId = newRoom.RoomId,
                     UserId = currentUser.UserId,
-                    Role = ParticipantRole.Creator,
+                    // Для публичных комнат создатель становится ведущим (Host)
+                    Role = newRoom.Status == RoomStatus.Public ? ParticipantRole.Host : ParticipantRole.Creator,
                     JoinedAt = DateTime.UtcNow
                 };
 
@@ -241,6 +242,14 @@ namespace WatchTogetherAPI.Controllers
                 }
 
                 // Формирование ответа
+                // Определяем, может ли пользователь управлять видео:
+                // 1. Если комната приватная - все участники могут управлять видео
+                // 2. Если комната публичная - только создатель (Creator) или ведущий (Host) могут управлять видео
+                var participant = room.Participants.FirstOrDefault(p => p.UserId == currentUser.UserId);
+                var canControlVideo = room.Status == RoomStatus.Private || 
+                                     (participant?.Role == ParticipantRole.Host || 
+                                      participant?.Role == ParticipantRole.Creator);
+
                 var response = new
                 {
                     currentUser.UserId,
@@ -251,13 +260,16 @@ namespace WatchTogetherAPI.Controllers
                         room.Description,
                         room.InvitationLink,
                         room.CreatedByUserId,
+                        room.Status,
                         room.VideoState.CurrentVideo,
                         room.VideoState.IsPaused,
                         room.VideoState.CurrentTime,
+                        CanControlVideo = canControlVideo,
                         Participants = room.Participants.Select(p => new
                         {
                             p.User.UserId,
-                            p.User.Username
+                            p.User.Username,
+                            p.Role
                         })
                     }
                 };
@@ -353,6 +365,13 @@ namespace WatchTogetherAPI.Controllers
                     .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
 
                 if (room == null) return NotFound(new { Message = "Комната не найдена" });
+
+                // Проверяем лимит участников для публичных комнат
+                if (room.Status == RoomStatus.Public && room.Participants.Count >= 5 && 
+                    !room.Participants.Any(p => p.UserId == currentUser.UserId))
+                {
+                    return BadRequest(new { Message = "В публичной комнате уже максимальное количество участников (5)" });
+                }
 
                 // Проверяем, является ли пользователь участником комнаты
                 var existingParticipant = await _context.Participants
@@ -456,6 +475,23 @@ namespace WatchTogetherAPI.Controllers
             }
         }
 
+        // Проверяет, может ли пользователь управлять видео в комнате
+        private async Task<bool> CanUserControlVideoAsync(Guid roomId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            var room = await _context.Rooms
+                .Include(r => r.Participants)
+                .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
+            
+            if (room == null) return false;
+            
+            // Для приватных комнат - все участники могут управлять видео
+            if (room.Status == RoomStatus.Private) return true;
+            
+            // Для публичных комнат - только создатель комнаты (ведущий)
+            var participant = room.Participants.FirstOrDefault(p => p.UserId == userId);
+            return participant != null && (participant.Role == ParticipantRole.Host || participant.Role == ParticipantRole.Creator);
+        }
+
         private async Task<IActionResult> HandleManualLeave(Room room, Participant participant, bool isCreator, CancellationToken cancellationToken = default)
         {
             // Если текущий пользователь - не создатель комнаты и в комнате больше нет участников, удаляем комнату
@@ -472,21 +508,15 @@ namespace WatchTogetherAPI.Controllers
                         .First();
                     
                     room.CreatedByUserId = oldestParticipant.UserId;
-                    oldestParticipant.Role = ParticipantRole.Creator;
+                    
+                    // Если комната публичная, назначаем роль Host, иначе - Creator
+                    oldestParticipant.Role = room.Status == RoomStatus.Public ? 
+                        ParticipantRole.Host : ParticipantRole.Creator;
                     
                     // Удаляем текущего пользователя из участников
                     _context.Participants.Remove(participant);
                     await _context.SaveChangesAsync(cancellationToken);
                     await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("ParticipantsUpdated", cancellationToken);
-                    
-                    // // Уведомляем всех о смене владельца
-                    // await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("OwnershipChanged", new 
-                    // {
-                    //     RoomId = room.RoomId,
-                    //     NewOwnerId = oldestParticipant.UserId,
-                    //     NewOwnerUsername = oldestParticipant.User?.Username ?? "Unknown",
-                    //     PreviousOwnerId = participant.UserId
-                    // });
                     
                     // Уведомляем всех участников о выходе пользователя
                     await _hubContext.Clients.Group(room.RoomId.ToString()).SendAsync("UserLeft", participant.UserId.ToString(), participant.User?.Username.ToString() ?? "Unknown", cancellationToken);
@@ -566,6 +596,14 @@ namespace WatchTogetherAPI.Controllers
                 
                 if (room == null) return NotFound("Комната не найдена");
 
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
+
+                // Проверяем, имеет ли пользователь право управлять видео
+                if (!await CanUserControlVideoAsync(roomId, currentUser.UserId, cancellationToken))
+                {
+                    return StatusCode(403, "В публичной комнате только ведущий может управлять видео");
+                }
+
                 // Проверяем существование видео в базе
                 var video = await _context.Videos
                     .FirstOrDefaultAsync(v => v.VideoId == request.VideoId, cancellationToken);
@@ -582,13 +620,6 @@ namespace WatchTogetherAPI.Controllers
                     _context.Videos.Add(video);
                 }
 
-                var currentUser = await GetOrCreateUserAsync(cancellationToken);
-
-                //if (!room.Participants.Any(p => p.UserId == currentUser.UserId))
-                //{
-                //    return Forbid("Вы не являетесь участником комнаты.");
-                //};
-
                 // Обновляем состояние комнаты
                 room.VideoState.CurrentVideo = video;
                 room.VideoState.CurrentTime = TimeSpan.Zero;
@@ -603,7 +634,7 @@ namespace WatchTogetherAPI.Controllers
                         CurrentVideoId = room.VideoState?.CurrentVideo?.VideoId,
                         IsPaused = room.VideoState?.IsPaused ?? true,
                         CurrentTime = room.VideoState?.CurrentTime.TotalSeconds ?? 0,
-                        CurrentVideo = room.VideoState?.CurrentVideo
+                        CurrentVideo = room.VideoState?.CurrentVideo // Отправляем видео, чтобы у клиента автоматически добавлялось видео без перезагрузки страницы
                     }, cancellationToken);
 
                 return Ok(new{ 
@@ -628,51 +659,81 @@ namespace WatchTogetherAPI.Controllers
         [HttpDelete("{roomId:guid}/video")]
         public async Task<IActionResult> DeleteCurrentVideo(Guid roomId, CancellationToken cancellationToken = default)
         {
-            var room = await _context.Rooms
-                .Include(r => r.VideoState)
-                    .ThenInclude(vs => vs.CurrentVideo)
-                .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
-                    
-            if (room == null) return NotFound();
-
-            if (room.VideoState.CurrentVideo == null)
+            try 
             {
-                return BadRequest("Room has no current video");
-            }
+                var room = await _context.Rooms
+                    .Include(r => r.VideoState)
+                        .ThenInclude(vs => vs.CurrentVideo)
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId, cancellationToken);
+                        
+                if (room == null) 
+                {
+                    _logger.LogWarning("Попытка удаления видео из несуществующей комнаты {RoomId}", roomId);
+                    return NotFound(new { Message = "Комната не найдена" });
+                }
 
-            try
-            {
-                // Удаляем видео из БД:
-                _context.Videos.Remove(room.VideoState.CurrentVideo);
+                if (room.VideoState.CurrentVideo == null)
+                {
+                    _logger.LogWarning("Попытка удаления несуществующего видео из комнаты {RoomId}", roomId);
+                    return BadRequest(new { Message = "В комнате нет активного видео" });
+                }
 
-                // Сбрасываем состояния плеера
-                room.VideoState.IsPaused = true;
-                room.VideoState.CurrentTime = TimeSpan.Zero;
-                room.VideoState.LastUpdated = DateTime.UtcNow;
-                room.VideoState.CurrentVideo = null;
+                var currentUser = await GetOrCreateUserAsync(cancellationToken);
 
-                await _context.SaveChangesAsync(cancellationToken);
+                // Проверяем, имеет ли пользователь право управлять видео
+                if (!await CanUserControlVideoAsync(roomId, currentUser.UserId, cancellationToken))
+                {
+                    _logger.LogWarning("Пользователь {UserId} не имеет прав на удаление видео в комнате {RoomId}", 
+                        currentUser.UserId, roomId);
+                    return StatusCode(403, new { Message = "В публичной комнате только ведущий может удалять видео" });
+                }
 
-                await _hubContext.Clients.Group(roomId.ToString())
-                    .SendAsync("VideoStateUpdated", new 
-                    {
-                        CurrentVideoId = (string)null,
-                        IsPaused = true,
-                        CurrentTime = 0,
-                        CurrentVideo = (object)null
-                    }, cancellationToken);
+                try
+                {
+                    // Удаляем видео из БД:
+                    _context.Videos.Remove(room.VideoState.CurrentVideo);
 
-                return NoContent();
+                    // Сбрасываем состояния плеера
+                    room.VideoState.IsPaused = true;
+                    room.VideoState.CurrentTime = TimeSpan.Zero;
+                    room.VideoState.LastUpdated = DateTime.UtcNow;
+                    room.VideoState.CurrentVideo = null;
+
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    await _hubContext.Clients.Group(roomId.ToString())
+                        .SendAsync("VideoStateUpdated", new 
+                        {
+                            CurrentVideoId = (string)null,
+                            IsPaused = true,
+                            CurrentTime = 0,
+                            CurrentVideo = (object)null
+                        }, cancellationToken);
+
+                    _logger.LogInformation("Видео успешно удалено из комнаты {RoomId} пользователем {UserId}", 
+                        roomId, currentUser.UserId);
+                    return NoContent();
+                }
+                catch (DbUpdateException ex)
+                {
+                    _logger.LogError(ex, "Ошибка базы данных при удалении видео из комнаты {RoomId}", roomId);
+                    return StatusCode(500, new { Message = "Ошибка удаления видео из базы данных" });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ошибка при удалении видео из комнаты {RoomId}", roomId);
+                    return StatusCode(500, new { Message = "Внутренняя ошибка сервера при удалении видео" });
+                }
             }
             catch (OperationCanceledException)
             {
                 _logger.LogInformation("Запрос на удаление видео из комнаты {RoomId} был отменен", roomId);
-                return StatusCode(499, "Запрос был отменен");
+                return StatusCode(499, new { Message = "Запрос был отменен" });
             }
-            catch (Exception error)
+            catch (Exception ex)
             {
-                _logger.LogError(error, "Ошибка удаления видео из комнаты {RoomId}", roomId);
-                return StatusCode(500, "Внутренняя ошибка сервера");
+                _logger.LogError(ex, "Необработанная ошибка при удалении видео из комнаты {RoomId}", roomId);
+                return StatusCode(500, new { Message = "Внутренняя ошибка сервера" });
             }
         }
 

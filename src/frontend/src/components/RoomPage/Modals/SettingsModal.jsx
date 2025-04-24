@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./Modal.module.css";
 
 // Параметры для текста
@@ -16,12 +16,25 @@ export const SettingsModal = ({
   mouseDownOnContentRef,
   roomName: initialRoomName,
   description: initialDescription,
+  canControlVideo,
 }) => {
   if (!isOpen) return null;
 
   // Создаем локальное состояние для отслеживания изменений
   const [roomName, setRoomName] = useState(initialRoomName);
   const [description, setDescription] = useState(initialDescription);
+
+  // Проверяем права доступа при открытии модального окна
+  useEffect(() => {
+    if (isOpen && !canControlVideo) {
+      // Если у пользователя нет прав, показываем уведомление и закрываем окно
+      alert("В публичной комнате только ведущий может изменять настройки");
+      onSettingsClose();
+    }
+  }, [isOpen, canControlVideo, onSettingsClose]);
+
+  // Если у пользователя нет прав, не отображаем модальное окно
+  if (!canControlVideo) return null;
 
   // Функция для сохранения изменений
   const handleSave = () => {

@@ -19,6 +19,7 @@ import Profile from "./components/Profile/Profile";
 import { useRoomData } from "./hooks/useRoomData";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 // Оптимизируем HeaderSelector с помощью React.memo
 const HeaderSelector = memo(function HeaderSelector() {
@@ -122,6 +123,7 @@ function RoomPageWithHeader() {
       <RoomHeader
         onSettingsClick={handleSettingsClick}
         roomName={roomData?.roomName}
+        canControlVideo={roomData?.canControlVideo}
       />
       <RoomPage
         isSettingsModalOpen={isSettingsModalOpen}
@@ -137,6 +139,7 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
+        <Toaster position="top-center" />
         <div className="layout-container">
           <HeaderSelector />
           <main className="main-content">

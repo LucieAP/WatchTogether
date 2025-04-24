@@ -32,7 +32,10 @@ export const removeVideo = async (roomId) => {
     const response = await axios.delete(`/api/Rooms/${roomId}/video`);
     return response.data;
   } catch (error) {
-    console.error("Ошибка при удалении видео:", error);
-    throw error;
+    // Извлекаем сообщение об ошибке из ответа, если оно доступно
+    const errorMessage =
+      error.response?.data?.message ||
+      "Не удалось удалить видео. Пожалуйста, попробуйте позже.";
+    throw new Error(errorMessage);
   }
 };

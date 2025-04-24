@@ -13,6 +13,7 @@ import ReactPlayer from "react-player";
 import Duration from "./Duration";
 import "./VideoPlayer.css"; // Убедимся, что подключен CSS файл
 import { calculateSeekPosition } from "../RoomPage/utils/videoHelpers";
+import { toast } from "react-hot-toast";
 
 // Оборачиваем компонент в forwardRef, что позволяет родительскому компоненту получить доступ к DOM-элементу или методам компонента.
 export const VideoPlayer = forwardRef(
@@ -20,12 +21,13 @@ export const VideoPlayer = forwardRef(
     {
       roomId,
       currentVideoId,
-      playing: propPlaying, // Переименовываем пропс, чтобы избежать конфликта имен
-      currentTime,
-      onVideoAdded, // Пропс для обработки добавления видео
-      onPlayPause, // Пропс для управления воспроизведением
-      onTimeUpdate, // Пропс для обновления времени
-      isRoomCreator, // Флаг, определяющий, является ли пользователь создателем комнаты
+      playing: initialPlaying,
+      currentTime: initialCurrentTime,
+      onPlayPause,
+      onTimeUpdate,
+      onVideoAdded,
+      isRoomCreator,
+      canControlVideo,
     },
     ref
   ) => {
@@ -101,17 +103,23 @@ export const VideoPlayer = forwardRef(
       isPlaying: () => playing,
     }));
 
-    // Синхронизируем пропс propPlaying с локальным состоянием setPlaying
+    // Синхронизируем пропс initialPlaying с локальным состоянием setPlaying
     useEffect(() => {
-      setPlaying(propPlaying);
-    }, [propPlaying]);
+      // Добавляем флаг, указывающий что это внешнее обновление
+      window.isExternalPlayingUpdate = true; // флаг позволяет отследить источник изменения (из за сетевой синхронизации или локального действия пользователя)
+      setPlaying(initialPlaying);
+      // Сбрасываем флаг после применения изменений
+      setTimeout(() => {
+        window.isExternalPlayingUpdate = false;
+      }, 50);
+    }, [initialPlaying]);
 
     // Синхронизируем пропс currentTime с локальным состоянием currentTimeRef
     useEffect(() => {
-      if (currentTime > 0 && playerRef.current) {
-        playerRef.current.seekTo(currentTime, "seconds");
+      if (initialCurrentTime > 0 && playerRef.current) {
+        playerRef.current.seekTo(initialCurrentTime, "seconds");
       }
-    }, [currentVideoId, currentTime]);
+    }, [currentVideoId, initialCurrentTime]);
 
     // Обработчик готовности плеера.
     // Вызывается когда ReactPlayer завершил инициализацию и внутренний плеер готов к работе
@@ -148,6 +156,8 @@ export const VideoPlayer = forwardRef(
     // Мемоизируем pauseVideo и playVideo, так как они вызываются часто при воспроизведении
     // Добавим функции для паузы и воспроизведения
     const pauseVideo = useCallback(() => {
+      // Устанавливаем флаг, что это вызвано через API
+      window.isExternalPlayingUpdate = true;
       setPlaying(false);
       // Если есть обработчик onPlayPause, вызываем его
       onPlayPause && onPlayPause("pause");
@@ -156,9 +166,16 @@ export const VideoPlayer = forwardRef(
       setControlsVisible(true);
 
       console.log("VideoPlayer: pauseVideo вызван, плеер поставлен на паузу");
+
+      // Сбрасываем флаг после применения изменений
+      setTimeout(() => {
+        window.isExternalPlayingUpdate = false;
+      }, 50);
     }, [onPlayPause, resetTimeout]);
 
     const playVideo = useCallback(() => {
+      // Устанавливаем флаг, что это вызвано через API
+      window.isExternalPlayingUpdate = true;
       setPlaying(true);
       // Если есть обработчик onPlayPause, вызываем его
       onPlayPause && onPlayPause("play");
@@ -167,14 +184,19 @@ export const VideoPlayer = forwardRef(
       resetTimeout();
 
       console.log("VideoPlayer: playVideo вызван, плеер запущен");
+
+      // Сбрасываем флаг после применения изменений
+      setTimeout(() => {
+        window.isExternalPlayingUpdate = false;
+      }, 50);
     }, [onPlayPause, resetTimeout]);
 
     // Обработчик включения контролсов (значок замка)
     const handleToggleControls = () => {
       // Проверяем, является ли пользователь создателем комнаты
-      if (!isRoomCreator) {
-        console.log("Только создатель комнаты может управлять контролами");
-        return; // Прерываем выполнение функции, если пользователь не является создателем
+      if (!canControlVideo) {
+        toast("Только ведущий может управлять контролами");
+        return; // Прерываем выполнение функции, если пользователь не имеет прав на управление видео
       }
 
       console.log("Toggling controls:", !controls);
@@ -184,16 +206,9 @@ export const VideoPlayer = forwardRef(
 
     // Обработчик изменения слайдера звука
     const handleVolumeChange = (e) => {
-      const newVolume = parseFloat(e.target.value);
-      setVolume(newVolume);
-      // Если пользователь устанавливает громкость больше 0, звук автоматически включается
-      if (newVolume > 0 && muted) {
-        setMuted(false);
-      }
-      // Если громкость становится равной 0 включить режим muted
-      if (newVolume === 0 && !muted) {
-        setMuted(true);
-      }
+      const value = parseFloat(e.target.value);
+      setVolume(value);
+      setMuted(value === 0);
     };
 
     // Обработчик мута звка
@@ -204,7 +219,12 @@ export const VideoPlayer = forwardRef(
 
     // Обработчик изменения скорости видео
     const handleSetPlaybackRate = (speed) => {
+      if (!canControlVideo) {
+        toast("Только ведущий может изменять скорость воспроизведения");
+        return;
+      }
       setPlaybackRate(speed);
+      setIsSettingsOpen(false);
       setIsSpeedSettingsOpen(false);
     };
 
@@ -215,6 +235,11 @@ export const VideoPlayer = forwardRef(
 
     // Обработчик нажатия кнопки мыши на ползунке (Начинает процесс перемотки)
     const handleSeekMouseDown = (e) => {
+      if (!canControlVideo) {
+        toast("Только ведущий может перематывать видео");
+        return;
+      }
+
       setSeeking(true); // Устанавливаем состояние seeking в true, чтобы указать, что началась перемотка
       isSeekingRef.current = true; // Добавляем установку флага для блокировки синхронизации
       e.stopPropagation(); // Предотвращаем всплытие события, чтобы не срабатывал клик на фоне
@@ -222,6 +247,8 @@ export const VideoPlayer = forwardRef(
 
     // Обработчик отпускания кнопки мыши на ползунке (Завершает процесс перемотки)
     const handleSeekMouseUp = (e) => {
+      if (!canControlVideo) return;
+
       setSeeking(false); // Устанавливаем состояние seeking в false, чтобы указать, что перемотка завершена
       // Не сбрасываем isSeekingRef.current здесь, чтобы избежать ранней синхронизации
 
@@ -271,6 +298,8 @@ export const VideoPlayer = forwardRef(
     // Обработчик изменения значения ползунка
     const handleSeekChange = useCallback(
       (e) => {
+        if (!canControlVideo) return;
+
         // Используем тот же метод, что и в handleSeekPreview
         const container = e.currentTarget.closest(".progress-bar-wrapper");
 
@@ -283,7 +312,7 @@ export const VideoPlayer = forwardRef(
         setSeekPreviewTime(result.exactTime);
         setSeekPreviewPosition(result.percentage * 100);
       },
-      [duration] // Убрали calculateSeekPosition из зависимостей
+      [duration, canControlVideo] // Добавили canControlVideo в зависимости
     );
 
     // Обработчик для предпросмотра перемотки (показ времени при наведении на прогресс-бар)
@@ -340,6 +369,19 @@ export const VideoPlayer = forwardRef(
 
     // Обработчик начала воспроизведения
     const handlePlay = () => {
+      // Проверяем, было ли это вызвано внешним обновлением или пользовательским действием
+      if (window.isExternalPlayingUpdate) {
+        // Если это внешнее обновление (например, от веб-сокета), применяем без проверки прав
+        setPlaying(true);
+        resetTimeout();
+        return;
+      }
+
+      if (!canControlVideo) {
+        toast("Только ведущий может управлять видео");
+        return;
+      }
+
       setPlaying(true);
       resetTimeout();
 
@@ -353,6 +395,19 @@ export const VideoPlayer = forwardRef(
 
     // Обработчик паузы
     const handlePause = () => {
+      // Проверяем, было ли это вызвано внешним обновлением или пользовательским действием
+      if (window.isExternalPlayingUpdate) {
+        // Если это внешнее обновление (например, от веб-сокета), применяем без проверки прав
+        setPlaying(false);
+        setControlsVisible(true);
+        return;
+      }
+
+      if (!canControlVideo) {
+        toast("Только ведущий может управлять видео");
+        return;
+      }
+
       setPlaying(false);
       setControlsVisible(true);
 
@@ -366,6 +421,23 @@ export const VideoPlayer = forwardRef(
 
     // Обработчик переключения между воспроизведением и паузой
     const handlePlayPause = useCallback(() => {
+      // Если это вызвано автоматически через WebSocket, не показываем предупреждение
+      if (window.isExternalPlayingUpdate) {
+        const newPlayingState = !playing;
+        setPlaying(newPlayingState);
+
+        // Вызываем onPlayPause с соответствующим действием
+        onPlayPause && onPlayPause(newPlayingState ? "play" : "pause");
+
+        resetTimeout();
+        return;
+      }
+
+      if (!canControlVideo) {
+        toast("Только ведущий может управлять видео");
+        return;
+      }
+
       const newPlayingState = !playing;
       setPlaying(newPlayingState);
 
@@ -373,7 +445,7 @@ export const VideoPlayer = forwardRef(
       onPlayPause && onPlayPause(newPlayingState ? "play" : "pause");
 
       resetTimeout();
-    }, [playing, onPlayPause, resetTimeout]);
+    }, [playing, onPlayPause, resetTimeout, canControlVideo]);
 
     // Обработчик переключения в полноэкранный режим
     const toggleFullscreen = useCallback(() => {
@@ -621,6 +693,11 @@ export const VideoPlayer = forwardRef(
 
     return (
       <div className="player-wrapper">
+        {!canControlVideo && (
+          <div className="video-control-permission-warning">
+            Только администратор может управлять видео
+          </div>
+        )}
         <div
           className="video-container"
           ref={containerRef}
@@ -948,7 +1025,7 @@ export const VideoPlayer = forwardRef(
             title={
               isRoomCreator
                 ? "Переключить управление"
-                : "Только создатель комнаты может изменить это"
+                : "Только ведущий может изменить это"
             }
             disabled={!isRoomCreator}
           >

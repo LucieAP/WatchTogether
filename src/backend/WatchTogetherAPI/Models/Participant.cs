@@ -6,6 +6,7 @@ namespace WatchTogetherAPI.Models
     public enum ParticipantRole
     {
         Creator,
+        Host,   // Ведущий, может управлять видео
         Member
     }
 

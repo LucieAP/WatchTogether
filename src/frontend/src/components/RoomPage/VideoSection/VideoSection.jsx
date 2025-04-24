@@ -105,6 +105,7 @@ export const VideoSection = memo(
               onPlayPause={handlePlayPause}
               onTimeUpdate={handleTimeUpdate}
               isRoomCreator={isRoomCreator}
+              canControlVideo={roomData?.canControlVideo}
             />
 
             {/* Компактная кнопка закрытия видео */}

@@ -23,6 +23,9 @@ namespace WatchTogetherAPI.Hubs
 
         // Храним уникальных пользователей в комнате (userId -> roomId)
         private static readonly ConcurrentDictionary<string, string> _userRooms = new();
+        
+        // Храним связь между connectionId и userId
+        private static readonly ConcurrentDictionary<string, string> _connectionToUserId = new();
 
         // Храним историю сообщений по комнатам (roomId -> msg[])
         private static readonly ConcurrentDictionary<string, List<ChatMessage>> _chatHistory = new();
@@ -125,6 +128,9 @@ namespace WatchTogetherAPI.Hubs
                 }
 
                 _connectionRooms[Context.ConnectionId] = roomId;
+                
+                // Сохраняем связь между connectionId и userId
+                _connectionToUserId[Context.ConnectionId] = userId;
                 
                 // Добавляем подключение в группу
                 try
@@ -274,7 +280,28 @@ namespace WatchTogetherAPI.Hubs
                 // Используем безопасное преобразование строки в Guid
                 if (!Guid.TryParse(roomId, out Guid parsedRoomId))
                 {
+                    _logger.LogWarning("Неверный формат идентификатора комнаты: {RoomId}", roomId);
                     throw new ArgumentException("Неверный формат идентификатора комнаты", nameof(roomId));
+                }
+
+                // Получаем идентификатор пользователя из нашего словаря
+                if (!_connectionToUserId.TryGetValue(Context.ConnectionId, out var userId))
+                {
+                    _logger.LogWarning("Пользователь {ConnectionId} не имеет идентификатора пользователя", Context.ConnectionId);
+                    throw new HubException("Ваша сессия недействительна. Обновите страницу.");
+                }
+        
+                if (!_connectionRooms.TryGetValue(Context.ConnectionId, out var userRoomId) || userRoomId != roomId)
+                {
+                    _logger.LogWarning("Пользователь {ConnectionId} не присоединен к комнате {RoomId}", Context.ConnectionId, roomId);
+                    throw new HubException("Вы не присоединены к этой комнате");
+                }
+
+                // Проверяем права пользователя на управление видео
+                if (!await CanUserControlVideo(roomId, userId, cancellationToken))
+                {
+                    _logger.LogWarning("Пользователь {UserId} не имеет прав на управление видео в комнате {RoomId}", userId, roomId);
+                    throw new HubException("В публичной комнате только ведущий может управлять видео");
                 }
 
                 // Получаем комнату из базы данных
@@ -285,6 +312,7 @@ namespace WatchTogetherAPI.Hubs
 
                 if (room == null)
                 {
+                    _logger.LogWarning("Комната {RoomId} не найдена", roomId);
                     throw new HubException("Комната не найдена");
                 }
 
@@ -333,6 +361,29 @@ namespace WatchTogetherAPI.Hubs
                     throw new ArgumentException("Неверный формат идентификатора комнаты", nameof(roomId));
                 }
 
+                // Получаем идентификатор пользователя из нашего словаря
+                if (!_connectionToUserId.TryGetValue(Context.ConnectionId, out var userId))
+                {
+                    _logger.LogWarning("Пользователь {ConnectionId} не имеет идентификатора пользователя", Context.ConnectionId);
+                    throw new HubException("Ваша сессия недействительна. Обновите страницу.");
+                }
+                
+                _logger.LogInformation("Получен запрос на изменение состояния паузы в комнате от пользователя {UserId}: IsPaused = {IsPaused}", 
+                    userId, isPaused);
+        
+                if (!_connectionRooms.TryGetValue(Context.ConnectionId, out var userRoomId) || userRoomId != roomId)
+                {
+                    _logger.LogWarning("Пользователь {ConnectionId} не присоединен к комнате {RoomId}", Context.ConnectionId, roomId);
+                    throw new HubException("Вы не присоединены к этой комнате");
+                }
+
+                // Проверяем права пользователя на управление видео
+                if (!await CanUserControlVideo(roomId, userId, cancellationToken))
+                {
+                    _logger.LogWarning("Пользователь {UserId} не имеет прав на управление видео в комнате {RoomId}", userId, roomId);
+                    throw new HubException("В публичной комнате только ведущий может управлять видео");
+                }
+
                 // Получаем комнату из базы данных
                 var room = await _context.Rooms
                     .Include(r => r.VideoState)
@@ -371,6 +422,27 @@ namespace WatchTogetherAPI.Hubs
                 _logger.LogError(ex, "Ошибка при обновлении состояния паузы в комнате {RoomId}", roomId);
                 throw new HubException($"Ошибка при обновлении состояния паузы: {ex.Message}");
             }
+        }
+
+        // Проверяет, может ли пользователь управлять видео
+        private async Task<bool> CanUserControlVideo(string roomId, string userId, CancellationToken cancellationToken = default)
+        {
+            // Преобразуем строки в Guid
+            if (!Guid.TryParse(roomId, out var parsedRoomId) || !Guid.TryParse(userId, out var parsedUserId))
+                return false;
+
+            var room = await _context.Rooms
+                .Include(r => r.Participants)
+                .FirstOrDefaultAsync(r => r.RoomId == parsedRoomId, cancellationToken);
+        
+            if (room == null) return false;
+        
+            // Для приватных комнат - все участники могут управлять видео
+            if (room.Status == RoomStatus.Private) return true;
+        
+            // Для публичных комнат - только ведущий или создатель
+            var participant = room.Participants.FirstOrDefault(p => p.UserId == parsedUserId);
+            return participant != null && (participant.Role == ParticipantRole.Host || participant.Role == ParticipantRole.Creator);
         }
     }
 }

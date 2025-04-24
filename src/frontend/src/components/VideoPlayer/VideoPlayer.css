@@ -601,3 +601,33 @@ h1 {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Стиль для предупреждения о правах доступа */
+.video-control-permission-warning {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: var(--z-settings);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.player-controls:hover + .video-control-permission-warning,
+.video-control-permission-warning:hover {
+  opacity: 1;
+}
+
+/* Стили для отключенных элементов управления */
+.control-button.disabled,
+.volume-container.disabled,
+.progress-container.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

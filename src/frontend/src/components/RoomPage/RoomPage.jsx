@@ -279,6 +279,7 @@ export default function RoomPage({
         mouseDownOnContentRef={mouseDownOnContentRef}
         roomName={roomData?.roomName}
         description={roomData?.description}
+        canControlVideo={roomData?.canControlVideo}
       />
     ),
     [
@@ -288,6 +289,7 @@ export default function RoomPage({
       onSettingsClose,
       roomData?.roomName,
       roomData?.description,
+      roomData?.canControlVideo,
     ]
   );
 

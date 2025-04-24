@@ -4,6 +4,7 @@ import {
   isValidYouTubeUrl,
   extractYouTubeVideoId,
 } from "../utils/videoHelpers";
+import { toast } from "react-hot-toast";
 
 export function useVideoManagement(roomId, setRoomData) {
   const [videoUrl, setVideoUrl] = useState("");
@@ -63,8 +64,12 @@ export function useVideoManagement(roomId, setRoomData) {
         currentVideoId: null,
         currentVideo: null,
       }));
+
+      toast.success("Видео успешно удалено");
     } catch (error) {
       console.error("Ошибка при удалении видео:", error);
+      // Показываем пользователю сообщение об ошибке
+      toast.error(error.message || "Ошибка при удалении видео");
     }
   };
 
