@@ -1,8 +1,8 @@
 import { AddVideoModal } from "../Modals/AddVideoModal";
 import { CloseVideoModal } from "../Modals/CloseVideoModal";
-import VideoPlayer from "../../VideoPlayer/VideoPlayer";
 import { useState, useCallback, memo } from "react";
 import "./VideoSection.css";
+import { VideoPlayer } from "../../VideoPlayer/VideoPlayer";
 
 export const VideoSection = memo(
   ({

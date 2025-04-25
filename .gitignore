@@ -1,0 +1,42 @@
+# Visual Studio / .NET specific
+.vs/
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.dbmdl
+*.jfm
+*.pfx
+*.publishsettings
+
+# Sensitive configuration files
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/appsettings.Staging.json
+**/appsettings.json
+**/firebase-credentials.json
+
+# Environment variables
+.env
+
+# Node.js / Frontend
+node_modules/
+npm-debug.log
+dist/
+coverage/
+.vscode/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+build/
+
+# IDEs
+.idea/
+*.swp
+*.swo
+
+# Miscellaneous
+.DS_Store
+Thumbs.db 

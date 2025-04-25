@@ -12,8 +12,6 @@ export const AddVideoModal = ({
   onClose,
   onSubmit,
 }) => {
-  if (!isOpen) return null;
-
   const [isLoading, setIsLoading] = useState(false);
 
   // Следим за изменением URL и устанавливаем состояние загрузки
@@ -84,6 +82,8 @@ export const AddVideoModal = ({
 
   // Проверка возможности добавления видео
   const isAddButtonDisabled = !tempMetadata.duration || isLoading;
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.modalOverlay} onClick={handleOverlayClick}>

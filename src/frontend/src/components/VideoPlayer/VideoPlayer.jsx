@@ -9,7 +9,7 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import ReactPlayer from "react-player";
+import ReactPlayer from "react-player/youtube";
 import Duration from "./Duration";
 import "./VideoPlayer.css"; // Убедимся, что подключен CSS файл
 import { calculateSeekPosition } from "../RoomPage/utils/videoHelpers";
@@ -739,7 +739,6 @@ export const VideoPlayer = forwardRef(
                 left: 0,
                 right: 0,
                 bottom: 0,
-
                 backgroundColor: "transparent",
                 zIndex: 2,
                 pointerEvents: "auto",

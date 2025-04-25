@@ -3,7 +3,7 @@ import axios from "axios";
 /**
  * Добавляет видео в комнату
  * @param {string} roomId - ID комнаты
- * @param {string} videoId - ID видео YouTube
+ * @param {string} videoId - ID видео
  * @param {string} title - Название видео
  * @param {number} duration - Продолжительность видео
  * @returns {Promise} - Промис с результатом запроса
