@@ -31,6 +31,11 @@ export default function BaseHeader({
     navigate("/profile");
   };
 
+  // Обрабатывает перенаправление на страницу статуса сервера
+  const handleHealthStatus = () => {
+    navigate("/health-status");
+  };
+
   return (
     <header className="header">
       <div className="logo" onClick={handleHomePage}>
@@ -39,6 +44,12 @@ export default function BaseHeader({
 
       {/* Слот для дополнительного контента */}
       {children}
+
+      <div className="server-status-nav-links">
+        <button className="server-status-nav-link" onClick={handleHealthStatus}>
+          Статус сервера
+        </button>
+      </div>
 
       <div className="auth-controls">
         {isLoggedIn ? (

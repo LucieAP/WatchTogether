@@ -1,7 +1,7 @@
 // API клиент для взаимодействия с сервером
 import axios from "axios";
 
-const API_BASE = "/api";
+const API_BASE = "https://localhost:7143/api";
 
 // Создаём экземпляр Axios с базовыми настройками
 const apiClient = axios.create({

@@ -18,6 +18,31 @@
   font-size: 1.2em;
 }
 
+.server-status-nav-links {
+  display: flex;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  align-items: center;
+  justify-content: center;
+}
+
+.server-status-nav-link {
+  background: none;
+  border: none;
+  color: #555;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.server-status-nav-link:hover {
+  background-color: #f0f0f0;
+  color: #2196f3;
+}
+
 .auth-controls {
   display: flex;
   align-items: center;
@@ -64,4 +89,25 @@
 
 .logout-button:hover {
   background-color: #d32f2f;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 15px;
+  }
+
+  .nav-links {
+    order: 3;
+    width: 100%;
+    margin-top: 10px;
+    justify-content: center;
+  }
+
+  .auth-controls {
+    flex: 1;
+    justify-content: flex-end;
+  }
 }

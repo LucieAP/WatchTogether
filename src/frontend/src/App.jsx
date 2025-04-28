@@ -16,6 +16,7 @@ import RoomHeader from "./components/RoomPage/RoomHeader";
 import GetRooms from "./components/GetRooms";
 import Auth from "./components/Auth/Auth";
 import Profile from "./components/Profile/Profile";
+import HealthStatus from "./components/HealthStatus/HealthStatus";
 import { useRoomData } from "./hooks/useRoomData";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -176,6 +177,7 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/health-status" element={<HealthStatus />} />
               <Route path="/" element={<HomePage />} />
               <Route path="/not-found" element={<NotFoundPage />} />
               <Route path="*" element={<NotFoundPage />} />
