@@ -41,7 +41,8 @@
   text-decoration: underline;
 }
 
-.login-button, .logout-button {
+.login-button,
+.logout-button {
   background-color: #2196f3;
   color: white;
   border: none;
@@ -52,7 +53,8 @@
   transition: background-color 0.2s;
 }
 
-.login-button:hover, .logout-button:hover {
+.login-button:hover,
+.logout-button:hover {
   background-color: #1976d2;
 }
 

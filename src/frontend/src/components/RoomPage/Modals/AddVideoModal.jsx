@@ -1,7 +1,7 @@
 import ReactPlayer from "react-player";
 import styles from "./Modal.module.css";
 import { useState, useEffect, useCallback } from "react";
-import { isValidYouTubeUrl } from "../utils/videoHelpers";
+import { extractVkVideoParams, getVideoType } from "../utils/videoHelpers";
 
 export const AddVideoModal = ({
   isOpen,
@@ -13,38 +13,67 @@ export const AddVideoModal = ({
   onSubmit,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [videoType, setVideoType] = useState(null);
 
-  // Следим за изменением URL и устанавливаем состояние загрузки
+  // Следим за изменением URL и устанавливаем состояние загрузки и тип видео
   useEffect(() => {
-    if (videoUrl && isValidYouTubeUrl(videoUrl)) {
+    if (!videoUrl) {
+      setIsLoading(false);
+      setVideoType(null);
+      return;
+    }
+
+    const videoType = getVideoType(videoUrl);
+    setVideoType(videoType);
+
+    if (videoType === "youtube") {
       setIsLoading(true);
+    } else if (videoType === "vk") {
+      setIsLoading(true);
+      // Для VK видео попытаемся извлечь информацию из URL
+      const vkParams = extractVkVideoParams(videoUrl);
+      if (vkParams) {
+        // Устанавливаем базовые метаданные для VK видео
+        onMetadataChange({
+          title: `VK Видео ${vkParams.ownerId}_${vkParams.videoId}`,
+          duration: 0, // VK API не дает получить длительность в моменте, установим 0 для разрешения добавления
+        });
+        setIsLoading(false);
+      }
     } else {
       setIsLoading(false);
     }
-  }, [videoUrl]);
+  }, [videoUrl, onMetadataChange]);
 
-  // Проверка готовности плеера
+  // Проверка готовности плеера (для YouTube)
   const handleTempPlayerReady = useCallback(
     (player) => {
+      if (videoType !== "youtube") return;
+
       const internalPlayer = player.getInternalPlayer(); // Доступ к внутреннему плееру
       if (internalPlayer?.getVideoData) {
         const data = internalPlayer.getVideoData();
         onMetadataChange((prev) => ({ ...prev, title: data.title }));
       }
     },
-    [onMetadataChange]
+    [onMetadataChange, videoType]
   );
 
-  // Получение длительности видео из скрытого плеера
+  // Получение длительности видео из скрытого плеера (для YouTube)
   const handleTempDuration = useCallback(
     (duration) => {
-      onMetadataChange((prev) => ({ ...prev, duration: Math.round(duration) }));
+      if (videoType === "youtube") {
+        onMetadataChange((prev) => ({
+          ...prev,
+          duration: Math.round(duration),
+        }));
+      }
       setIsLoading(false); // Отключаем индикатор загрузки, когда получена длительность
     },
-    [onMetadataChange]
+    [onMetadataChange, videoType]
   );
 
-  // Предотвращаем всплытие события для контента модального окна
+  // Предотвращаем всплытие события для контента модального окна (для YouTube)
   const handleContentClick = useCallback((e) => {
     e.stopPropagation();
   }, []);
@@ -54,7 +83,6 @@ export const AddVideoModal = ({
     (e) => {
       e.preventDefault();
       e.stopPropagation();
-      // Предотвращаем всплытие события и выполнение стандартного действия формы
       onSubmit();
     },
     [onSubmit]
@@ -81,19 +109,27 @@ export const AddVideoModal = ({
   );
 
   // Проверка возможности добавления видео
-  const isAddButtonDisabled = !tempMetadata.duration || isLoading;
+  // Для VK видео мы разрешаем добавление даже с нулевой длительностью
+  const isAddButtonDisabled =
+    (videoType === "youtube" && !tempMetadata.duration) ||
+    isLoading ||
+    !videoType;
 
   if (!isOpen) return null;
 
   return (
     <div className={styles.modalOverlay} onClick={handleOverlayClick}>
       {/* Добавим скрытый плеер */}
-      <ReactPlayer
-        url={videoUrl}
-        onReady={handleTempPlayerReady}
-        onDuration={handleTempDuration}
-        style={{ display: "none" }} // не отображается
-      />
+      {videoType === "youtube" && (
+        <ReactPlayer
+          url={videoUrl}
+          onReady={handleTempPlayerReady}
+          onDuration={handleTempDuration}
+          style={{ display: "none" }} // не отображается
+          playing={false} // Добавить явное отключение воспроизведения
+          playsinline // Для корректной работы в мобильных браузерах
+        />
+      )}
 
       <form
         className={styles.modalContent}
@@ -104,10 +140,25 @@ export const AddVideoModal = ({
         <input
           type="text"
           className={styles.input}
-          placeholder="Вставьте ссылку YouTube"
+          placeholder="Вставьте ссылку YouTube или ВК"
           value={videoUrl}
           onChange={(e) => onUrlChange(e.target.value)}
         />
+
+        {/* Показываем информацию о типе видео */}
+        {videoType && (
+          <div className={styles.videoTypeInfo}>
+            <span>
+              Тип видео:{" "}
+              {videoType === "youtube"
+                ? "YouTube"
+                : videoType === "vk"
+                ? "ВКонтакте"
+                : "Неизвестный"}
+            </span>
+            {tempMetadata.title && <span>Название: {tempMetadata.title}</span>}
+          </div>
+        )}
 
         <div className={styles.modalButtons}>
           <button

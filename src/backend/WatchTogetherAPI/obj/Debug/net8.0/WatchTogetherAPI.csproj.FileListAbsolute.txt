@@ -288,3 +288,6 @@ C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\FirebaseAdmin.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Api.Gax.dll
 C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Google.Api.Gax.Rest.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.HealthChecks.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll
+C:\Users\zzz\Desktop\diplom\WatchTogether\src\backend\WatchTogetherAPI\bin\Debug\net8.0\Microsoft.Extensions.FileProviders.Abstractions.dll

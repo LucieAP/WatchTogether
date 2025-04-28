@@ -1,6 +1,7 @@
 import { useRef, useMemo, useEffect } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import * as signalR from "@microsoft/signalr";
+import { normalizeVideoType } from "../utils/videoHelpers";
 
 export const useVideoSync = (
   roomId,
@@ -349,6 +350,8 @@ export const useVideoSync = (
               videoId: videoState.currentVideo.videoId,
               title: videoState.currentVideo.title,
               duration: videoState.currentVideo.durationInSeconds,
+              // Нормализуем тип видео в числовое значение
+              videoType: normalizeVideoType(videoState.currentVideo.videoType),
             }
           : null;
 

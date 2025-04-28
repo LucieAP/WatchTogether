@@ -1,5 +1,5 @@
-
 using System.ComponentModel.DataAnnotations;
+using WatchTogetherAPI.Models;
 
 namespace WatchTogetherAPI.Models.DTO
 {
@@ -7,7 +7,7 @@ namespace WatchTogetherAPI.Models.DTO
     {
         
         [Required]
-        [StringLength(11, MinimumLength = 11)]
+        // [StringLength(11, MinimumLength = 11)]
         public string VideoId { get; set; } // YouTube Video ID (11 символов)
 
         [Required]
@@ -15,5 +15,7 @@ namespace WatchTogetherAPI.Models.DTO
         public string Title { get; set; }
 
         public int DurationInSeconds { get; set; }
+
+        public VideoType VideoType { get; set; }
     }
 }

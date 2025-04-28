@@ -585,6 +585,11 @@ namespace WatchTogetherAPI.Controllers
         [HttpPut("{roomId:guid}/video")]
         public async Task<IActionResult> UpdateVideo(Guid roomId, [FromBody] UpdateVideoRequest request, CancellationToken cancellationToken = default)
         {
+            // _logger.LogDebug("**************************************************");
+            // _logger.LogDebug("UpdateVideo: \nroomId: {RoomId} \nrequest.VideoId: {VideoId} \nrequest.Title: {Title} \nrequest.DurationInSeconds: {DurationInSeconds}", 
+            //     roomId, request.VideoId, request.Title, request.DurationInSeconds);
+            // _logger.LogDebug("**************************************************");   
+
             using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
@@ -616,9 +621,17 @@ namespace WatchTogetherAPI.Controllers
                         VideoId = request.VideoId,
                         Title = request.Title,
                         DurationInSeconds = request.DurationInSeconds,
+                        VideoType = request.VideoType // Добавляем поле типа видео
                     };
                     _context.Videos.Add(video);
                 }
+                // else
+                // {
+                //     // Обновляем данные существующего видео
+                //     video.Title = request.Title;
+                //     video.DurationInSeconds = request.DurationInSeconds;
+                //     video.VideoType = request.VideoType; // Обновляем тип видео
+                // }
 
                 // Обновляем состояние комнаты
                 room.VideoState.CurrentVideo = video;
@@ -635,6 +648,7 @@ namespace WatchTogetherAPI.Controllers
                         IsPaused = room.VideoState?.IsPaused ?? true,
                         CurrentTime = room.VideoState?.CurrentTime.TotalSeconds ?? 0,
                         CurrentVideo = room.VideoState?.CurrentVideo // Отправляем видео, чтобы у клиента автоматически добавлялось видео без перезагрузки страницы
+
                     }, cancellationToken);
 
                 return Ok(new{ 

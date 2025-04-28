@@ -3,6 +3,7 @@ import { CloseVideoModal } from "../Modals/CloseVideoModal";
 import { useState, useCallback, memo } from "react";
 import "./VideoSection.css";
 import { VideoPlayer } from "../../VideoPlayer/VideoPlayer";
+import VkVideoPlayer from "../../VideoPlayer/VkVideoPlayer";
 
 export const VideoSection = memo(
   ({
@@ -22,6 +23,7 @@ export const VideoSection = memo(
     isChatVisible,
     toggleChatVisibility,
     isRoomCreator,
+    videoType,
   }) => {
     const [isCloseVideoModalOpen, setIsCloseVideoModalOpen] = useState(false);
 
@@ -82,6 +84,25 @@ export const VideoSection = memo(
       [handleCloseVideo, setIsCloseVideoModalOpen]
     );
 
+    // Функция для определения правильного типа видео
+    const isYouTubeVideo = (typeValue) => {
+      return (
+        typeValue === 0 ||
+        typeValue === "0" ||
+        typeValue === "youtube" ||
+        typeValue === "YouTube"
+      );
+    };
+
+    const isVkVideo = (typeValue) => {
+      return (
+        typeValue === 1 ||
+        typeValue === "1" ||
+        typeValue === "vk" ||
+        typeValue === "VK"
+      );
+    };
+
     return (
       <section className="video-section">
         {/* Кнопка скрытия/показа чата */}
@@ -95,18 +116,51 @@ export const VideoSection = memo(
 
         {roomData?.currentVideo?.videoId ? (
           <>
-            <VideoPlayer
-              ref={playerRef}
-              roomId={roomId}
-              currentVideoId={roomData.currentVideo.videoId}
-              playing={!roomData.isPaused}
-              currentTime={roomData.currentTime}
-              onVideoAdded={handleVideoAdded}
-              onPlayPause={handlePlayPause}
-              onTimeUpdate={handleTimeUpdate}
-              isRoomCreator={isRoomCreator}
-              canControlVideo={roomData?.canControlVideo}
-            />
+            {console.log("Тип видео: ", roomData.currentVideo.videoType)}
+
+            {isYouTubeVideo(roomData.currentVideo.videoType) && (
+              <VideoPlayer
+                ref={playerRef}
+                roomId={roomId}
+                currentVideoId={roomData.currentVideo.videoId}
+                playing={!roomData.isPaused}
+                currentTime={roomData.currentTime}
+                onVideoAdded={handleVideoAdded}
+                onPlayPause={handlePlayPause}
+                onTimeUpdate={handleTimeUpdate}
+                isRoomCreator={isRoomCreator}
+                canControlVideo={roomData?.canControlVideo}
+              />
+            )}
+
+            {isVkVideo(roomData.currentVideo.videoType) && (
+              <VkVideoPlayer
+                ref={playerRef}
+                ownerId={roomData.currentVideo.videoId.split("_")[0]}
+                videoId={roomData.currentVideo.videoId.split("_")[1]}
+                playing={!roomData.isPaused}
+                currentTime={roomData.currentTime}
+                onPlayPause={handlePlayPause}
+                onTimeUpdate={handleTimeUpdate}
+                onError={(error) => console.error("VK player error:", error)}
+              />
+            )}
+
+            {/* {!isYouTubeVideo(roomData.currentVideo.videoType) &&
+              !isVkVideo(roomData.currentVideo.videoType) && (
+                <div className="video-error-message">
+                  <p>
+                    Ошибка загрузки видео. Тип видео не определен:{" "}
+                    {roomData.currentVideo.videoType}
+                  </p>
+                  <button
+                    onClick={handleCloseVideo}
+                    className="error-close-button"
+                  >
+                    Закрыть видео
+                  </button>
+                </div>
+              )} */}
 
             {/* Компактная кнопка закрытия видео */}
             <button

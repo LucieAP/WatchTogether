@@ -6,14 +6,23 @@ import axios from "axios";
  * @param {string} videoId - ID видео
  * @param {string} title - Название видео
  * @param {number} duration - Продолжительность видео
+ * @param {number} videoType - Тип видео (0 - YouTube, 1 - VK)
  * @returns {Promise} - Промис с результатом запроса
  */
-export const addVideo = async (roomId, videoId, title, duration) => {
+export const addVideo = async (
+  roomId,
+  videoId,
+  title,
+  duration,
+  videoType = 0 // 0 - YouTube, 1 - Vk
+) => {
   try {
+    console.log("addVideo: ", roomId, videoId, title, duration, videoType);
     const response = await axios.put(`/api/Rooms/${roomId}/video`, {
       videoId,
       title,
-      duration,
+      durationInSeconds: duration,
+      videoType,
     });
     return response.data;
   } catch (error) {

@@ -11,6 +11,7 @@ import { useVideoManagement } from "./hooks/useVideoManagement";
 import { useRoomSettings } from "./hooks/useRoomSettings";
 import { useChatHandlers } from "./hooks/useChatHandlers";
 import { useConnectionHandlers } from "./hooks/useConnectionHandlers";
+import { normalizeVideoType } from "./utils/videoHelpers";
 import {
   leaveRoom,
   handleManualLeave,
@@ -93,6 +94,8 @@ export default function RoomPage({
     setIsAddVideoModalOpen,
     handleAddVideoModal,
     handleCloseVideo,
+    videoType,
+    setVideoType,
   } = useVideoManagement(roomId, setRoomData);
 
   const { handleSaveSettings } = useRoomSettings(
@@ -137,6 +140,17 @@ export default function RoomPage({
           isPaused: videoState.isPaused ?? prev.isPaused,
           currentTime: videoState.currentTime ?? prev.currentTime,
           currentVideoId: videoState.currentVideoId ?? prev.currentVideoId,
+          currentVideo: videoState.currentVideo
+            ? {
+                ...prev.currentVideo,
+                videoId: videoState.currentVideo.videoId,
+                title: videoState.currentVideo.title,
+                duration: videoState.currentVideo.durationInSeconds,
+                videoType: normalizeVideoType(
+                  videoState.currentVideo.videoType
+                ),
+              }
+            : prev.currentVideo,
         }));
       }
     },
@@ -209,6 +223,7 @@ export default function RoomPage({
         isChatVisible={isChatVisible}
         toggleChatVisibility={toggleChatVisibility}
         isRoomCreator={isRoomCreator}
+        videoType={videoType}
       />
     ),
     [
@@ -227,6 +242,7 @@ export default function RoomPage({
       isChatVisible,
       toggleChatVisibility,
       isRoomCreator,
+      videoType,
     ]
   );
 
