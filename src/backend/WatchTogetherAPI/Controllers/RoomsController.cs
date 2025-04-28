@@ -270,7 +270,8 @@ namespace WatchTogetherAPI.Controllers
                             p.User.UserId,
                             p.User.Username,
                             p.Role
-                        })
+                        }),
+                        room.ExpiresAt
                     }
                 };
 

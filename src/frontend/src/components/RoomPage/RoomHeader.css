@@ -66,3 +66,45 @@
 .leave-button:hover {
   background-color: #dc2626;
 }
+
+/* Стили для отображения времени до закрытия комнаты */
+.room-expiration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.expiration-time {
+  font-weight: 500;
+  color: #555;
+}
+
+.room-expiration.warning .expiration-time {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.expiration-warning {
+  background-color: #fee2e2;
+  color: #ef4444;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  font-weight: 600;
+  text-align: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}

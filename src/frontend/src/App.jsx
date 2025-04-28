@@ -133,6 +133,7 @@ function RoomPageWithHeader() {
         canControlVideo={roomData?.canControlVideo}
         roomId={roomId}
         connectionRef={connectionRef}
+        expiresAt={roomData?.expiresAt}
       />
       <RoomPage
         isSettingsModalOpen={isSettingsModalOpen}
