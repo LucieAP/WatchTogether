@@ -94,7 +94,7 @@ namespace WatchTogetherAPI.Controllers
             {
                 // Генерация базового URL
                 var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
-
+                
                 // Получаем существующего пользователя по кукам или создаем нового гостевого пользователя
                 var currentUser = await GetOrCreateUserAsync(cancellationToken);
                 

@@ -1,15 +1,17 @@
 // API функции для работы с health check эндпоинтами
 import { apiClient } from "./client";
 
+const HEALTH_API_BASE = "https://localhost:7143/api";
+
 /**
  * Получает полную информацию о состоянии сервера
  * @returns {Promise<Object>} Объект с подробной информацией о состоянии сервера
  */
 export const getHealthStatus = async () => {
   try {
-    // Теперь используем обычный apiClient, так как health эндпоинты
-    // настроены под /api префиксом
-    const response = await apiClient.get("/health");
+    // Обратите внимание: apiClient уже настроен на базовый путь /api
+    // поэтому используем путь без начального слэша
+    const response = await apiClient.get(`${HEALTH_API_BASE}/health`);
 
     console.log("Полный ответ от health API:", response);
     return response;
@@ -25,7 +27,7 @@ export const getHealthStatus = async () => {
  */
 export const getLivenessStatus = async () => {
   try {
-    const response = await apiClient.get("/health/live");
+    const response = await apiClient.get(`${HEALTH_API_BASE}/health/live`);
     return response;
   } catch (error) {
     console.error("Ошибка проверки статуса работоспособности сервера:", error);
@@ -39,7 +41,7 @@ export const getLivenessStatus = async () => {
  */
 export const getReadinessStatus = async () => {
   try {
-    const response = await apiClient.get("/health/ready");
+    const response = await apiClient.get(`${HEALTH_API_BASE}/health/ready`);
     return response;
   } catch (error) {
     console.error("Ошибка проверки готовности сервера:", error);

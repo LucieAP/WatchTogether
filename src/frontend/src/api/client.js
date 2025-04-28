@@ -1,7 +1,9 @@
 // API клиент для взаимодействия с сервером
 import axios from "axios";
 
-const API_BASE = "https://localhost:7143/api";
+// Используем относительный путь, чтобы запросы шли через прокси настроенный в vite.config.js
+// Это позволит правильно генерировать URL-адреса на сервере через HttpContext.Request
+const API_BASE = "/api";
 
 // Создаём экземпляр Axios с базовыми настройками
 const apiClient = axios.create({
