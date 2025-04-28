@@ -420,6 +420,65 @@ export const useVideoSync = (
     [playerRef, setRoomData]
   );
 
+  // Обработчик получения начального состояния видео при присоединении к комнате
+  const handleInitialVideoState = useMemo(
+    () => (videoState) => {
+      if (!videoState) {
+        console.warn("Получено пустое начальное состояние видео");
+        return;
+      }
+
+      console.log("Получено начальное состояние видео:", videoState);
+      connectionHealthRef.current.lastPingTime = Date.now();
+
+      // Создаем новый объект видео
+      const newVideo = videoState.currentVideo
+        ? {
+            videoId: videoState.currentVideo.videoId,
+            title: videoState.currentVideo.title,
+            duration: videoState.currentVideo.durationInSeconds,
+            videoType: normalizeVideoType(videoState.currentVideo.videoType),
+          }
+        : null;
+
+      // Обновляем состояние комнаты с данными с сервера
+      setRoomData((prev) => ({
+        ...prev,
+        currentVideoId: videoState.currentVideoId || null,
+        currentTime: videoState.currentTime || 0,
+        isPaused: videoState.isPaused ?? true,
+        currentVideo: newVideo,
+      }));
+
+      // Принудительно перематываем плеер к времени сервера
+      const player = playerRef.current;
+      const serverTime = videoState.currentTime || 0;
+
+      if (player && serverTime > 0) {
+        console.log(
+          `Перемотка к начальному времени сервера: ${serverTime} сек.`
+        );
+        isSeekingRef.current = true;
+
+        // Выполняем перемотку
+        player.seekTo(serverTime, "seconds");
+
+        // Через короткий промежуток снимаем флаг перемотки
+        setTimeout(() => {
+          isSeekingRef.current = false;
+        }, 2000);
+
+        // Устанавливаем правильное состояние воспроизведения
+        if (videoState.isPaused) {
+          player.pauseVideo?.();
+        } else {
+          player.playVideo?.();
+        }
+      }
+    },
+    [playerRef, setRoomData]
+  );
+
   // Настройка обработчиков событий SignalR
   useEffect(() => {
     // Проверяем, доступно ли соединение
@@ -430,6 +489,12 @@ export const useVideoSync = (
         handleVideoStateUpdated
       );
 
+      // Обработчик получения начального состояния видео
+      connectionRef.current.connection.on(
+        "InitialVideoState",
+        handleInitialVideoState
+      );
+
       // Добавляем периодическую проверку здоровья соединения
       const healthCheckInterval = setInterval(checkConnectionHealth, 30000);
 
@@ -437,11 +502,12 @@ export const useVideoSync = (
       return () => {
         if (connectionRef.current && connectionRef.current.connection) {
           connectionRef.current.connection.off("VideoStateUpdated");
+          connectionRef.current.connection.off("InitialVideoState");
         }
         clearInterval(healthCheckInterval);
       };
     }
-  }, [connectionRef, handleVideoStateUpdated]);
+  }, [connectionRef, handleVideoStateUpdated, handleInitialVideoState]);
 
   // Пинг для поддержания соединения активным
   useEffect(() => {
@@ -472,9 +538,15 @@ export const useVideoSync = (
       handleTimeUpdate,
       handlePlayPause,
       handleVideoStateUpdated,
+      handleInitialVideoState,
       playPauseDebounceTimeoutRef,
       checkConnectionHealth,
     }),
-    [handleTimeUpdate, handlePlayPause, handleVideoStateUpdated]
+    [
+      handleTimeUpdate,
+      handlePlayPause,
+      handleVideoStateUpdated,
+      handleInitialVideoState,
+    ]
   );
 };

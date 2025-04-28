@@ -182,6 +182,7 @@ export default function RoomPage({
     handleTimeUpdate,
     handlePlayPause,
     handleVideoStateUpdated, // Получаем реальную функцию
+    handleInitialVideoState, // Добавляем новый обработчик
     playPauseDebounceTimeoutRef,
   } = useVideoSync(roomId, roomData, setRoomData, playerRef, connectionRef);
 
@@ -198,9 +199,17 @@ export default function RoomPage({
         "ReceiveVideoState",
         handleVideoStateUpdated
       );
-      console.log("Обработчик видео-событий SignalR обновлен на реальный");
+
+      // Добавляем обработчик для InitialVideoState
+      connectionRef.current.connection.off("InitialVideoState");
+      connectionRef.current.connection.on(
+        "InitialVideoState",
+        handleInitialVideoState
+      );
+
+      console.log("Обработчики видео-событий SignalR обновлены на реальные");
     }
-  }, [connectionRef, handleVideoStateUpdated]);
+  }, [connectionRef, handleVideoStateUpdated, handleInitialVideoState]);
 
   /* Очистка таймаутов при размонтировании компонента */
   useEffect(() => {
