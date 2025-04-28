@@ -166,8 +166,7 @@ export default function RoomPage({
       handleParticipantsUpdated,
       handleChatHistory,
       handleVideoStateUpdatedStub, // Используем заглушку здесь
-      handleConnectionStateChanged,
-      setupBrowserCloseHandler
+      handleConnectionStateChanged
     );
 
   // Передаем connectionRef родительскому компоненту
@@ -279,10 +278,6 @@ export default function RoomPage({
         mouseDownOnContentRef={mouseDownOnContentRef}
         handleManualReconnect={handleManualReconnect}
         handleCloseModal={handleCloseModal}
-        handleManualLeave={handleManualLeave}
-        navigate={navigate}
-        isChatVisible={isChatVisible}
-        toggleChatVisibility={toggleChatVisibility}
       />
     ),
     [
@@ -295,9 +290,6 @@ export default function RoomPage({
       isInviteModalOpen,
       handleManualReconnect,
       handleCloseModal,
-      navigate,
-      isChatVisible,
-      toggleChatVisibility,
     ]
   );
 

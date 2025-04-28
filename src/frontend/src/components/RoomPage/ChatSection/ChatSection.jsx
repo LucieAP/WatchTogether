@@ -20,10 +20,6 @@ export const ChatSection = ({
   mouseDownOnContentRef,
   handleManualReconnect,
   handleCloseModal,
-  handleManualLeave,
-  navigate,
-  isChatVisible,
-  toggleChatVisibility,
 }) => {
   const [showNotification, setShowNotification] = useState(false);
   const [showParticipants, setShowParticipants] = useState(false);
@@ -194,7 +190,7 @@ export const ChatSection = ({
         />
 
         {/* Отображение состояния соединения */}
-        <div className={`connection-status ${connectionStatus}`}>
+        {/* <div className={`connection-status ${connectionStatus}`}>
           {connectionStatus === "connected" && <span>✓ Подключено</span>}
           {connectionStatus === "reconnecting" && (
             <span>⟳ Переподключение...</span>
@@ -211,7 +207,7 @@ export const ChatSection = ({
               <button onClick={handleManualReconnect}>Попробовать снова</button>
             </div>
           )}
-        </div>
+        </div> */}
       </div>
 
       <div className="messages-container">

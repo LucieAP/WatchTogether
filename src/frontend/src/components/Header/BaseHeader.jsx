@@ -6,6 +6,7 @@ import "./Header.css";
 export default function BaseHeader({
   children, // Дополнительный контент, который будет отображаться между лого и блоком авторизации
   logoText = "WatchTogether", // Текст логотипа по умолчанию
+  hideServerStatus = false, // Флаг для скрытия блока статуса сервера
 }) {
   const navigate = useNavigate(); // Возвращает объект navigate, который используется для перенаправления на другие страницы
   const { isLoggedIn, username, logout } = useAuth();
@@ -45,11 +46,16 @@ export default function BaseHeader({
       {/* Слот для дополнительного контента */}
       {children}
 
-      <div className="server-status-nav-links">
-        <button className="server-status-nav-link" onClick={handleHealthStatus}>
-          Статус сервера
-        </button>
-      </div>
+      {!hideServerStatus && (
+        <div className="server-status-nav-links">
+          <button
+            className="server-status-nav-link"
+            onClick={handleHealthStatus}
+          >
+            Статус сервера
+          </button>
+        </div>
+      )}
 
       <div className="auth-controls">
         {isLoggedIn ? (

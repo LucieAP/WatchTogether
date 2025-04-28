@@ -3,14 +3,15 @@ import axios from "axios";
 import { createConnection } from "../../../api/media";
 import * as signalR from "@microsoft/signalr";
 
+import { setupBrowserCloseHandler } from "../../../api/leaveRoomAction";
+
 const useSignalRConnection = (
   roomId,
   handleNewMessage,
   handleParticipantsUpdated,
   handleChatHistory,
   handleVideoStateUpdated,
-  handleConnectionStateChanged,
-  setupBrowserCloseHandler
+  handleConnectionStateChanged
 ) => {
   const [userInfo, setUserInfo] = useState({
     userId: "",

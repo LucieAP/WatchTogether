@@ -6,6 +6,7 @@ import { LeaveRoomModal } from "./Modals/LeaveRoomModal";
 import { useState, useEffect } from "react";
 import "./RoomHeader.css";
 import { handleManualLeave } from "../../api/leaveRoomAction";
+import useSignalRConnection from "./hooks/useSignalRConnection";
 
 export default function RoomHeader({
   onSettingsClick,
@@ -23,6 +24,9 @@ export default function RoomHeader({
   const openLeaveRoomModal = () => setIsLeaveRoomModalOpen(true);
   const closeLeaveRoomModal = () => setIsLeaveRoomModalOpen(false);
 
+  // const { connectionStatus, handleManualReconnect, connectionRef } =
+  //   useSignalRConnection(roomId);
+
   const handleLeaveRoom = () => {
     handleManualLeave(roomId, connectionRef, navigate);
     closeLeaveRoomModal();
@@ -31,8 +35,11 @@ export default function RoomHeader({
   useEffect(() => {
     if (!expiresAt) return;
 
+    console.log("expiresAt:", expiresAt);
+
     const calculateTimeLeft = () => {
       const expirationTime = new Date(expiresAt);
+      // const expirationTime = new Date("2025-04-28T22:05:43.159429Z");
       const now = new Date();
       const difference = expirationTime - now;
 
@@ -71,7 +78,7 @@ export default function RoomHeader({
   }, [expiresAt]);
 
   return (
-    <BaseHeader>
+    <BaseHeader hideServerStatus={true}>
       {/* Специфичный для комнаты контент, который будет вставлен между логотипом и авторизацией */}
       <div className="room-header-content">
         <div className="room-info">
@@ -86,33 +93,59 @@ export default function RoomHeader({
               title="Настройки комнаты"
             />
           )}
+
+          {/* Отображение времени до закрытия комнаты */}
+          {timeLeft && (
+            <div className={`room-expiration ${showWarning ? "warning" : ""}`}>
+              <div className="expiration-time">
+                Время до закрытия: {timeLeft}
+              </div>
+              {showWarning && (
+                <div className="expiration-warning">
+                  Комната закроется через &lt;5 мин!
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Отображение времени до закрытия комнаты */}
-        {timeLeft && (
-          <div className={`room-expiration ${showWarning ? "warning" : ""}`}>
-            {showWarning && (
-              <div className="expiration-warning">
-                Внимание! Комната будет закрыта менее чем через 5 минут.
+        <div className="right-controls">
+          {/* Отображение состояния соединения */}
+          {/* <div className={`connection-status ${connectionStatus}`}>
+            {connectionStatus === "connected" && <span>✓ Подключено</span>}
+            {connectionStatus === "reconnecting" && (
+              <span>⟳ Переподключение...</span>
+            )}
+            {connectionStatus === "disconnected" && (
+              <div>
+                <span>✕ Соединение потеряно</span>
+                <button onClick={handleManualReconnect}>
+                  Переподключиться
+                </button>
               </div>
             )}
-            <div className="expiration-time">
-              Время до закрытия комнаты: {timeLeft}
-            </div>
+            {connectionStatus === "error" && (
+              <div>
+                <span>✕ Ошибка соединения</span>
+                <button onClick={handleManualReconnect}>
+                  Попробовать снова
+                </button>
+              </div>
+            )}
+          </div> */}
+
+          {/* Выход из комнаты */}
+          <div className="leave-room-header">
+            <button onClick={openLeaveRoomModal} className="leave-button">
+              Покинуть комнату
+            </button>
+
+            <LeaveRoomModal
+              isOpen={isLeaveRoomModalOpen}
+              onClose={closeLeaveRoomModal}
+              onLeave={handleLeaveRoom}
+            />
           </div>
-        )}
-
-        {/* Выход из комнаты */}
-        <div className="leave-room-header">
-          <button onClick={openLeaveRoomModal} className="leave-button">
-            Покинуть комнату
-          </button>
-
-          <LeaveRoomModal
-            isOpen={isLeaveRoomModalOpen}
-            onClose={closeLeaveRoomModal}
-            onLeave={handleLeaveRoom}
-          />
         </div>
       </div>
     </BaseHeader>

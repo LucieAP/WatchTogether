@@ -19,16 +19,26 @@
   padding: 2rem; */
 }
 
+/* Стили для заголовка чата */
+/* .chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  padding: 10px 0;
+  flex-direction: column;
+  border-bottom: 1px solid #eee;
+} */
+
 .chat-toolbar {
   display: flex;
-  /* margin-bottom: 10px; */
+  margin-bottom: 1rem;
 }
 
 .messages-container {
   flex-grow: 1; /* Позволяем сообщениям занимать всё доступное пространство */
   overflow-y: auto;
   /* border: 1px solid #ccc; */
-  border-top: 1px solid #ddd;
   margin-bottom: 10px;
   /* Добавляем скролл и фиксируем высоту */
   display: flex;
@@ -49,7 +59,7 @@
   background: white;
   position: relative;
   align-items: center;
-  margin-top: auto; /* Прижимает форму к низу контейнера */
+  margin-top: 1rem; /* Прижимает форму к низу контейнера */
 }
 
 .input-container {
@@ -102,17 +112,6 @@
 }
 
 /* Текущие участники комнаты */
-
-/* Стили для заголовка чата */
-/* .chat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 15px;
-  padding: 10px 0;
-  flex-direction: column;
-  border-bottom: 1px solid #eee;
-} */
 
 /* Стили для контейнера участников */
 .participants-container {
@@ -289,9 +288,8 @@
 }
 
 /* Стили для индикатора статуса соединения */
-.connection-status {
+/* .connection-status {
   padding: 8px 12px;
-  /* margin-bottom: 10px; */
   border-radius: 5px;
   text-align: center;
   font-weight: 500;
@@ -332,4 +330,4 @@
 
 .connection-status button:hover {
   background-color: #d32f2f;
-}
+} */
