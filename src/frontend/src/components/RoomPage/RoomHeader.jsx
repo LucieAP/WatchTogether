@@ -2,14 +2,29 @@ import { useNavigate } from "react-router-dom";
 import gearIcon from "../../assets/gear-icon.png";
 import userIcon from "../../assets/user-icon.png";
 import BaseHeader from "../Header/BaseHeader";
+import { LeaveRoomModal } from "./Modals/LeaveRoomModal";
+import { useState } from "react";
 import "./RoomHeader.css";
+import { handleManualLeave } from "../../api/leaveRoomAction";
 
 export default function RoomHeader({
   onSettingsClick,
   roomName,
-  onLeaveRoom,
   canControlVideo,
+  roomId,
+  connectionRef,
 }) {
+  const navigate = useNavigate();
+  const [isLeaveRoomModalOpen, setIsLeaveRoomModalOpen] = useState(false);
+
+  const openLeaveRoomModal = () => setIsLeaveRoomModalOpen(true);
+  const closeLeaveRoomModal = () => setIsLeaveRoomModalOpen(false);
+
+  const handleLeaveRoom = () => {
+    handleManualLeave(roomId, connectionRef, navigate);
+    closeLeaveRoomModal();
+  };
+
   return (
     <BaseHeader>
       {/* Специфичный для комнаты контент, который будет вставлен между логотипом и авторизацией */}
@@ -28,11 +43,16 @@ export default function RoomHeader({
           )}
         </div>
 
-        <div className="user-profile">
-          <img
-            src={userIcon}
-            alt="Профиль пользователя"
-            className="user-icon"
+        {/* Выход из комнаты */}
+        <div className="leave-room-header">
+          <button onClick={openLeaveRoomModal} className="leave-button">
+            Покинуть комнату
+          </button>
+
+          <LeaveRoomModal
+            isOpen={isLeaveRoomModalOpen}
+            onClose={closeLeaveRoomModal}
+            onLeave={handleLeaveRoom}
           />
         </div>
       </div>

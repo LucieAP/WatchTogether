@@ -24,6 +24,7 @@ export default function RoomPage({
   onSettingsClose,
   roomData: initialRoomData,
   refetchRoomData,
+  onConnectionRefCreate,
 }) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   // Состояние для показа/скрытия чата
@@ -168,6 +169,13 @@ export default function RoomPage({
       handleConnectionStateChanged,
       setupBrowserCloseHandler
     );
+
+  // Передаем connectionRef родительскому компоненту
+  useEffect(() => {
+    if (connectionRef && onConnectionRefCreate) {
+      onConnectionRefCreate(connectionRef);
+    }
+  }, [connectionRef, onConnectionRefCreate]);
 
   // Используем хук синхронизации видео
   const {

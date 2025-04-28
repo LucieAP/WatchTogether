@@ -8,7 +8,8 @@ export const LeaveRoomModal = ({ isOpen, onClose, onLeave }) => {
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.modalTitle}>Подтверждение</h3>
         <p className={styles.modalMessage}>
-          Вы уверены, что хотите покинуть комнату?
+          Вы уверены, что хотите покинуть комнату? <br />
+          (Если в комнате больше нет участников, она будет удалена)
         </p>
 
         <div className={styles.modalButtons}>

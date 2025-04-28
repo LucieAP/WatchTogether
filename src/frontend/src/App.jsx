@@ -97,6 +97,7 @@ function ProtectedRoute({
 
 function RoomPageWithHeader() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false); // Открытие модального окна при нажатии на шестеренку
+  const [connectionRef, setConnectionRef] = useState(null); // Состояние для хранения ссылки на соединение
 
   const { roomId } = useParams();
   const { roomData, isLoading, error, refetch } = useRoomData(roomId);
@@ -119,18 +120,26 @@ function RoomPageWithHeader() {
     setIsSettingsModalOpen(false);
   }, []);
 
+  // Функция для получения connectionRef из RoomPage
+  const handleConnectionRefCreate = useCallback((ref) => {
+    setConnectionRef(ref);
+  }, []);
+
   return (
     <>
       <RoomHeader
         onSettingsClick={handleSettingsClick}
         roomName={roomData?.roomName}
         canControlVideo={roomData?.canControlVideo}
+        roomId={roomId}
+        connectionRef={connectionRef}
       />
       <RoomPage
         isSettingsModalOpen={isSettingsModalOpen}
         onSettingsClose={handleSettingsClose}
         roomData={roomData}
         refetchRoomData={refetch}
+        onConnectionRefCreate={handleConnectionRefCreate}
       />
     </>
   );

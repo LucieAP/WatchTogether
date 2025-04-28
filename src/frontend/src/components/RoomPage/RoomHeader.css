@@ -1,5 +1,5 @@
 .user-icon {
-  width: 32px;  /* Ограничиваем ширину */
+  width: 32px; /* Ограничиваем ширину */
   height: 32px; /* Ограничиваем высоту */
   border-radius: 50%; /* Делаем круглую иконку */
   object-fit: cover; /* Сохраняем пропорции изображения */
@@ -43,4 +43,26 @@
 
 .gear-icon:hover {
   opacity: 0.7;
+}
+
+/* Контейнер для кнопки выхода из комнаты */
+.leave-room-header {
+  margin-left: auto;
+  position: relative;
+}
+
+/* Стиль кнопки "Покинуть комнату" в хедере */
+.leave-button {
+  background-color: #ef4444;
+  color: white;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.leave-button:hover {
+  background-color: #dc2626;
 }
