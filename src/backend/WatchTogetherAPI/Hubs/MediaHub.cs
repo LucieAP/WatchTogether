@@ -49,6 +49,34 @@ namespace WatchTogetherAPI.Hubs
                 {
                     try
                     {
+                        // Получаем имя пользователя перед удалением из словаря
+                        string username = "Пользователь";
+                        if (_connectionToUserId.TryGetValue(Context.ConnectionId, out var userId))
+                        {
+                            try
+                            {
+                                // Пытаемся получить имя пользователя из базы данных
+                                if (Guid.TryParse(userId, out Guid parsedUserId))
+                                {
+                                    var user = await _context.Users.FindAsync(parsedUserId);
+                                    if (user != null)
+                                    {
+                                        username = user.Username;
+                                    }
+                                }
+                                
+                                // Отправляем системное сообщение о выходе из комнаты
+                                await SendSystemMessage(roomId, username, "покинул чат.");
+                                
+                                // Удаляем пользователя из словаря
+                                _connectionToUserId.TryRemove(Context.ConnectionId, out _);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Ошибка при получении имени пользователя {UserId}", userId);
+                            }
+                        }
+
                         await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId, Context.ConnectionAborted);
                         await Clients.Group(roomId).SendAsync("ParticipantsUpdated", Context.ConnectionAborted);
                         _logger.LogInformation("Клиент {ConnectionId} удален из комнаты {RoomId}", Context.ConnectionId, roomId);
@@ -70,6 +98,19 @@ namespace WatchTogetherAPI.Hubs
             }
 
             await base.OnDisconnectedAsync(exception);
+        }
+
+        // Вспомогательный метод для отправки системных сообщений
+        private async Task SendSystemMessage(string roomId, string username, string message)
+        {
+            try
+            {
+                await SendMessage(roomId, "System", username, message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при отправке системного сообщения в комнату {RoomId}", roomId);
+            }
         }
 
         public async Task JoinRoom(string roomId, string userName, string userId)
@@ -176,11 +217,8 @@ namespace WatchTogetherAPI.Hubs
                     // Уведомляем всех об обновлении списка участников
                     await Clients.Group(roomId).SendAsync("ParticipantsUpdated", cancellationToken);
 
-                    // Отправляем системное сообщение только если это новый пользователь
-                    if (isNewUser)
-                    {
-                        await SendMessage(roomId, "System", userName, "присоединился к чату.");
-                    }
+                    // Отправляем системное сообщение при каждом подключении
+                    await SendMessage(roomId, "System", userName, "присоединился к чату.");
                 }
                 catch (OperationCanceledException)
                 {
