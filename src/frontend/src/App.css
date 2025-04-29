@@ -1,5 +1,6 @@
 /* Основные переменные */
 :root {
+  /* Светлая тема (по умолчанию) */
   --primary-color: #3498db;
   --secondary-color: #2ecc71;
   --accent-color: #e74c3c;
@@ -12,6 +13,30 @@
   --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
   --container-width: 1200px;
+
+  /* Темная тема */
+  --dark-primary-color: #4dabf7;
+  --dark-secondary-color: #40c28d;
+  --dark-accent-color: #f25f5c;
+  --dark-text-color: #e1e1e1;
+  --dark-light-text-color: #a0a0a0;
+  --dark-bg-color: #121212;
+  --dark-light-bg-color: #272727;
+  --dark-border-color: #333333;
+  --dark-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Темная тема */
+[data-theme="dark"] {
+  --primary-color: var(--dark-primary-color);
+  --secondary-color: var(--dark-secondary-color);
+  --accent-color: var(--dark-accent-color);
+  --text-color: var(--dark-text-color);
+  --light-text-color: var(--dark-light-text-color);
+  --bg-color: var(--dark-bg-color);
+  --light-bg-color: var(--dark-light-bg-color);
+  --border-color: var(--dark-border-color);
+  --shadow: var(--dark-shadow);
 }
 
 /* Сброс стилей */
@@ -36,6 +61,7 @@ body {
   line-height: 1.5;
   color: var(--text-color);
   background-color: var(--bg-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Типографика */

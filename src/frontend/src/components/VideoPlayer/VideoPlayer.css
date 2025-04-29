@@ -5,13 +5,17 @@
   --gutter-width: clamp(10px, 2vw, 20px);
 
   /* Цветовая схема */
-  --primary-color: #3a86ff;
-  --background-color: #121212;
-  --text-color-white: #ffffff;
-  --text-color-black: #000000;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --control-background: rgba(0, 0, 0, 0.6);
-  --hover-background: rgba(58, 134, 255, 0.2);
+  --player-primary-color: #3a86ff;
+  --player-background-color: #121212;
+  --player-text-color-white: #ffffff;
+  --player-text-color-black: #000000;
+  --player-text-secondary: rgba(255, 255, 255, 0.7);
+  --player-control-background: rgba(0, 0, 0, 0.6);
+  --player-hover-background: rgba(58, 134, 255, 0.2);
+
+  /* Для темной темы */
+  --player-light-control-background: rgba(255, 255, 255, 0.2);
+  --player-light-hover-background: rgba(255, 255, 255, 0.3);
 
   /* Анимации */
   --transition-fast: 0.2s ease;
@@ -59,11 +63,15 @@
   max-width: var(--column-width);
   height: 100%;
   padding-top: 0;
-  background-color: var(--background-color);
+  background-color: var(--player-background-color);
   overflow: hidden;
   border-radius: var(--border-radius);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   margin: 0 auto;
+}
+
+[data-theme="dark"] .player-wrapper {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 h1 {
@@ -96,7 +104,7 @@ h1 {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: var(--control-background);
+  background: var(--player-control-background);
   border-radius: 50%;
   transition: opacity var(--transition-normal), transform var(--transition-fast),
     background-color var(--transition-fast);
@@ -116,7 +124,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-color-white);
+  color: var(--player-text-color-white);
   background-color: transparent;
   border: none;
   cursor: pointer;
@@ -126,7 +134,7 @@ h1 {
 
 .play-pause-btn:hover {
   transform: scale(1.1);
-  background-color: var(--hover-background);
+  background-color: var(--player-hover-background);
 }
 
 .play-pause-btn svg {
@@ -175,7 +183,7 @@ h1 {
   /* padding: calc(var(--gutter-width) * 0.5); */
   background: linear-gradient(
     to top,
-    var(--control-background) 0%,
+    var(--player-control-background) 0%,
     rgba(0, 0, 0, 0.3) 70%,
     transparent 100%
   );
@@ -195,7 +203,7 @@ h1 {
   justify-content: center;
   width: var(--control-size);
   height: var(--control-size);
-  color: var(--text-color-white);
+  color: var(--player-text-color-white);
   background-color: transparent;
   border: none;
   border-radius: 50%;
@@ -208,7 +216,7 @@ h1 {
 .volume-btn:hover,
 .settings-button:hover,
 .fullscreen-button:hover {
-  background-color: var(--hover-background);
+  background-color: var(--player-hover-background);
 }
 
 .play-button svg,
@@ -262,12 +270,16 @@ h1 {
   -webkit-appearance: none;
   width: var(--thumb-size) !important;
   height: var(--thumb-size) !important;
-  background: var(--primary-color);
+  background: var(--player-primary-color);
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   transition: transform var(--transition-fast),
     box-shadow var(--transition-fast);
+}
+
+[data-theme="dark"] .player-progress-bar::-webkit-slider-thumb {
+  background: var(--dark-primary-color);
 }
 
 .player-progress-bar::-webkit-slider-thumb:hover {
@@ -278,7 +290,7 @@ h1 {
 .player-progress-bar::-moz-range-thumb {
   width: var(--thumb-size) !important;
   height: var(--thumb-size) !important;
-  background: var(--primary-color);
+  background: var(--player-primary-color);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -327,7 +339,7 @@ h1 {
 .time-display {
   font-family: monospace;
   font-size: clamp(12px, 2vw, 14px);
-  color: var(--text-secondary);
+  color: var(--player-text-secondary);
   margin: 0 8px;
   white-space: nowrap;
 }
@@ -369,7 +381,7 @@ h1 {
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
-  background: var(--primary-color);
+  background: var(--player-primary-color);
   border-radius: 50%;
   cursor: pointer;
 }
@@ -377,7 +389,7 @@ h1 {
 .volume-change-bar::-moz-range-thumb {
   width: 12px;
   height: 12px;
-  background: var(--primary-color);
+  background: var(--player-primary-color);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -429,7 +441,7 @@ h1 {
 .settings-list,
 .speed-settings-values {
   position: absolute;
-  background: var(--control-background);
+  background: var(--player-control-background);
   border-radius: var(--border-radius);
   padding: 8px;
   z-index: var(--z-settings);
@@ -453,7 +465,7 @@ h1 {
 .speed-settings-btn,
 .speed-value {
   background: transparent;
-  color: var(--text-color-white);
+  color: var(--player-text-color-white);
   border: none;
   padding: 8px 12px;
   text-align: left;
@@ -471,7 +483,7 @@ h1 {
 
 .speed-settings-btn:hover,
 .speed-value:hover {
-  background-color: var(--hover-background);
+  background-color: var(--player-hover-background);
 }
 
 /* Кнопка блокировки элементов управления */
@@ -486,8 +498,8 @@ h1 {
   justify-content: center;
   width: var(--control-size);
   height: var(--control-size);
-  color: var(--text-color-white);
-  background-color: var(--control-background);
+  color: var(--player-text-color-white);
+  background-color: var(--player-control-background);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -500,7 +512,7 @@ h1 {
 .lock-button:hover,
 .lock-button:focus {
   outline: none;
-  background-color: var(--hover-background);
+  background-color: var(--player-hover-background);
   opacity: 1 !important;
 }
 
@@ -566,7 +578,7 @@ h1 {
 .footer {
   margin: var(--gutter-width);
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--player-text-secondary);
 }
 
 /* Оптимизация для различных устройств ввода */
@@ -578,16 +590,16 @@ h1 {
   }
 
   .player-controls {
-    background: var(--control-background);
+    background: var(--player-control-background);
   }
 }
 
 /* Поддержка темной темы */
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary-color: #60a5fa;
-    --background-color: #0f0f0f;
-    --hover-background: rgba(96, 165, 250, 0.2);
+    --player-primary-color: #60a5fa;
+    --player-background-color: #0f0f0f;
+    --player-hover-background: rgba(96, 165, 250, 0.2);
   }
 }
 

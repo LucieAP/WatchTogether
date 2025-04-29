@@ -2,13 +2,16 @@
 .chat-section {
   flex: 2;
   padding: 20px;
-  border-left: 1px solid #ddd;
+  border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  transition: flex 0.3s ease-in-out, width 0.3s ease-in-out;
+  transition: flex 0.3s ease-in-out, width 0.3s ease-in-out,
+    background-color 0.3s ease;
   height: 100%; /* Заменяем 100vh на 100% для соответствия высоте родителя */
   overflow-y: auto; /* Добавляем прокрутку для чата */
   padding-bottom: 0px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 /* Контейнер компонента */
@@ -56,7 +59,7 @@
 .chat-form {
   display: flex;
   /* padding: 8px; */
-  background: white;
+  background: var(--bg-color);
   position: relative;
   align-items: center;
   margin-top: 1rem; /* Прижимает форму к низу контейнера */
@@ -70,16 +73,18 @@
 
 .chat-input {
   width: 100%;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 5px;
   padding: 8px 12px;
   padding-right: 40px; /* Освобождаем место для кнопки эмодзи */
   outline: none;
   box-sizing: border-box;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .chat-input:focus {
-  border-color: #29b6f6;
+  border-color: var(--primary-color);
 }
 
 .invite-btn {
@@ -120,10 +125,11 @@
   margin-left: 0;
   width: 100%;
   border-radius: 6px;
-  background-color: #f8f9fa;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: var(--light-bg-color);
+  box-shadow: var(--shadow);
   /* overflow: hidden; */
   overflow: visible; /* Меняем на visible, чтобы выпадающий список мог выходить за пределы */
+  transition: background-color 0.3s ease;
 }
 
 /* Заголовок списка участников */
@@ -132,16 +138,22 @@
   justify-content: center;
   align-items: center;
   padding: 8px 12px;
-  background-color: #e9ecef;
+  background-color: var(--light-bg-color);
   font-size: 18px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   user-select: none;
+  color: var(--text-color);
+  transition: background-color 0.3s ease;
 }
 
 .participants-header:hover {
   background-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .participants-header:hover {
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 /* Стрелка для сворачивания/разворачивания списка */
@@ -164,10 +176,11 @@
   max-height: 200px;
   overflow-y: auto;
 
-  background-color: #f8f9fa; /* Добавляем фоновый цвет */
+  background-color: var(--light-bg-color); /* Добавляем фоновый цвет */
   border-radius: 0 0 6px 6px; /* Закругляем нижние углы */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Добавляем тень */
+  box-shadow: var(--shadow); /* Добавляем тень */
   z-index: 1000; /* Высокий z-index, чтобы быть поверх других элементов */
+  transition: background-color 0.3s ease;
 }
 
 /* Кнопка удаления участника */
@@ -185,8 +198,9 @@
 /* Элемент списка участников */
 .participants-list li {
   padding: 6px 12px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--border-color);
   font-size: 0.9em;
+  color: var(--text-color);
 }
 
 .participants-list li:last-child {
@@ -199,16 +213,30 @@
   background-color: rgba(0, 123, 255, 0.1);
 }
 
+[data-theme="dark"] .participants-list .current-user {
+  background-color: rgba(77, 171, 247, 0.2);
+}
+
 /* Стиль для контейнера сообщения */
 .message {
   padding: 2px 6px;
   /* margin-bottom: 8px; */
   transition: background-color 0.2s ease;
+  color: var(--text-color);
 }
 
 /* Эффект при наведении на сообщение */
 .message:hover {
   background-color: rgba(0, 0, 0, 0.05); /* Светло-серый цвет при наведении */
+}
+
+[data-theme="dark"] .message:hover {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.05
+  ); /* Темный вариант при наведении */
 }
 
 /* Заголовок сообщения с именем пользователя и временем */
@@ -226,7 +254,7 @@
 
 /* Стиль для временной метки */
 .message-timestamp {
-  color: #888;
+  color: var(--light-text-color);
   font-size: 0.8em;
   margin-left: auto; /* Прижимает метку времени к правому краю */
 }
@@ -242,8 +270,16 @@
   font-style: italic;
 }
 
+[data-theme="dark"] .system-message {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
 .own-message {
   background-color: rgba(0, 123, 255, 0.1);
+}
+
+[data-theme="dark"] .own-message {
+  background-color: rgba(77, 171, 247, 0.15);
 }
 
 /* При наведении на системные и собственные сообщения */
@@ -251,8 +287,16 @@
   background-color: rgba(0, 0, 0, 0.08);
 }
 
+[data-theme="dark"] .system-message:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
 .own-message:hover {
   background-color: rgba(0, 123, 255, 0.15);
+}
+
+[data-theme="dark"] .own-message:hover {
+  background-color: rgba(77, 171, 247, 0.2);
 }
 
 /* Стили для кнопки эмодзи */

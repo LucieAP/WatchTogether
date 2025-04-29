@@ -20,6 +20,7 @@ import HealthStatus from "./components/HealthStatus/HealthStatus";
 import { useRoomData } from "./hooks/useRoomData";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ConnectionProvider } from "./context/ConnectionContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -144,50 +145,52 @@ export default function App() {
     <Router>
       <AuthProvider>
         <ConnectionProvider>
-          <Toaster position="top-center" />
-          <div className="layout-container">
-            <HeaderSelector />
-            <main className="main-content">
-              <Routes>
-                <Route path="/rooms" element={<GetRooms />} />
-                <Route
-                  path="/create-room"
-                  element={
-                    <ProtectedRoute
-                      allowGuest={true}
-                      checkLogoutTimestamp={false}
-                    >
-                      <CreateRoom />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/room/:roomId"
-                  element={
-                    <ProtectedRoute
-                      allowGuest={true}
-                      checkLogoutTimestamp={false}
-                    >
-                      <RoomPageWithHeader />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/auth" element={<Auth />} />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute allowGuest={false}>
-                      <Profile />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/health-status" element={<HealthStatus />} />
-                <Route path="/" element={<HomePage />} />
-                <Route path="/not-found" element={<NotFoundPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </main>
-          </div>
+          <ThemeProvider>
+            <Toaster position="top-center" />
+            <div className="layout-container">
+              <HeaderSelector />
+              <main className="main-content">
+                <Routes>
+                  <Route path="/rooms" element={<GetRooms />} />
+                  <Route
+                    path="/create-room"
+                    element={
+                      <ProtectedRoute
+                        allowGuest={true}
+                        checkLogoutTimestamp={false}
+                      >
+                        <CreateRoom />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/room/:roomId"
+                    element={
+                      <ProtectedRoute
+                        allowGuest={true}
+                        checkLogoutTimestamp={false}
+                      >
+                        <RoomPageWithHeader />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute allowGuest={false}>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/health-status" element={<HealthStatus />} />
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/not-found" element={<NotFoundPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </main>
+            </div>
+          </ThemeProvider>
         </ConnectionProvider>
       </AuthProvider>
     </Router>

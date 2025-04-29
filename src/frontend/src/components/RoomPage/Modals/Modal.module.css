@@ -14,15 +14,19 @@
   z-index: 1000; /* Высокое значение для перекрытия других элементов */
 }
 
+[data-theme="dark"] .modalOverlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
 /* Контейнер содержимого */
 .modalContent {
-  background-color: white;
+  background-color: var(--bg-color);
   padding: 20px;
   border-radius: 8px;
   width: 600px;
   max-width: 90%;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow);
+  transition: background-color 0.3s ease;
 }
 
 /* Заголовок модального окна */
@@ -31,11 +35,12 @@
   font-weight: 600;
   margin-bottom: 1rem;
   user-select: none;
+  color: var(--text-color);
 }
 
 /* Сообщение в модальном окне */
 .modalMessage {
-  color: #4b5563;
+  color: var(--light-text-color);
   margin-bottom: 1.5rem;
   user-select: none;
   font-size: 16px;
@@ -117,8 +122,10 @@
   width: 100%;
   padding: 8px;
   margin-bottom: 15px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 /* Контейнер для ссылки приглашения */
@@ -133,18 +140,20 @@
 .inviteLink {
   flex: 1;
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   word-wrap: break-word;
   overflow-wrap: break-word;
   min-height: 40px;
   display: flex;
   align-items: center;
+  background-color: var(--light-bg-color);
+  color: var(--text-color);
 }
 
 /* Уведомление о копировании */
 .notification {
-  color: #4caf50;
+  color: var(--secondary-color);
   font-size: 14px;
   margin-top: 10px;
 }

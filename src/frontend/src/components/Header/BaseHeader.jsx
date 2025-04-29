@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 import "./Header.css";
 
 // Базовый компонент заголовка, содержащий общую логику
@@ -10,6 +11,7 @@ export default function BaseHeader({
 }) {
   const navigate = useNavigate(); // Возвращает объект navigate, который используется для перенаправления на другие страницы
   const { isLoggedIn, username, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   // Обрабатывает перенаправление на главную страницу
   const handleHomePage = () => {
@@ -58,6 +60,21 @@ export default function BaseHeader({
       )}
 
       <div className="auth-controls">
+        {/* Переключатель темы */}
+        <div className="theme-toggle">
+          <span className="theme-toggle-icon">
+            {theme === "dark" ? "🌙" : "☀️"}
+          </span>
+          <label className="theme-switch">
+            <input
+              type="checkbox"
+              checked={theme === "dark"}
+              onChange={toggleTheme}
+            />
+            <span className="slider"></span>
+          </label>
+        </div>
+
         {isLoggedIn ? (
           <div className="user-info">
             <span className="username" onClick={handleProfile}>

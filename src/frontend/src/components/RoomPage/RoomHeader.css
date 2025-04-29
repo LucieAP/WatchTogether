@@ -31,6 +31,7 @@
   font-size: 18px;
   margin: 0 10px 0 0;
   font-weight: 500;
+  color: var(--text-color);
 }
 
 /* Кнопка настроек */
@@ -40,6 +41,7 @@
   cursor: pointer;
   transition: opacity 0.3s;
   margin-right: 15px;
+  color: var(--text-color);
 }
 
 .gear-icon:hover {
@@ -80,11 +82,12 @@
   font-size: 14px;
   transition: all 0.3s ease;
   position: relative;
+  color: var(--text-color);
 }
 
 .expiration-time {
   font-weight: 500;
-  color: #555;
+  color: var(--light-text-color);
   white-space: nowrap;
 }
 

@@ -6,16 +6,19 @@
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
+  color: var(--text-color);
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 14px;
   resize: none;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 /* Основной контент */
@@ -28,10 +31,10 @@
   right: 0;
   bottom: 0;
   z-index: 1; /* Меньший z-index, чтобы хедер был сверху */
-  background-color: #fff;
-  transition: all 0.3s ease-in-out;
+  background-color: var(--bg-color);
+  transition: all 0.3s ease-in-out, background-color 0.3s ease;
   overflow: hidden; /* Предотвращаем прокрутку внутри комнаты */
-  border-top: 3px solid #eee; /* Добавляем полоску-разделитель сверху */
+  border-top: 3px solid var(--border-color); /* Добавляем полоску-разделитель сверху */
 }
 
 /* Стили для комнаты со скрытым чатом */
@@ -48,7 +51,7 @@
 
 /* Дорожка скроллбара */
 ::-webkit-scrollbar-track {
-  background: #f1f1f1; /* Цвет фона дорожки */
+  background: var(--light-bg-color); /* Цвет фона дорожки */
 }
 
 ::-webkit-scrollbar-thumb {
@@ -61,4 +64,8 @@
     0 calc(100% - 0.15em),
     0 0.15em
   );
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
 }
