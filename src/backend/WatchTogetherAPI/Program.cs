@@ -10,6 +10,7 @@ using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using WatchTogetherAPI.Extensions;
 
 namespace WatchTogetherAPI
 {
@@ -152,6 +153,49 @@ namespace WatchTogetherAPI
 
 
             var app = builder.Build();
+
+            // Добавляем код для применения миграций для Docker
+            // Проверяем, установлена ли переменная окружения для автоматического применения миграций
+            if (Environment.GetEnvironmentVariable("ApplyMigrations") == "true")
+            {
+                // Создаем временную область видимости для получения сервисов
+                using (var scope = app.Services.CreateScope())
+                {
+                    // Получаем экземпляр контекста базы данных из DI-контейнера
+                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    
+                    try
+                    {
+                        // Используем новый метод инициализации базы данных
+                        // Вызываем синхронно с помощью .Wait() (в идеале лучше использовать await)
+                        DatabaseInitializer.InitializeDatabaseAsync(dbContext).Wait();
+                        
+                        // Проверяем необходимость применения миграций
+                        // Получаем список ожидающих миграций, которые еще не были применены
+                        var pendingMigrations = dbContext.Database.GetPendingMigrations();
+                        if (pendingMigrations.Any())
+                        {
+                            // Если есть ожидающие миграции, выводим информацию и применяем их
+                            Console.WriteLine($"Найдено {pendingMigrations.Count()} ожидающих миграций. Применение...");
+                            // Применяем все ожидающие миграции к базе данных
+                            dbContext.Database.Migrate();
+                            Console.WriteLine("Миграции успешно применены.");
+                        }
+                        else
+                        {
+                            // Если ожидающих миграций нет, просто выводим сообщение
+                            Console.WriteLine("Нет ожидающих миграций.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Обрабатываем и логируем любые исключения, возникшие при инициализации БД
+                        Console.WriteLine($"Ошибка при инициализации базы данных: {ex.Message}");
+                        // Выводим стек вызовов для облегчения отладки
+                        Console.WriteLine(ex.StackTrace);
+                    }
+                }
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

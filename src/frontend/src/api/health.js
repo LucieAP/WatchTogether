@@ -1,7 +1,8 @@
 // API функции для работы с health check эндпоинтами
 import { apiClient } from "./client";
 
-const HEALTH_API_BASE = "https://localhost:7143/api";
+// Удаляем жестко заданный URL и используем относительные пути
+// const HEALTH_API_BASE = "https://localhost:7143/api";
 
 /**
  * Получает полную информацию о состоянии сервера
@@ -9,9 +10,8 @@ const HEALTH_API_BASE = "https://localhost:7143/api";
  */
 export const getHealthStatus = async () => {
   try {
-    // Обратите внимание: apiClient уже настроен на базовый путь /api
-    // поэтому используем путь без начального слэша
-    const response = await apiClient.get(`${HEALTH_API_BASE}/health`);
+    // Используем apiClient напрямую, так как он уже настроен на базовый путь /api
+    const response = await apiClient.get(`health`);
 
     console.log("Полный ответ от health API:", response);
     return response;
@@ -27,7 +27,7 @@ export const getHealthStatus = async () => {
  */
 export const getLivenessStatus = async () => {
   try {
-    const response = await apiClient.get(`${HEALTH_API_BASE}/health/live`);
+    const response = await apiClient.get(`health/live`);
     return response;
   } catch (error) {
     console.error("Ошибка проверки статуса работоспособности сервера:", error);
@@ -41,7 +41,7 @@ export const getLivenessStatus = async () => {
  */
 export const getReadinessStatus = async () => {
   try {
-    const response = await apiClient.get(`${HEALTH_API_BASE}/health/ready`);
+    const response = await apiClient.get(`health/ready`);
     return response;
   } catch (error) {
     console.error("Ошибка проверки готовности сервера:", error);

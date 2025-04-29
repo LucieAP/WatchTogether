@@ -14,7 +14,7 @@ export const createConnection = (
 ) => {
   // Настраиваем параметры автоматического переподключения
   const connection = new signalR.HubConnectionBuilder()
-    .withUrl("https://localhost:7143/mediaHub", {
+    .withUrl("/mediaHub", {
       skipNegotiation: true,
       transport: signalR.HttpTransportType.WebSockets,
     })

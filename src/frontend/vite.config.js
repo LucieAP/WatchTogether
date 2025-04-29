@@ -7,8 +7,15 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://localhost:7143",
+        target: "http://localhost:5000",
         secure: false, // отключить проверку самоподписанного сертификата https
+        changeOrigin: true,
+      },
+      "/mediaHub": {
+        target: "http://localhost:5000",
+        secure: false,
+        ws: true, // Включаем WebSocket для SignalR
+        changeOrigin: true,
       },
     },
   },

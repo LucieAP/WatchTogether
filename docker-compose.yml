@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  # База данных PostgreSQL
+  postgres:
+    image: postgres:16
+    restart: always
+    ports:
+      - "5432:5432" # Проброс порта базы данных
+    environment:
+      # ${VAR:-default_value}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres} # Имя пользователя из .env или значение по умолчанию
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres} # Пароль из .env или значение по умолчанию
+      - POSTGRES_DB=${POSTGRES_DB:-WatchTogetherDb} # Название базы данных из .env или значение по умолчанию
+      - POSTGRES_HOST_AUTH_METHOD=trust # Метод аутентификации
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Постоянное хранилище данных
+      - ./postgres-init:/docker-entrypoint-initdb.d # Скрипты инициализации
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"] # Проверка готовности БД
+      interval: 5s # Интервал проверки
+      timeout: 5s # Таймаут проверки
+      retries: 5 # Количество повторных попыток
+    command: [
+        "postgres",
+        "-c",
+        "log_statement=all",
+        "-c",
+        "log_destination=stderr",
+      ] # Настройка логирования
+
+  # Бэкенд приложения на ASP.NET Core
+  backend:
+    build:
+      context: ./src/backend # Путь к исходному коду бэкенда
+      dockerfile: Dockerfile # Файл сборки образа
+    restart: always
+    ports:
+      - "5000:8080" # Проброс порта API
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production # Окружение приложения
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING:-Host=postgres;Port=5432;Database=WatchTogetherDb;Username=postgres;Password=postgres} # Строка подключения к БД из .env
+      - ApplyMigrations=true # Флаг применения миграций при запуске
+    depends_on:
+      postgres:
+        condition: service_healthy # Зависимость от готовности БД
+
+  # Фронтенд приложения на React
+  frontend:
+    build:
+      context: ./src/frontend # Путь к исходному коду фронтенда
+      dockerfile: Dockerfile # Файл сборки образа
+    restart: always
+    ports:
+      - "80:80" # Проброс порта веб-сервера
+    depends_on:
+      - backend # Зависимость от бэкенда
+
+# Определение томов для постоянного хранения данных
+volumes:
+  postgres_data: # Том для хранения данных PostgreSQL
