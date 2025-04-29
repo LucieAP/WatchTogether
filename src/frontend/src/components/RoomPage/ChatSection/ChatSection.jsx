@@ -198,7 +198,6 @@ export const ChatSection = ({
           isOpen={isInviteModalOpen}
           onClose={handleCloseModal}
           onCopy={handleCopy}
-          showNotification={showNotification}
           invitationLink={roomData?.invitationLink}
           mouseDownOnContentRef={mouseDownOnContentRef}
         />
