@@ -4,7 +4,10 @@ import { createConnection } from "../../../api/media";
 import * as signalR from "@microsoft/signalr";
 import { useConnection } from "../../../context/ConnectionContext";
 
-import { setupBrowserCloseHandler } from "../../../api/leaveRoomAction";
+import {
+  setupBrowserCloseHandler,
+  removeBeforeUnloadHandler,
+} from "../../../api/leaveRoomAction";
 
 const useSignalRConnection = (
   roomId,
@@ -179,12 +182,12 @@ const useSignalRConnection = (
       isMountedRef.current = false;
 
       // Очищаем все интервалы и обработчики событий
-      cleanupBrowserClose();
-      clearInterval(pingInterval); // 1. Останавливает ping-проверки
+      cleanupBrowserClose(); // Удаляем обработчик beforeunload
+      clearInterval(pingInterval); // Останавливает ping-проверки
 
-      // 2. Проверяем наличие соединения и то, что процесс установки соединения завершен
+      // Проверяем наличие соединения и то, что процесс установки соединения завершен
       if (connectionRef.current?.connection && !isConnectingRef.current) {
-        connectionRef.current.connection.stop(); // 3. Корректно останавливает SignalR соединение
+        connectionRef.current.connection.stop(); // Корректно останавливает SignalR соединение
       }
     };
   }, [roomId]);

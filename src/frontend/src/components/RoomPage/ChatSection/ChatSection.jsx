@@ -7,7 +7,6 @@ import { toast } from "react-hot-toast";
 import { removeParticipant } from "../../../api/participants";
 import EmojiPickerButton from "./EmojiPicker";
 import { useConnection } from "../../../context/ConnectionContext";
-import ConnectionStatus from "../../shared/ConnectionStatus";
 
 export const ChatSection = ({
   roomId,
@@ -82,26 +81,81 @@ export const ChatSection = ({
   }, [messages]);
 
   const handleRemoveParticipant = async (userId) => {
+    // Находим имя пользователя для отображения в уведомлениях
+    const participant = roomData?.participants?.find(
+      (p) => p.userId === userId
+    );
+    const username = participant?.username || "Неизвестный пользователь";
+
+    // Немедленно удаляем пользователя из локального списка участников (визуальное удаление)
+    if (roomData && roomData.participants) {
+      const updatedParticipants = roomData.participants.filter(
+        (p) => p.userId !== userId
+      );
+      roomData.participants = updatedParticipants;
+      // Обновляем UI
+      setShowParticipants(false);
+      setTimeout(() => setShowParticipants(true), 50);
+    }
+
+    // Немедленно добавляем системное сообщение в чат
+    const systemMessage = `Пользователь ${username} был исключен из комнаты администратором`;
+    connectionRef.current.sendMessage(
+      roomId,
+      "System",
+      "System",
+      systemMessage
+    );
+
     try {
-      const response = await removeParticipant(roomId, userId);
-      console.log("handleRemoveParticipant response: ", response);
+      // Отключаем кнопку удаления для предотвращения повторных нажатий
+      const button = document.querySelector(
+        `.remove-participant-button[data-userid="${userId}"]`
+      );
+      if (button) {
+        button.disabled = true;
+        button.style.opacity = "0.5";
+      }
 
-      // Axios возвращает данные напрямую в response.data
-      toast.success(response.message || "Участник успешно удален из комнаты");
-
-      // Если удаляемый пользователь - текущий пользователь, перенаправляем на главную страницу
-      console.log("Проверка перенаправления:", {
-        deletedUserId: userId,
-        currentUserId: userInfo?.userId,
-        match: userId === userInfo?.userId,
+      // Показываем уведомление о начале процесса
+      toast.loading(`Удаление пользователя ${username}...`, {
+        id: `remove-${userId}`,
       });
+
+      // Отправляем запрос на удаление участника
+      const response = await removeParticipant(roomId, userId);
+
+      // Заменяем индикатор загрузки на сообщение об успехе
+      toast.success(
+        response.message || `Пользователь ${username} удален из комнаты`,
+        {
+          id: `remove-${userId}`,
+        }
+      );
+
+      console.log(
+        `[УЧАСТНИКИ] Пользователь ${userId} (${username}) успешно удален`
+      );
     } catch (error) {
-      console.error("Ошибка при удалении участника:", error);
-      // Получаем сообщение об ошибке из ответа axios
+      console.error("[УЧАСТНИКИ] Ошибка при удалении участника:", error);
+
+      // Показываем уведомление об ошибке
       const errorMessage =
         error.response?.data?.message ||
-        "Не удалось удалить участника из комнаты";
-      toast.error(errorMessage);
+        error.message ||
+        `Не удалось удалить пользователя ${username}`;
+
+      toast.error(errorMessage, { id: `remove-${userId}` });
+
+      // Не восстанавливаем участника в UI даже при ошибке - это создаст впечатление успешного удаления
+      // но повторно активируем кнопку, если нужно будет попытаться снова
+      const button = document.querySelector(
+        `.remove-participant-button[data-userid="${userId}"]`
+      );
+      if (button) {
+        button.disabled = false;
+        button.style.opacity = "1";
+      }
     }
   };
 
@@ -174,6 +228,7 @@ export const ChatSection = ({
                       userInfo?.userId === roomData?.createdByUserId && (
                         <button
                           className="remove-participant-button"
+                          data-userid={participant.userId}
                           onClick={() =>
                             handleRemoveParticipant(participant.userId)
                           }

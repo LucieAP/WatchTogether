@@ -62,14 +62,26 @@ export const createConnection = (
   // Обработчик удаления участника
   connection.on("ParticipantRemoved", (removedUserId, removedUserName) => {
     console.log(
-      "Получено событие ParticipantRemoved для пользователя:",
-      removedUserId
+      "[MEDIA] Получено событие ParticipantRemoved для пользователя:",
+      removedUserId,
+      removedUserName
     );
 
     // Проверяем, является ли текущий пользователь удаленным
     if (removedUserId === userId) {
+      // Проверяем, не выполняется ли уже перенаправление
+      if (window.isBeingRemoved) {
+        console.log(
+          "[MEDIA] Перенаправление уже выполняется, игнорируем повторный вызов"
+        );
+        return;
+      }
+
+      // Устанавливаем глобальный флаг перенаправления
+      window.isBeingRemoved = true;
+
       console.log(
-        "Текущий пользователь был удален из комнаты, перенаправление на главную страницу"
+        "[MEDIA] Текущий пользователь был удален из комнаты, начинаю процесс выхода"
       );
 
       // Отправляем системное сообщение
@@ -85,11 +97,54 @@ export const createConnection = (
       sessionStorage.setItem("userRemoved", "true");
       sessionStorage.setItem("removedFromRoom", roomId);
 
-      // Перенаправляем на главную страницу
-      // Используем replace вместо href, чтобы предотвратить возможность вернуться назад
-      window.location.replace("/");
+      // Очищаем данные текущей комнаты
+      sessionStorage.removeItem(`room_${roomId}_user`);
+
+      // Импортируем функцию для обработки удаления
+      import("../api/leaveRoomAction")
+        .then((module) => {
+          try {
+            // Используем глобальную функцию для обработки удаления из комнаты
+            const { handleKickFromRoom } = module;
+
+            // Останавливаем соединение перед вызовом функции
+            connection.stop().catch((error) => {
+              console.error("[MEDIA] Ошибка при остановке соединения:", error);
+            });
+
+            // Вызываем функцию с текущим соединением и без функции навигации
+            handleKickFromRoom(roomId, { current: connection }, null);
+          } catch (error) {
+            console.error("[MEDIA] Ошибка при обработке удаления:", error);
+
+            // В случае ошибки используем forceRedirect
+            if (module.forceRedirect) {
+              module.forceRedirect(true);
+            } else {
+              // Или прямой редирект, если функция недоступна
+              window.location.replace("/");
+            }
+          }
+        })
+        .catch((error) => {
+          console.error(
+            "[MEDIA] Ошибка при импорте модуля leaveRoomAction:",
+            error
+          );
+
+          // Резервное перенаправление в случае ошибки
+          try {
+            // Останавливаем соединение
+            connection.stop().catch(() => {});
+
+            // Перенаправляем
+            setTimeout(() => window.location.replace("/"), 100);
+          } catch {
+            window.location.replace("/");
+          }
+        });
     } else {
-      // Для всех остальных участников отображаем сообщение о том, что пользователь был исключен
+      // Для других участников комнаты просто отображаем сообщение
       onMessageReceived({
         userId: null,
         userName: "System",

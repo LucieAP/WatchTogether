@@ -1,6 +1,7 @@
-// roomActions.js
-
 import axios from "axios";
+
+// Глобальная ссылка на обработчик beforeunload
+let beforeUnloadHandler = null;
 
 /**
  * Функция для выхода из комнаты с поддержкой различных сценариев выхода
@@ -54,43 +55,49 @@ export const handleManualLeave = (roomId, connectionRef, navigate) => {
   return leaveRoom(roomId, connectionRef, navigate, 0); // 0 - Manual leave
 };
 
+// Удаляет обработчик beforeunload
+export const removeBeforeUnloadHandler = () => {
+  if (beforeUnloadHandler) {
+    console.log("[LEAVE] Removing global beforeunload handler");
+    window.removeEventListener("beforeunload", beforeUnloadHandler);
+    beforeUnloadHandler = null;
+    return true;
+  }
+
+  // Дополнительный способ очистки - использовать прямую ссылку
+  if (window.onbeforeunload) {
+    console.log("[LEAVE] Removing window.onbeforeunload handler");
+    window.onbeforeunload = null;
+    return true;
+  }
+
+  return false;
+};
+
 // Обработчик для автоматического выхода при закрытии вкладки/браузера
 export const setupBrowserCloseHandler = (roomId, connectionRef) => {
-  const handleBeforeUnload = (event) => {
-    // Запись в localStorage о том, что обработчик был вызван
-    // localStorage.setItem("browserCloseHandlerTriggered", Date.now().toString());
-    // localStorage.setItem("browserCloseHandlerLeaveType", "1"); // BrowserClose
+  // Сначала удаляем предыдущий обработчик, если он был
+  removeBeforeUnloadHandler();
 
+  // Создаем новый обработчик
+  beforeUnloadHandler = (event) => {
+    console.log("[LEAVE] beforeunload handler triggered");
     // Пытаемся остановить SignalR соединение
     try {
       if (connectionRef.current?.connection) {
         connectionRef.current.connection.stop();
       }
     } catch (e) {
-      console.error("Error stopping connection on page unload:", e);
+      console.error("[LEAVE] Error stopping connection on page unload:", e);
     }
 
     // Используем sendBeacon для надежной отправки данных перед выгрузкой страницы
     try {
-      // JSON.stringify – это встроенная функция JS, которая преобразует объект или значение в строку JSON.
       const data = JSON.stringify({ leaveType: 1 }); // 1 - BrowserClose
-      // blob - это встроенный объект JS, который представляет собой необработанные данные в виде двоичных объектов.
-      // Он позволяет работать с данными, которые не являются строками или текстом.
-      const blob = new Blob([data], { type: "application/json" }); // Создаем Blob из данных, Blob принимает массив данных и опции
-      // Отправляем данные с помощью sendBeacon
-      const success = navigator.sendBeacon(`/api/Rooms/${roomId}/leave`, blob);
-      // if (success) {
-      //   localStorage.setItem(
-      //     "browserCloseHandlerSuccess",
-      //     "sendBeacon succeeded"
-      //   );
-      // } else {
-      //   // Если sendBeacon не удался, записываем это в localStorage
-      //   localStorage.setItem("browserCloseHandlerError", "sendBeacon failed");
-      // }
+      const blob = new Blob([data], { type: "application/json" });
+      navigator.sendBeacon(`/api/Rooms/${roomId}/leave`, blob);
     } catch (e) {
-      // localStorage.setItem("browserCloseHandlerError", e.toString());
-      console.error("Error sending leave request on page unload:", e);
+      console.error("[LEAVE] Error sending leave request on page unload:", e);
     }
 
     // Для некоторых браузеров нужно вернуть специальное сообщение
@@ -100,21 +107,89 @@ export const setupBrowserCloseHandler = (roomId, connectionRef) => {
   };
 
   // Регистрируем обработчик события beforeunload
-  // beforeunload - событие, которое срабатывает перед закрытием вкладки или окна браузера
-  window.addEventListener("beforeunload", handleBeforeUnload);
+  window.addEventListener("beforeunload", beforeUnloadHandler);
 
   // Возвращаем функцию отключения обработчика
   return () => {
-    window.removeEventListener("beforeunload", handleBeforeUnload);
+    removeBeforeUnloadHandler();
   };
 };
-
-// // Обработчик для выхода из-за таймаута неактивности
-// export const handleTimeoutLeave = (roomId, connectionRef, navigate) => {
-//   return leaveRoom(roomId, connectionRef, navigate, "Timeout");
-// };
 
 // Обработчик для выхода из-за проблем с сетью
 export const handleNetworkDisconnect = (roomId, connectionRef) => {
   return leaveRoom(roomId, connectionRef, null, "NetworkDisconnect");
+};
+
+/**
+ * Принудительно перенаправляет пользователя на главную страницу
+ * @param {boolean} clearStorage - Очищать ли данные из sessionStorage
+ */
+export const forceRedirect = (clearStorage = false) => {
+  // Удаляем обработчик beforeunload
+  removeBeforeUnloadHandler();
+
+  // По необходимости очищаем sessionStorage
+  if (clearStorage) {
+    // Сохраняем текущий userId
+    const userId = sessionStorage.getItem("X-User-Id");
+
+    // Очищаем все данные
+    sessionStorage.clear();
+
+    // Восстанавливаем userId, чтобы пользователь не потерял свою учетную запись
+    if (userId) {
+      sessionStorage.setItem("X-User-Id", userId);
+    }
+  }
+
+  // Перенаправляем пользователя
+  window.location.replace("/");
+};
+
+/**
+ * Обработчик для случая, когда пользователя удаляют из комнаты
+ * @param {string} roomId - Идентификатор комнаты
+ * @param {Object} connectionRef - Ссылка на SignalR соединение
+ * @param {Function} navigate - Функция для перенаправления пользователя
+ * @returns {void}
+ */
+export const handleKickFromRoom = (roomId, connectionRef, navigate) => {
+  try {
+    console.log("[LEAVE] Начинаю обработку удаления из комнаты", roomId);
+
+    // Отключаем обработчик beforeunload
+    removeBeforeUnloadHandler();
+
+    // Устанавливаем флаг, что удаление уже выполняется
+    window.isBeingRemoved = true;
+
+    // Останавливаем SignalR соединение
+    if (connectionRef.current?.connection) {
+      try {
+        connectionRef.current.connection.stop();
+        console.log("[LEAVE] SignalR соединение остановлено");
+      } catch (error) {
+        console.error("[LEAVE] Ошибка при остановке SignalR:", error);
+      }
+    }
+
+    // Очищаем sessionStorage от данных этой комнаты
+    sessionStorage.removeItem(`room_${roomId}_user`);
+    sessionStorage.setItem("userRemoved", "true");
+    sessionStorage.setItem("removedFromRoom", roomId);
+
+    // Перенаправляем пользователя на главную страницу
+    console.log("[LEAVE] Перенаправление на главную страницу");
+    if (navigate) {
+      navigate("/");
+    } else {
+      setTimeout(() => {
+        window.location.replace("/");
+      }, 100);
+    }
+  } catch (error) {
+    console.error("[LEAVE] Ошибка при обработке удаления из комнаты:", error);
+    // Даже при ошибке пытаемся перенаправить пользователя
+    forceRedirect(true);
+  }
 };
