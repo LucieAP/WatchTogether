@@ -18,8 +18,6 @@ export const SettingsModal = ({
   description: initialDescription,
   canControlVideo,
 }) => {
-  if (!isOpen) return null;
-
   // Создаем локальное состояние для отслеживания изменений
   const [roomName, setRoomName] = useState(initialRoomName);
   const [description, setDescription] = useState(initialDescription);
@@ -33,7 +31,8 @@ export const SettingsModal = ({
     }
   }, [isOpen, canControlVideo, onSettingsClose]);
 
-  // Если у пользователя нет прав, не отображаем модальное окно
+  // Если модальное окно не открыто или у пользователя нет прав, не отображаем его
+  if (!isOpen) return null;
   if (!canControlVideo) return null;
 
   // Функция для сохранения изменений
