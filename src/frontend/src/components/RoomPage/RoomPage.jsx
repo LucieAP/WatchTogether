@@ -2,6 +2,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useConnection } from "../../context/ConnectionContext";
 import { VideoSection } from "./VideoSection/VideoSection";
 import { ChatSection } from "./ChatSection/ChatSection";
 import { SettingsModal } from "./Modals/SettingsModal";
@@ -24,13 +25,16 @@ export default function RoomPage({
   onSettingsClose,
   roomData: initialRoomData,
   refetchRoomData,
-  onConnectionRefCreate,
 }) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   // Состояние для показа/скрытия чата
   const [isChatVisible, setIsChatVisible] = useState(true);
   // Отслеживаем взаимодействие с мышью, чтобы решить проблему закрытия модального окна при копировании текста и выходе курсора за его границы
   const mouseDownOnContentRef = useRef(false);
+
+  // Получаем состояние соединения и функцию переподключения из контекста
+  const { connectionStatus, connectionRef, handleManualReconnect } =
+    useConnection();
 
   const { roomId } = useParams();
   const playerRef = useRef(null); // Ref для получения методов плеер проброшенного из VideoPlayer.jsx
@@ -159,22 +163,14 @@ export default function RoomPage({
   );
 
   // Хук для подключения к SignalR, используем заглушку вместо реального обработчика
-  const { userInfo, connectionStatus, connectionRef, handleManualReconnect } =
-    useSignalRConnection(
-      roomId,
-      handleNewMessage,
-      handleParticipantsUpdated,
-      handleChatHistory,
-      handleVideoStateUpdatedStub, // Используем заглушку здесь
-      handleConnectionStateChanged
-    );
-
-  // Передаем connectionRef родительскому компоненту
-  useEffect(() => {
-    if (connectionRef && onConnectionRefCreate) {
-      onConnectionRefCreate(connectionRef);
-    }
-  }, [connectionRef, onConnectionRefCreate]);
+  const { userInfo } = useSignalRConnection(
+    roomId,
+    handleNewMessage,
+    handleParticipantsUpdated,
+    handleChatHistory,
+    handleVideoStateUpdatedStub, // Используем заглушку здесь
+    handleConnectionStateChanged
+  );
 
   // Используем хук синхронизации видео
   const {
@@ -270,13 +266,9 @@ export default function RoomPage({
         roomData={roomData}
         userInfo={userInfo}
         messages={messages}
-        setMessages={setMessages}
-        connectionRef={connectionRef}
-        connectionStatus={connectionStatus}
         isInviteModalOpen={isInviteModalOpen}
         setIsInviteModalOpen={setIsInviteModalOpen}
         mouseDownOnContentRef={mouseDownOnContentRef}
-        handleManualReconnect={handleManualReconnect}
         handleCloseModal={handleCloseModal}
       />
     ),

@@ -140,7 +140,8 @@ export const AddVideoModal = ({
         <input
           type="text"
           className={styles.input}
-          placeholder="Вставьте ссылку YouTube или ВК"
+          // placeholder="Вставьте ссылку YouTube или ВК"
+          placeholder="Вставьте ссылку YouTube"
           value={videoUrl}
           onChange={(e) => onUrlChange(e.target.value)}
         />

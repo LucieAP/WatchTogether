@@ -6,19 +6,17 @@ import trashIcon from "../../../assets/trash-icon.png";
 import { toast } from "react-hot-toast";
 import { removeParticipant } from "../../../api/participants";
 import EmojiPickerButton from "./EmojiPicker";
+import { useConnection } from "../../../context/ConnectionContext";
+import ConnectionStatus from "../../shared/ConnectionStatus";
 
 export const ChatSection = ({
   roomId,
   roomData,
   userInfo,
   messages,
-  setMessages,
-  connectionRef,
-  connectionStatus,
   isInviteModalOpen,
   setIsInviteModalOpen,
   mouseDownOnContentRef,
-  handleManualReconnect,
   handleCloseModal,
 }) => {
   const [showNotification, setShowNotification] = useState(false);
@@ -26,13 +24,29 @@ export const ChatSection = ({
 
   const messagesEndRef = useRef(null); // Ref для автопрокрутки чата
   const [showPicker, setShowPicker] = useState(false);
+  const timerRef = useRef(null);
+
+  // Получаем функцию переподключения из контекста
+  const { connectionRef } = useConnection();
+
+  // Очистка таймаута при размонтировании
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   // Обработчик копирования ссылки
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(roomData.invitationLink);
       setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 2000);
+
+      // Очищаем предыдущий таймер
+      if (timerRef.current) clearTimeout(timerRef.current);
+
+      // Устанавливаем новый
+      timerRef.current = setTimeout(() => setShowNotification(false), 2000);
     } catch (err) {
       console.error("Ошибка копирования:", err);
     }
@@ -189,25 +203,8 @@ export const ChatSection = ({
           mouseDownOnContentRef={mouseDownOnContentRef}
         />
 
-        {/* Отображение состояния соединения */}
-        {/* <div className={`connection-status ${connectionStatus}`}>
-          {connectionStatus === "connected" && <span>✓ Подключено</span>}
-          {connectionStatus === "reconnecting" && (
-            <span>⟳ Переподключение...</span>
-          )}
-          {connectionStatus === "disconnected" && (
-            <div>
-              <span>✕ Соединение потеряно</span>
-              <button onClick={handleManualReconnect}>Переподключиться</button>
-            </div>
-          )}
-          {connectionStatus === "error" && (
-            <div>
-              <span>✕ Ошибка соединения</span>
-              <button onClick={handleManualReconnect}>Попробовать снова</button>
-            </div>
-          )}
-        </div> */}
+        {/* Показываем статус соединения */}
+        {/* <ConnectionStatus className="chat-connection-status" showText={true} /> */}
       </div>
 
       <div className="messages-container">

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { createConnection } from "../../../api/media";
 import * as signalR from "@microsoft/signalr";
+import { useConnection } from "../../../context/ConnectionContext";
 
 import { setupBrowserCloseHandler } from "../../../api/leaveRoomAction";
 
@@ -17,8 +18,11 @@ const useSignalRConnection = (
     userId: "",
     username: "",
   });
-  const [connectionStatus, setConnectionStatus] = useState("disconnected");
-  const connectionRef = useRef(null);
+
+  // Получаем статус соединения и ссылку на соединение из глобального контекста
+  const { connectionStatus, setConnectionStatus, connectionRef } =
+    useConnection();
+
   // Добавляем флаг для отслеживания процесса подключения
   const isConnectingRef = useRef(false);
   // Добавляем флаг для отслеживания размонтирования компонента
@@ -128,6 +132,7 @@ const useSignalRConnection = (
           return;
         }
 
+        // Сохраняем методы соединения в глобальный контекст
         connectionRef.current = {
           connection,
           sendMessage,
@@ -184,25 +189,8 @@ const useSignalRConnection = (
     };
   }, [roomId]);
 
-  // Функция для ручного переподключения
-  const handleManualReconnect = async () => {
-    if (connectionRef.current?.reconnect && !isConnectingRef.current) {
-      isConnectingRef.current = true;
-      setConnectionStatus("reconnecting");
-      try {
-        await connectionRef.current.reconnect();
-      } catch (error) {
-        console.error("Manual reconnection failed:", error);
-        if (isMountedRef.current) {
-          setConnectionStatus("error");
-        }
-      } finally {
-        isConnectingRef.current = false;
-      }
-    }
-  };
-
-  return { userInfo, connectionStatus, connectionRef, handleManualReconnect };
+  // Используем handleManualReconnect из контекста в компоненте RoomPage
+  return { userInfo, connectionStatus };
 };
 
 export default useSignalRConnection;

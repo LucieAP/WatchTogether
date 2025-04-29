@@ -133,7 +133,7 @@ export const VideoSection = memo(
               />
             )}
 
-            {isVkVideo(roomData.currentVideo.videoType) && (
+            {/* {isVkVideo(roomData.currentVideo.videoType) && (
               <VkVideoPlayer
                 ref={playerRef}
                 ownerId={roomData.currentVideo.videoId.split("_")[0]}
@@ -144,7 +144,7 @@ export const VideoSection = memo(
                 onTimeUpdate={handleTimeUpdate}
                 onError={(error) => console.error("VK player error:", error)}
               />
-            )}
+            )} */}
 
             {/* {!isYouTubeVideo(roomData.currentVideo.videoType) &&
               !isVkVideo(roomData.currentVideo.videoType) && (

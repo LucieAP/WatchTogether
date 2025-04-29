@@ -19,6 +19,7 @@ import Profile from "./components/Profile/Profile";
 import HealthStatus from "./components/HealthStatus/HealthStatus";
 import { useRoomData } from "./hooks/useRoomData";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ConnectionProvider } from "./context/ConnectionContext";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -97,7 +98,6 @@ function ProtectedRoute({
 
 function RoomPageWithHeader() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false); // Открытие модального окна при нажатии на шестеренку
-  const [connectionRef, setConnectionRef] = useState(null); // Состояние для хранения ссылки на соединение
 
   const { roomId } = useParams();
   const { roomData, isLoading, error, refetch } = useRoomData(roomId);
@@ -120,11 +120,6 @@ function RoomPageWithHeader() {
     setIsSettingsModalOpen(false);
   }, []);
 
-  // Функция для получения connectionRef из RoomPage
-  const handleConnectionRefCreate = useCallback((ref) => {
-    setConnectionRef(ref);
-  }, []);
-
   return (
     <>
       <RoomHeader
@@ -132,7 +127,6 @@ function RoomPageWithHeader() {
         roomName={roomData?.roomName}
         canControlVideo={roomData?.canControlVideo}
         roomId={roomId}
-        connectionRef={connectionRef}
         expiresAt={roomData?.expiresAt}
       />
       <RoomPage
@@ -140,7 +134,6 @@ function RoomPageWithHeader() {
         onSettingsClose={handleSettingsClose}
         roomData={roomData}
         refetchRoomData={refetch}
-        onConnectionRefCreate={handleConnectionRefCreate}
       />
     </>
   );
@@ -150,50 +143,52 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <Toaster position="top-center" />
-        <div className="layout-container">
-          <HeaderSelector />
-          <main className="main-content">
-            <Routes>
-              <Route path="/rooms" element={<GetRooms />} />
-              <Route
-                path="/create-room"
-                element={
-                  <ProtectedRoute
-                    allowGuest={true}
-                    checkLogoutTimestamp={false}
-                  >
-                    <CreateRoom />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/room/:roomId"
-                element={
-                  <ProtectedRoute
-                    allowGuest={true}
-                    checkLogoutTimestamp={false}
-                  >
-                    <RoomPageWithHeader />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/auth" element={<Auth />} />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute allowGuest={false}>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/health-status" element={<HealthStatus />} />
-              <Route path="/" element={<HomePage />} />
-              <Route path="/not-found" element={<NotFoundPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </main>
-        </div>
+        <ConnectionProvider>
+          <Toaster position="top-center" />
+          <div className="layout-container">
+            <HeaderSelector />
+            <main className="main-content">
+              <Routes>
+                <Route path="/rooms" element={<GetRooms />} />
+                <Route
+                  path="/create-room"
+                  element={
+                    <ProtectedRoute
+                      allowGuest={true}
+                      checkLogoutTimestamp={false}
+                    >
+                      <CreateRoom />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/room/:roomId"
+                  element={
+                    <ProtectedRoute
+                      allowGuest={true}
+                      checkLogoutTimestamp={false}
+                    >
+                      <RoomPageWithHeader />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/auth" element={<Auth />} />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute allowGuest={false}>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/health-status" element={<HealthStatus />} />
+                <Route path="/" element={<HomePage />} />
+                <Route path="/not-found" element={<NotFoundPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </main>
+          </div>
+        </ConnectionProvider>
       </AuthProvider>
     </Router>
   );
