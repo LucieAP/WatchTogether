@@ -1,3 +1,42 @@
+:root {
+  /* Светлая тема (по умолчанию) */
+  --nav-link-color: #555;
+  --nav-link-hover-bg: #f0f0f0;
+  --nav-link-hover-color: #2196f3;
+  --login-button-bg: #2196f3;
+  --login-button-color: white;
+  --login-button-hover-bg: #1976d2;
+  --logout-button-bg: #f44336;
+  --logout-button-hover-bg: #d32f2f;
+  --slider-bg: #ccc;
+  --slider-button-bg: white;
+
+  /* Темная тема */
+  --dark-nav-link-color: #a0a0a0;
+  --dark-nav-link-hover-bg: #3a3a46;
+  --dark-nav-link-hover-color: #4dabf7;
+  --dark-login-button-bg: #1976d2;
+  --dark-login-button-color: #e1e1e1;
+  --dark-login-button-hover-bg: #0d5ca0;
+  --dark-logout-button-bg: #d32f2f;
+  --dark-logout-button-hover-bg: #b71c1c;
+  --dark-slider-bg: #555;
+  --dark-slider-button-bg: #e1e1e1;
+}
+
+[data-theme="dark"] {
+  --nav-link-color: var(--dark-nav-link-color);
+  --nav-link-hover-bg: var(--dark-nav-link-hover-bg);
+  --nav-link-hover-color: var(--dark-nav-link-hover-color);
+  --login-button-bg: var(--dark-login-button-bg);
+  --login-button-color: var(--dark-login-button-color);
+  --login-button-hover-bg: var(--dark-login-button-hover-bg);
+  --logout-button-bg: var(--dark-logout-button-bg);
+  --logout-button-hover-bg: var(--dark-logout-button-hover-bg);
+  --slider-bg: var(--dark-slider-bg);
+  --slider-button-bg: var(--dark-slider-button-bg);
+}
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -33,7 +72,7 @@
 .server-status-nav-link {
   background: none;
   border: none;
-  color: #555;
+  color: var(--nav-link-color);
   padding: 6px 12px;
   font-size: 16px;
   cursor: pointer;
@@ -42,8 +81,8 @@
 }
 
 .server-status-nav-link:hover {
-  background-color: #f0f0f0;
-  color: #2196f3;
+  background-color: var(--nav-link-hover-bg);
+  color: var(--nav-link-hover-color);
 }
 
 .auth-controls {
@@ -72,8 +111,8 @@
 
 .login-button,
 .logout-button {
-  background-color: #2196f3;
-  color: white;
+  background-color: var(--login-button-bg);
+  color: var(--login-button-color);
   border: none;
   border-radius: 4px;
   padding: 8px 16px;
@@ -84,15 +123,15 @@
 
 .login-button:hover,
 .logout-button:hover {
-  background-color: #1976d2;
+  background-color: var(--login-button-hover-bg);
 }
 
 .logout-button {
-  background-color: #f44336;
+  background-color: var(--logout-button-bg);
 }
 
 .logout-button:hover {
-  background-color: #d32f2f;
+  background-color: var(--logout-button-hover-bg);
 }
 
 /* Переключатель темы */
@@ -131,7 +170,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: var(--slider-bg);
   transition: 0.4s;
   border-radius: 24px;
 }
@@ -143,7 +182,7 @@
   width: 16px;
   left: 4px;
   bottom: 4px;
-  background-color: white;
+  background-color: var(--slider-button-bg);
   transition: 0.4s;
   border-radius: 50%;
 }

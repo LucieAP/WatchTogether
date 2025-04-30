@@ -1,3 +1,78 @@
+:root {
+  /* Светлая тема (по умолчанию) */
+  --create-button-bg: #007bff;
+  --create-button-hover-bg: #0056b3;
+  --create-button-color: white;
+  --modal-overlay-bg: rgba(0, 0, 0, 0.7);
+  --cancel-button-bg: #f1f1f1;
+  --cancel-button-color: #333;
+  --cancel-button-hover-bg: #e5e5e5;
+  --confirm-button-bg: #4285f4;
+  --confirm-button-hover-bg: #3367d6;
+  --confirm-button-color: white;
+  --user-room-card-border: #3f51b5;
+  --user-room-card-bg: rgba(63, 81, 181, 0.05);
+  --join-button-bg: #4caf50;
+  --join-button-hover-bg: #45a049;
+  --join-button-color: white;
+  --leave-button-bg: #f44336;
+  --leave-button-hover-bg: #d32f2f;
+  --leave-button-color: white;
+  --delete-button-bg: #f44336;
+  --delete-button-hover-bg: #d32f2f;
+  --delete-button-color: white;
+  --warning-text-color: #f44336;
+
+  /* Темная тема */
+  --dark-create-button-bg: #0069d9;
+  --dark-create-button-hover-bg: #0050a5;
+  --dark-create-button-color: #e1e1e1;
+  --dark-modal-overlay-bg: rgba(0, 0, 0, 0.8);
+  --dark-cancel-button-bg: #3a3a46;
+  --dark-cancel-button-color: #e1e1e1;
+  --dark-cancel-button-hover-bg: #444452;
+  --dark-confirm-button-bg: #2a75f3;
+  --dark-confirm-button-hover-bg: #1a5ad9;
+  --dark-confirm-button-color: #e1e1e1;
+  --dark-user-room-card-border: #5c6bc0;
+  --dark-user-room-card-bg: rgba(63, 81, 181, 0.1);
+  --dark-join-button-bg: #388e3c;
+  --dark-join-button-hover-bg: #2e7d32;
+  --dark-join-button-color: #e1e1e1;
+  --dark-leave-button-bg: #d32f2f;
+  --dark-leave-button-hover-bg: #b71c1c;
+  --dark-leave-button-color: #e1e1e1;
+  --dark-delete-button-bg: #d32f2f;
+  --dark-delete-button-hover-bg: #b71c1c;
+  --dark-delete-button-color: #e1e1e1;
+  --dark-warning-text-color: #ef5350;
+}
+
+[data-theme="dark"] {
+  --create-button-bg: var(--dark-create-button-bg);
+  --create-button-hover-bg: var(--dark-create-button-hover-bg);
+  --create-button-color: var(--dark-create-button-color);
+  --modal-overlay-bg: var(--dark-modal-overlay-bg);
+  --cancel-button-bg: var(--dark-cancel-button-bg);
+  --cancel-button-color: var(--dark-cancel-button-color);
+  --cancel-button-hover-bg: var(--dark-cancel-button-hover-bg);
+  --confirm-button-bg: var(--dark-confirm-button-bg);
+  --confirm-button-hover-bg: var(--dark-confirm-button-hover-bg);
+  --confirm-button-color: var(--dark-confirm-button-color);
+  --user-room-card-border: var(--dark-user-room-card-border);
+  --user-room-card-bg: var(--dark-user-room-card-bg);
+  --join-button-bg: var(--dark-join-button-bg);
+  --join-button-hover-bg: var(--dark-join-button-hover-bg);
+  --join-button-color: var(--dark-join-button-color);
+  --leave-button-bg: var(--dark-leave-button-bg);
+  --leave-button-hover-bg: var(--dark-leave-button-hover-bg);
+  --leave-button-color: var(--dark-leave-button-color);
+  --delete-button-bg: var(--dark-delete-button-bg);
+  --delete-button-hover-bg: var(--dark-delete-button-hover-bg);
+  --delete-button-color: var(--dark-delete-button-color);
+  --warning-text-color: var(--dark-warning-text-color);
+}
+
 .homePageContainer {
   display: flex;
   justify-content: center;
@@ -31,8 +106,8 @@
 .createRoomButton {
   padding: 15px 30px;
   font-size: 18px;
-  background-color: #007bff;
-  color: white;
+  background-color: var(--create-button-bg);
+  color: var(--create-button-color);
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -42,7 +117,7 @@
 
 /* Дополнительное улучшение: эффект при наведении */
 .createRoomButton:hover {
-  background-color: #0056b3;
+  background-color: var(--create-button-hover-bg);
 }
 
 .publicRoomsSection {
@@ -142,7 +217,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--modal-overlay-bg);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -187,21 +262,21 @@
 }
 
 .cancelButton {
-  background-color: #f1f1f1;
-  color: #333;
+  background-color: var(--cancel-button-bg);
+  color: var(--cancel-button-color);
 }
 
 .confirmButton {
-  background-color: #4285f4;
-  color: white;
+  background-color: var(--confirm-button-bg);
+  color: var(--confirm-button-color);
 }
 
 .cancelButton:hover {
-  background-color: #e5e5e5;
+  background-color: var(--cancel-button-hover-bg);
 }
 
 .confirmButton:hover {
-  background-color: #3367d6;
+  background-color: var(--confirm-button-hover-bg);
 }
 
 /* Добавляем новые стили для раздела пользовательских комнат */
@@ -212,8 +287,8 @@
 
 .userRoomCard {
   position: relative;
-  border: 2px solid #3f51b5;
-  background-color: rgba(63, 81, 181, 0.05);
+  border: 2px solid var(--user-room-card-border);
+  background-color: var(--user-room-card-bg);
 }
 
 .roomActions {
@@ -234,42 +309,42 @@
 }
 
 .joinButton {
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--join-button-bg);
+  color: var(--join-button-color);
 }
 
 .joinButton:hover {
-  background-color: #45a049;
+  background-color: var(--join-button-hover-bg);
 }
 
 .leaveButton {
-  background-color: #f44336;
-  color: white;
+  background-color: var(--leave-button-bg);
+  color: var(--leave-button-color);
 }
 
 .leaveButton:hover {
-  background-color: #d32f2f;
+  background-color: var(--leave-button-hover-bg);
 }
 
 .deleteButton {
-  background-color: #f44336;
-  color: white;
+  background-color: var(--delete-button-bg);
+  color: var(--delete-button-color);
 }
 
 .deleteButton:hover {
-  background-color: #d32f2f;
+  background-color: var(--delete-button-hover-bg);
 }
 
 /* Стили для модальных окон */
 .warningText {
-  color: #f44336;
+  color: var(--warning-text-color);
   font-weight: 500;
 }
 
 .dangerButton {
-  background-color: #f44336;
+  background-color: var(--delete-button-bg);
 }
 
 .dangerButton:hover {
-  background-color: #d32f2f;
+  background-color: var(--delete-button-hover-bg);
 }

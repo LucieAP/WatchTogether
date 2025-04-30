@@ -31,6 +31,9 @@ services:
 
   # Бэкенд приложения на ASP.NET Core
   backend:
+    # Для использования DockerHub раскомментируйте строку ниже и укажите ваше имя пользователя
+    # image: lucieap/watchtogether-backend:latest
+    # Для локальной сборки используйте эти строки
     build:
       context: ./src/backend # Путь к исходному коду бэкенда
       dockerfile: Dockerfile # Файл сборки образа
@@ -47,6 +50,9 @@ services:
 
   # Фронтенд приложения на React
   frontend:
+    # Для использования DockerHub раскомментируйте строку ниже и укажите ваше имя пользователя
+    # image: lucieap/watchtogether-frontend:latest
+    # Для локальной сборки используйте эти строки
     build:
       context: ./src/frontend # Путь к исходному коду фронтенда
       dockerfile: Dockerfile # Файл сборки образа

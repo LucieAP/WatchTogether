@@ -1,0 +1,24 @@
+{
+  "name": "WatchTogether Development",
+  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.extend.yml"],
+  "service": "backend",
+  "workspaceFolder": "/src",
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "editor.formatOnSave": true,
+    "omnisharp.enableRoslynAnalyzers": true,
+    "omnisharp.enableEditorConfigSupport": true
+  },
+  "extensions": [
+    "ms-dotnettools.csharp",
+    "ms-vscode.vscode-node-azure-pack",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "gruntfuggly.todo-tree",
+    "EliverLara.andromeda",
+    "formulahendry.auto-rename-tag",
+    "vscode-icons-team.vscode-icons"
+  ],
+  "remoteUser": "root",
+  "forwardPorts": [5000, 5432, 80]
+}

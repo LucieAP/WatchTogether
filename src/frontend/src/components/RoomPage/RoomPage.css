@@ -1,3 +1,18 @@
+:root {
+  /* Светлая тема (по умолчанию) */
+  --scrollbar-track-bg: var(--light-bg-color);
+  --scrollbar-thumb-bg: rgba(0, 0, 0, 0.2);
+
+  /* Темная тема */
+  --dark-scrollbar-track-bg: var(--dark-light-bg-color);
+  --dark-scrollbar-thumb-bg: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] {
+  --scrollbar-track-bg: var(--dark-scrollbar-track-bg);
+  --scrollbar-thumb-bg: var(--dark-scrollbar-thumb-bg);
+}
+
 .form-group {
   margin-bottom: 15px;
 }
@@ -51,11 +66,11 @@
 
 /* Дорожка скроллбара */
 ::-webkit-scrollbar-track {
-  background: var(--light-bg-color); /* Цвет фона дорожки */
+  background: var(--scrollbar-track-bg); /* Цвет фона дорожки */
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--scrollbar-thumb-bg);
   clip-path: polygon(
     50% 0,
     100% 0.15em,

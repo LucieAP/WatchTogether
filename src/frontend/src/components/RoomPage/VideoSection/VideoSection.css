@@ -1,3 +1,27 @@
+:root {
+  /* Светлая тема (по умолчанию) */
+  --close-video-button-bg: rgba(0, 0, 0, 0.6);
+  --close-video-button-hover-bg: rgba(0, 0, 0, 0.9);
+  --toggle-chat-button-bg: rgba(0, 0, 0, 0.7);
+  --toggle-chat-button-hover-bg: rgba(0, 0, 0, 0.9);
+  --toggle-chat-button-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+
+  /* Темная тема */
+  --dark-close-video-button-bg: rgba(255, 255, 255, 0.2);
+  --dark-close-video-button-hover-bg: rgba(255, 255, 255, 0.3);
+  --dark-toggle-chat-button-bg: rgba(255, 255, 255, 0.2);
+  --dark-toggle-chat-button-hover-bg: rgba(255, 255, 255, 0.3);
+  --dark-toggle-chat-button-shadow: -2px 0 5px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] {
+  --close-video-button-bg: var(--dark-close-video-button-bg);
+  --close-video-button-hover-bg: var(--dark-close-video-button-hover-bg);
+  --toggle-chat-button-bg: var(--dark-toggle-chat-button-bg);
+  --toggle-chat-button-hover-bg: var(--dark-toggle-chat-button-hover-bg);
+  --toggle-chat-button-shadow: var(--dark-toggle-chat-button-shadow);
+}
+
 .video-section {
   flex: 7;
   padding: 20px;
@@ -18,7 +42,7 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: var(--close-video-button-bg);
   color: white;
   border: none;
   border-radius: 50%;
@@ -33,16 +57,8 @@
   z-index: 5;
 }
 
-[data-theme="dark"] .mini-close-video-button {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
 .mini-close-video-button:hover {
-  background-color: rgba(0, 0, 0, 0.9);
-}
-
-[data-theme="dark"] .mini-close-video-button:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: var(--close-video-button-hover-bg);
 }
 
 /* Центрирование круглой кнопки внутри видеоплеера */
@@ -73,7 +89,7 @@
     -50%
   ); /* Корректировка для вертикального центрирования */
   z-index: 10;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--toggle-chat-button-bg);
   color: white;
   border: none;
   border-radius: 50% 0 0 50%; /* Скругляем только левую сторону */
@@ -85,18 +101,9 @@
   justify-content: center;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2); /* Добавляем тень слева */
-}
-
-[data-theme="dark"] .toggle-chat-button {
-  background-color: rgba(255, 255, 255, 0.2);
-  box-shadow: -2px 0 5px rgba(255, 255, 255, 0.1);
+  box-shadow: var(--toggle-chat-button-shadow); /* Добавляем тень слева */
 }
 
 .toggle-chat-button:hover {
-  background-color: rgba(0, 0, 0, 0.9);
-}
-
-[data-theme="dark"] .toggle-chat-button:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: var(--toggle-chat-button-hover-bg);
 }

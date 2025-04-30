@@ -1,3 +1,42 @@
+:root {
+  /* Светлая тема (по умолчанию) */
+  --invite-button-bg: #4caf50;
+  --invite-button-hover-bg: #45a049;
+  --message-hover-bg: rgba(0, 0, 0, 0.05);
+  --system-message-bg: rgba(0, 0, 0, 0.03);
+  --system-message-hover-bg: rgba(0, 0, 0, 0.08);
+  --own-message-bg: rgba(0, 123, 255, 0.1);
+  --own-message-hover-bg: rgba(0, 123, 255, 0.15);
+  --current-user-bg: rgba(0, 123, 255, 0.1);
+  --participants-hover-bg: rgba(0, 0, 0, 0.08);
+  --emoji-button-hover-bg: rgba(0, 0, 0, 0.1);
+
+  /* Темная тема */
+  --dark-invite-button-bg: #388e3c;
+  --dark-invite-button-hover-bg: #2e7d32;
+  --dark-message-hover-bg: rgba(255, 255, 255, 0.05);
+  --dark-system-message-bg: rgba(255, 255, 255, 0.03);
+  --dark-system-message-hover-bg: rgba(255, 255, 255, 0.08);
+  --dark-own-message-bg: rgba(77, 171, 247, 0.15);
+  --dark-own-message-hover-bg: rgba(77, 171, 247, 0.2);
+  --dark-current-user-bg: rgba(77, 171, 247, 0.2);
+  --dark-participants-hover-bg: rgba(255, 255, 255, 0.08);
+  --dark-emoji-button-hover-bg: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] {
+  --invite-button-bg: var(--dark-invite-button-bg);
+  --invite-button-hover-bg: var(--dark-invite-button-hover-bg);
+  --message-hover-bg: var(--dark-message-hover-bg);
+  --system-message-bg: var(--dark-system-message-bg);
+  --system-message-hover-bg: var(--dark-system-message-hover-bg);
+  --own-message-bg: var(--dark-own-message-bg);
+  --own-message-hover-bg: var(--dark-own-message-hover-bg);
+  --current-user-bg: var(--dark-current-user-bg);
+  --participants-hover-bg: var(--dark-participants-hover-bg);
+  --emoji-button-hover-bg: var(--dark-emoji-button-hover-bg);
+}
+
 /* Чат */
 .chat-section {
   flex: 2;
@@ -90,7 +129,7 @@
 .invite-btn {
   font-size: 18px;
   cursor: pointer;
-  background-color: #4caf50;
+  background-color: var(--invite-button-bg);
   color: white;
   border: none;
   border-radius: 5px;
@@ -98,7 +137,7 @@
 }
 
 .invite-btn:hover {
-  background-color: #45a049;
+  background-color: var(--invite-button-hover-bg);
 }
 
 .chat-button {
@@ -106,14 +145,14 @@
   padding: 0.5rem 0.8rem;
   width: auto; /* Уменьшаем ширину кнопки до содержимого */
   cursor: pointer;
-  background-color: #4caf50;
+  background-color: var(--invite-button-bg);
   color: white;
   border: none;
   border-radius: 5px;
 }
 
 .chat-button:hover {
-  background-color: #45a049;
+  background-color: var(--invite-button-hover-bg);
 }
 
 /* Текущие участники комнаты */
@@ -149,7 +188,7 @@
 }
 
 .participants-header:hover {
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: var(--participants-hover-bg);
 }
 
 [data-theme="dark"] .participants-header:hover {
@@ -210,7 +249,7 @@
 /* Стиль для текущего пользователя */
 .participants-list .current-user {
   font-weight: bold;
-  background-color: rgba(0, 123, 255, 0.1);
+  background-color: var(--current-user-bg);
 }
 
 [data-theme="dark"] .participants-list .current-user {
@@ -227,7 +266,7 @@
 
 /* Эффект при наведении на сообщение */
 .message:hover {
-  background-color: rgba(0, 0, 0, 0.05); /* Светло-серый цвет при наведении */
+  background-color: var(--message-hover-bg);
 }
 
 [data-theme="dark"] .message:hover {
@@ -266,7 +305,7 @@
 
 /* Дополнительные стили для системных и собственных сообщений */
 .system-message {
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: var(--system-message-bg);
   font-style: italic;
 }
 
@@ -275,7 +314,7 @@
 }
 
 .own-message {
-  background-color: rgba(0, 123, 255, 0.1);
+  background-color: var(--own-message-bg);
 }
 
 [data-theme="dark"] .own-message {
@@ -284,7 +323,7 @@
 
 /* При наведении на системные и собственные сообщения */
 .system-message:hover {
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: var(--system-message-hover-bg);
 }
 
 [data-theme="dark"] .system-message:hover {
@@ -292,7 +331,7 @@
 }
 
 .own-message:hover {
-  background-color: rgba(0, 123, 255, 0.15);
+  background-color: var(--own-message-hover-bg);
 }
 
 [data-theme="dark"] .own-message:hover {
@@ -315,7 +354,7 @@
 }
 
 .emoji-button:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: var(--emoji-button-hover-bg);
 }
 
 /* Обеспечиваем корректное отображение пикера эмодзи */

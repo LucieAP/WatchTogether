@@ -1,3 +1,39 @@
+:root {
+  /* Светлая тема (по умолчанию) */
+  --leave-button-bg: #ef4444;
+  --leave-button-hover-bg: #dc2626;
+  --expiration-warning-bg: #fee2e2;
+  --expiration-warning-color: #ef4444;
+  --connection-connected-color: #10b981;
+  --connection-reconnecting-color: #f59e0b;
+  --connection-error-color: #ef4444;
+  --connection-button-bg: #f44336;
+  --connection-button-hover-bg: #2563eb;
+
+  /* Темная тема */
+  --dark-leave-button-bg: #b91c1c;
+  --dark-leave-button-hover-bg: #991b1b;
+  --dark-expiration-warning-bg: #7f1d1d;
+  --dark-expiration-warning-color: #fca5a5;
+  --dark-connection-connected-color: #059669;
+  --dark-connection-reconnecting-color: #d97706;
+  --dark-connection-error-color: #b91c1c;
+  --dark-connection-button-bg: #dc2626;
+  --dark-connection-button-hover-bg: #1d4ed8;
+}
+
+[data-theme="dark"] {
+  --leave-button-bg: var(--dark-leave-button-bg);
+  --leave-button-hover-bg: var(--dark-leave-button-hover-bg);
+  --expiration-warning-bg: var(--dark-expiration-warning-bg);
+  --expiration-warning-color: var(--dark-expiration-warning-color);
+  --connection-connected-color: var(--dark-connection-connected-color);
+  --connection-reconnecting-color: var(--dark-connection-reconnecting-color);
+  --connection-error-color: var(--dark-connection-error-color);
+  --connection-button-bg: var(--dark-connection-button-bg);
+  --connection-button-hover-bg: var(--dark-connection-button-hover-bg);
+}
+
 .user-icon {
   width: 32px; /* Ограничиваем ширину */
   height: 32px; /* Ограничиваем высоту */
@@ -61,7 +97,7 @@
 
 /* Стиль кнопки "Покинуть комнату" в хедере */
 .leave-button {
-  background-color: #ef4444;
+  background-color: var(--leave-button-bg);
   color: white;
   font-size: 14px;
   padding: 8px 16px;
@@ -72,7 +108,7 @@
 }
 
 .leave-button:hover {
-  background-color: #dc2626;
+  background-color: var(--leave-button-hover-bg);
 }
 
 /* Стили для отображения времени до закрытия комнаты */
@@ -97,8 +133,8 @@
 }
 
 .expiration-warning {
-  background-color: #fee2e2;
-  color: #ef4444;
+  background-color: var(--expiration-warning-bg);
+  color: var(--expiration-warning-color);
   padding: 4px 8px;
   border-radius: 4px;
   font-weight: 600;
@@ -134,21 +170,21 @@
 }
 
 .connection-status.connected {
-  color: #10b981;
+  color: var(--connection-connected-color);
 }
 
 .connection-status.reconnecting {
-  color: #f59e0b;
+  color: var(--connection-reconnecting-color);
   animation: pulse 1.5s infinite;
 }
 
 .connection-status.disconnected,
 .connection-status.error {
-  color: #ef4444;
+  color: var(--connection-error-color);
 }
 
 .connection-status button {
-  background-color: #f44336;
+  background-color: var(--connection-button-bg);
   color: white;
   border: none;
   border-radius: 4px;
@@ -160,5 +196,5 @@
 }
 
 .connection-status button:hover {
-  background-color: #2563eb;
+  background-color: var(--connection-button-hover-bg);
 }

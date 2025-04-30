@@ -1,12 +1,132 @@
+:root {
+  /* Светлая тема (по умолчанию) */
+  --profile-bg-color: #fff;
+  --profile-title-color: #333;
+  --profile-text-color: #333;
+  --profile-border-color: #f0f0f0;
+  --profile-avatar-bg: #3d84a8;
+  --profile-status-online-bg: #d4edda;
+  --profile-status-online-color: #155724;
+  --profile-status-offline-bg: #f8d7da;
+  --profile-status-offline-color: #721c24;
+  --profile-loading-color: #6c757d;
+  --profile-error-bg: #f8d7da;
+  --profile-error-color: #721c24;
+  --profile-not-logged-bg: #fff3cd;
+  --profile-not-logged-color: #856404;
+  --room-item-bg: #f9f9f9;
+  --room-item-hover-bg: #f0f0f0;
+  --room-item-border: #eee;
+  --room-name-color: #333;
+  --room-description-color: #666;
+  --room-meta-color: #777;
+  --enter-room-btn-bg: #4a90e2;
+  --enter-room-btn-hover-bg: #3a7bc8;
+  --delete-room-btn-color: #e74c3c;
+  --delete-room-btn-hover-bg: #e74c3c;
+  --delete-room-btn-hover-color: white;
+  --delete-error-bg: #ffebee;
+  --delete-error-color: #c62828;
+  --modal-overlay-bg: rgba(0, 0, 0, 0.5);
+  --modal-content-bg: white;
+  --modal-title-color: #333;
+  --modal-border-color: #eee;
+  --modal-confirm-bg: #e74c3c;
+  --modal-confirm-hover-bg: #c0392b;
+  --modal-cancel-bg: #f8f9fa;
+  --modal-cancel-color: #333;
+  --modal-cancel-border: #ddd;
+  --modal-cancel-hover-bg: #e9ecef;
+
+  /* Темная тема */
+  --dark-profile-bg-color: #292a2d;
+  --dark-profile-title-color: #e1e1e1;
+  --dark-profile-text-color: #e1e1e1;
+  --dark-profile-border-color: #3a3a46;
+  --dark-profile-avatar-bg: #2a6b8a;
+  --dark-profile-status-online-bg: #1e4d2b;
+  --dark-profile-status-online-color: #a3cfbb;
+  --dark-profile-status-offline-bg: #4e1c1f;
+  --dark-profile-status-offline-color: #e6b0b4;
+  --dark-profile-loading-color: #a0a0a0;
+  --dark-profile-error-bg: #4e1c1f;
+  --dark-profile-error-color: #e6b0b4;
+  --dark-profile-not-logged-bg: #4d3f11;
+  --dark-profile-not-logged-color: #f1dba1;
+  --dark-room-item-bg: #3a3a46;
+  --dark-room-item-hover-bg: #444452;
+  --dark-room-item-border: #555;
+  --dark-room-name-color: #e1e1e1;
+  --dark-room-description-color: #b0b0b0;
+  --dark-room-meta-color: #a0a0a0;
+  --dark-enter-room-btn-bg: #3a7bc8;
+  --dark-enter-room-btn-hover-bg: #2c6099;
+  --dark-delete-room-btn-color: #e74c3c;
+  --dark-delete-room-btn-hover-bg: #c0392b;
+  --dark-delete-room-btn-hover-color: #e1e1e1;
+  --dark-delete-error-bg: #4e1c1f;
+  --dark-delete-error-color: #e6b0b4;
+  --dark-modal-overlay-bg: rgba(0, 0, 0, 0.7);
+  --dark-modal-content-bg: #3a3a46;
+  --dark-modal-title-color: #e1e1e1;
+  --dark-modal-border-color: #555;
+  --dark-modal-confirm-bg: #c0392b;
+  --dark-modal-confirm-hover-bg: #a82c1e;
+  --dark-modal-cancel-bg: #444452;
+  --dark-modal-cancel-color: #e1e1e1;
+  --dark-modal-cancel-border: #666;
+  --dark-modal-cancel-hover-bg: #555563;
+}
+
+[data-theme="dark"] {
+  --profile-bg-color: var(--dark-profile-bg-color);
+  --profile-title-color: var(--dark-profile-title-color);
+  --profile-text-color: var(--dark-profile-text-color);
+  --profile-border-color: var(--dark-profile-border-color);
+  --profile-avatar-bg: var(--dark-profile-avatar-bg);
+  --profile-status-online-bg: var(--dark-profile-status-online-bg);
+  --profile-status-online-color: var(--dark-profile-status-online-color);
+  --profile-status-offline-bg: var(--dark-profile-status-offline-bg);
+  --profile-status-offline-color: var(--dark-profile-status-offline-color);
+  --profile-loading-color: var(--dark-profile-loading-color);
+  --profile-error-bg: var(--dark-profile-error-bg);
+  --profile-error-color: var(--dark-profile-error-color);
+  --profile-not-logged-bg: var(--dark-profile-not-logged-bg);
+  --profile-not-logged-color: var(--dark-profile-not-logged-color);
+  --room-item-bg: var(--dark-room-item-bg);
+  --room-item-hover-bg: var(--dark-room-item-hover-bg);
+  --room-item-border: var(--dark-room-item-border);
+  --room-name-color: var(--dark-room-name-color);
+  --room-description-color: var(--dark-room-description-color);
+  --room-meta-color: var(--dark-room-meta-color);
+  --enter-room-btn-bg: var(--dark-enter-room-btn-bg);
+  --enter-room-btn-hover-bg: var(--dark-enter-room-btn-hover-bg);
+  --delete-room-btn-color: var(--dark-delete-room-btn-color);
+  --delete-room-btn-hover-bg: var(--dark-delete-room-btn-hover-bg);
+  --delete-room-btn-hover-color: var(--dark-delete-room-btn-hover-color);
+  --delete-error-bg: var(--dark-delete-error-bg);
+  --delete-error-color: var(--dark-delete-error-color);
+  --modal-overlay-bg: var(--dark-modal-overlay-bg);
+  --modal-content-bg: var(--dark-modal-content-bg);
+  --modal-title-color: var(--dark-modal-title-color);
+  --modal-border-color: var(--dark-modal-border-color);
+  --modal-confirm-bg: var(--dark-modal-confirm-bg);
+  --modal-confirm-hover-bg: var(--dark-modal-confirm-hover-bg);
+  --modal-cancel-bg: var(--dark-modal-cancel-bg);
+  --modal-cancel-color: var(--dark-modal-cancel-color);
+  --modal-cancel-border: var(--dark-modal-cancel-border);
+  --modal-cancel-hover-bg: var(--dark-modal-cancel-hover-bg);
+}
+
 .profile-container {
   padding: 20px;
   max-width: 800px;
   margin: 0 auto;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 .profile-card {
-  background-color: #fff;
+  background-color: var(--profile-bg-color);
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 25px;
@@ -14,10 +134,10 @@
 }
 
 .profile-card h2 {
-  color: #333;
+  color: var(--profile-title-color);
   margin-bottom: 20px;
   text-align: center;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid var(--profile-border-color);
   padding-bottom: 15px;
 }
 
@@ -35,7 +155,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background-color: #3d84a8;
+  background-color: var(--profile-avatar-bg);
   color: white;
   display: flex;
   justify-content: center;
@@ -52,6 +172,7 @@
   margin: 10px 0;
   font-size: 16px;
   line-height: 1.5;
+  color: var(--profile-text-color);
 }
 
 .status-badge {
@@ -64,13 +185,13 @@
 }
 
 .status-badge.online {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: var(--profile-status-online-bg);
+  color: var(--profile-status-online-color);
 }
 
 .status-badge.offline {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: var(--profile-status-offline-bg);
+  color: var(--profile-status-offline-color);
 }
 
 .profile-container.loading,
@@ -78,23 +199,23 @@
 .profile-container.not-logged-in {
   text-align: center;
   padding: 40px;
-  background-color: #fff;
+  background-color: var(--profile-bg-color);
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .profile-container.loading {
-  color: #6c757d;
+  color: var(--profile-loading-color);
 }
 
 .profile-container.error {
-  color: #721c24;
-  background-color: #f8d7da;
+  color: var(--profile-error-color);
+  background-color: var(--profile-error-bg);
 }
 
 .profile-container.not-logged-in {
-  color: #856404;
-  background-color: #fff3cd;
+  color: var(--profile-not-logged-color);
+  background-color: var(--profile-not-logged-bg);
 }
 
 @media (max-width: 600px) {
@@ -107,7 +228,7 @@
 
 /* Стили для списка комнат пользователя */
 .user-rooms-card {
-  background-color: #fff;
+  background-color: var(--profile-bg-color);
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
@@ -116,15 +237,15 @@
 
 .user-rooms-card h3 {
   margin-top: 0;
-  color: #333;
+  color: var(--profile-title-color);
   font-size: 1.2rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--profile-border-color);
   padding-bottom: 10px;
   margin-bottom: 15px;
 }
 
 .no-rooms-message {
-  color: #888;
+  color: var(--room-meta-color);
   text-align: center;
   font-style: italic;
   padding: 15px 0;
@@ -142,13 +263,13 @@
   align-items: center;
   padding: 15px;
   border-radius: 8px;
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
+  background-color: var(--room-item-bg);
+  border: 1px solid var(--room-item-border);
   transition: all 0.2s ease;
 }
 
 .room-profile-item:hover {
-  background-color: #f0f0f0;
+  background-color: var(--room-item-hover-bg);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -161,13 +282,13 @@
 
 .room-profile-name {
   font-weight: bold;
-  color: #333;
+  color: var(--room-name-color);
   font-size: 1rem;
   margin-bottom: 5px;
 }
 
 .room-profile-description {
-  color: #666;
+  color: var(--room-description-color);
   font-size: 0.9rem;
   margin-bottom: 8px;
 }
@@ -176,10 +297,11 @@
   display: flex;
   gap: 15px;
   font-size: 0.8rem;
-  color: #777;
+  color: var(--room-meta-color);
 }
 
-.room-profile-participants-count, .room-profile-current-video {
+.room-profile-participants-count,
+.room-profile-current-video {
   display: flex;
   align-items: center;
 }
@@ -189,7 +311,8 @@
   gap: 10px;
 }
 
-.room-profile-enter-room-btn, .room-profile-delete-room-btn {
+.room-profile-enter-room-btn,
+.room-profile-delete-room-btn {
   padding: 6px 12px;
   border-radius: 4px;
   font-size: 0.9rem;
@@ -198,25 +321,25 @@
 }
 
 .room-profile-enter-room-btn {
-  background-color: #4a90e2;
+  background-color: var(--enter-room-btn-bg);
   color: white;
   text-decoration: none;
   border: none;
 }
 
 .room-profile-enter-room-btn:hover {
-  background-color: #3a7bc8;
+  background-color: var(--enter-room-btn-hover-bg);
 }
 
 .room-profile-delete-room-btn {
   background-color: white;
-  color: #e74c3c;
-  border: 1px solid #e74c3c;
+  color: var(--delete-room-btn-color);
+  border: 1px solid var(--delete-room-btn-color);
 }
 
 .room-profile-delete-room-btn:hover {
-  background-color: #e74c3c;
-  color: white;
+  background-color: var(--delete-room-btn-hover-bg);
+  color: var(--delete-room-btn-hover-color);
 }
 
 .room-profile-delete-room-btn:disabled {
@@ -225,8 +348,8 @@
 }
 
 .room-profile-delete-error-message {
-  background-color: #ffebee;
-  color: #c62828;
+  background-color: var(--delete-error-bg);
+  color: var(--delete-error-color);
   padding: 10px;
   border-radius: 4px;
   margin-top: 15px;
@@ -249,8 +372,8 @@
 
 .delete-all-rooms-btn {
   background-color: white;
-  color: #e74c3c;
-  border: 1px solid #e74c3c;
+  color: var(--delete-room-btn-color);
+  border: 1px solid var(--delete-room-btn-color);
   padding: 6px 12px;
   border-radius: 4px;
   font-size: 0.9rem;
@@ -259,8 +382,8 @@
 }
 
 .delete-all-rooms-btn:hover {
-  background-color: #e74c3c;
-  color: white;
+  background-color: var(--delete-room-btn-hover-bg);
+  color: var(--delete-room-btn-hover-color);
 }
 
 .delete-all-rooms-btn:disabled {
@@ -275,7 +398,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--modal-overlay-bg);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -283,7 +406,7 @@
 }
 
 .profile-modal-content {
-  background-color: white;
+  background-color: var(--modal-content-bg);
   padding: 25px;
   border-radius: 10px;
   width: 400px;
@@ -293,9 +416,9 @@
 
 .profile-modal-content h3 {
   margin-top: 0;
-  color: #333;
+  color: var(--modal-title-color);
   font-size: 1.2rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--modal-border-color);
   padding-bottom: 10px;
   margin-bottom: 15px;
 }
@@ -317,20 +440,20 @@
 }
 
 .profile-modal-confirm-btn {
-  background-color: #e74c3c;
+  background-color: var(--modal-confirm-bg);
   color: white;
 }
 
 .profile-modal-confirm-btn:hover {
-  background-color: #c0392b;
+  background-color: var(--modal-confirm-hover-bg);
 }
 
 .profile-modal-cancel-btn {
-  background-color: #f8f9fa;
-  color: #333;
-  border: 1px solid #ddd;
+  background-color: var(--modal-cancel-bg);
+  color: var(--modal-cancel-color);
+  border: 1px solid var(--modal-cancel-border);
 }
 
 .profile-modal-cancel-btn:hover {
-  background-color: #e9ecef;
-} 
+  background-color: var(--modal-cancel-hover-bg);
+}

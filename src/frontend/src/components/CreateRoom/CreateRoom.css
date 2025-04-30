@@ -1,27 +1,73 @@
+:root {
+  /* Светлая тема (по умолчанию) */
+  --create-wrapper-bg: #f8f9fa;
+  --card-bg: #ffffff;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --form-control-bg: #ffffff;
+  --form-control-border: #ced4da;
+  --form-control-text: #495057;
+  --form-label-color: #212529;
+  --btn-primary-bg: #007bff;
+  --btn-primary-hover-bg: #0069d9;
+  --btn-primary-text: #ffffff;
+
+  /* Темная тема */
+  --dark-create-wrapper-bg: #292a2d;
+  --dark-card-bg: #3a3a46;
+  --dark-card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --dark-form-control-bg: #444452;
+  --dark-form-control-border: #555;
+  --dark-form-control-text: #e1e1e1;
+  --dark-form-label-color: #c8c8c8;
+  --dark-btn-primary-bg: #0069d9;
+  --dark-btn-primary-hover-bg: #0050a5;
+  --dark-btn-primary-text: #e1e1e1;
+}
+
+[data-theme="dark"] {
+  --create-wrapper-bg: var(--dark-create-wrapper-bg);
+  --card-bg: var(--dark-card-bg);
+  --card-shadow: var(--dark-card-shadow);
+  --form-control-bg: var(--dark-form-control-bg);
+  --form-control-border: var(--dark-form-control-border);
+  --form-control-text: var(--dark-form-control-text);
+  --form-label-color: var(--dark-form-label-color);
+  --btn-primary-bg: var(--dark-btn-primary-bg);
+  --btn-primary-hover-bg: var(--dark-btn-primary-hover-bg);
+  --btn-primary-text: var(--dark-btn-primary-text);
+}
+
 .wrapper {
   height: 100vh; /* Растягиваем контейнер на всю высоту окна */
   display: flex;
   justify-content: center; /* Центрируем по горизонтали */
   align-items: center; /* Центрируем по вертикали */
+  background-color: var(--create-wrapper-bg);
 }
 
 .card {
   border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow);
+  background-color: var(--card-bg);
 }
 
 .form-control {
   border-radius: 8px;
   padding: 12px;
+  background-color: var(--form-control-bg);
+  border-color: var(--form-control-border);
+  color: var(--form-control-text);
 }
 
 #createNewRoom {
   text-align: center;
+  color: var(--form-label-color);
 }
 
 #description {
   resize: none;
 }
+
 #roomType {
   cursor: pointer;
 }
@@ -31,6 +77,17 @@
   padding: 12px;
   border-radius: 8px;
   font-weight: 600;
+}
+
+.btn-primary {
+  background-color: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+.btn-primary:hover {
+  background-color: var(--btn-primary-hover-bg);
+  border-color: var(--btn-primary-hover-bg);
 }
 
 .container {

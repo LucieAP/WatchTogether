@@ -1,3 +1,48 @@
+:root {
+  /* Светлая тема (по умолчанию) */
+  --reconnecting-bg: rgba(255, 193, 7, 0.1);
+  --reconnecting-color: #ffc107;
+  --reconnecting-border: rgba(255, 193, 7, 0.2);
+  --reconnecting-shadow: rgba(255, 193, 7, 0.3);
+  --error-bg: rgba(244, 67, 54, 0.1);
+  --error-color: #f44336;
+  --error-border: rgba(244, 67, 54, 0.2);
+  --error-shadow: rgba(244, 67, 54, 0.3);
+  --connected-bg: rgba(76, 175, 80, 0.1);
+  --connected-color: #4caf50;
+  --connected-border: rgba(76, 175, 80, 0.2);
+  --connected-shadow: rgba(76, 175, 80, 0.3);
+
+  /* Темная тема */
+  --dark-reconnecting-bg: rgba(255, 193, 7, 0.2);
+  --dark-reconnecting-color: #ffd54f;
+  --dark-reconnecting-border: rgba(255, 193, 7, 0.3);
+  --dark-reconnecting-shadow: rgba(255, 193, 7, 0.4);
+  --dark-error-bg: rgba(244, 67, 54, 0.2);
+  --dark-error-color: #ef9a9a;
+  --dark-error-border: rgba(244, 67, 54, 0.3);
+  --dark-error-shadow: rgba(244, 67, 54, 0.4);
+  --dark-connected-bg: rgba(76, 175, 80, 0.2);
+  --dark-connected-color: #81c784;
+  --dark-connected-border: rgba(76, 175, 80, 0.3);
+  --dark-connected-shadow: rgba(76, 175, 80, 0.4);
+}
+
+[data-theme="dark"] {
+  --reconnecting-bg: var(--dark-reconnecting-bg);
+  --reconnecting-color: var(--dark-reconnecting-color);
+  --reconnecting-border: var(--dark-reconnecting-border);
+  --reconnecting-shadow: var(--dark-reconnecting-shadow);
+  --error-bg: var(--dark-error-bg);
+  --error-color: var(--dark-error-color);
+  --error-border: var(--dark-error-border);
+  --error-shadow: var(--dark-error-shadow);
+  --connected-bg: var(--dark-connected-bg);
+  --connected-color: var(--dark-connected-color);
+  --connected-border: var(--dark-connected-border);
+  --connected-shadow: var(--dark-connected-shadow);
+}
+
 .connection-indicator {
   display: flex;
   align-items: center;
@@ -17,39 +62,39 @@
 }
 
 .connection-indicator.reconnecting {
-  background-color: rgba(255, 193, 7, 0.1);
-  color: #ffc107;
-  border: 1px solid rgba(255, 193, 7, 0.2);
+  background-color: var(--reconnecting-bg);
+  color: var(--reconnecting-color);
+  border: 1px solid var(--reconnecting-border);
 }
 
 .connection-indicator.reconnecting .connection-indicator__dot {
-  background-color: #ffc107;
-  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.3);
+  background-color: var(--reconnecting-color);
+  box-shadow: 0 0 0 2px var(--reconnecting-shadow);
   animation: pulse 1.5s infinite;
 }
 
 .connection-indicator.disconnected,
 .connection-indicator.error {
-  background-color: rgba(244, 67, 54, 0.1);
-  color: #f44336;
-  border: 1px solid rgba(244, 67, 54, 0.2);
+  background-color: var(--error-bg);
+  color: var(--error-color);
+  border: 1px solid var(--error-border);
 }
 
 .connection-indicator.disconnected .connection-indicator__dot,
 .connection-indicator.error .connection-indicator__dot {
-  background-color: #f44336;
-  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.3);
+  background-color: var(--error-color);
+  box-shadow: 0 0 0 2px var(--error-shadow);
 }
 
 .connection-indicator.connected {
-  background-color: rgba(76, 175, 80, 0.1);
-  color: #4caf50;
-  border: 1px solid rgba(76, 175, 80, 0.2);
+  background-color: var(--connected-bg);
+  color: var(--connected-color);
+  border: 1px solid var(--connected-border);
 }
 
 .connection-indicator.connected .connection-indicator__dot {
-  background-color: #4caf50;
-  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+  background-color: var(--connected-color);
+  box-shadow: 0 0 0 2px var(--connected-shadow);
 }
 
 @keyframes pulse {
