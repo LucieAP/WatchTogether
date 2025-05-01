@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import { apiClient } from "../../../api/client";
 import { createConnection } from "../../../api/media";
 import * as signalR from "@microsoft/signalr";
 import { useConnection } from "../../../context/ConnectionContext";
@@ -81,12 +81,12 @@ const useSignalRConnection = (
 
         if (!userInfoData) {
           // Если нет сохраненных данных, выполняем запрос к API
-          const joinResponse = await axios.post(`/api/Rooms/${roomId}/join`);
-          console.log("Join response data:", joinResponse.data);
+          const joinResponse = await apiClient.post(`Rooms/${roomId}/join`);
+          console.log("Join response data:", joinResponse);
 
           userInfoData = {
-            userId: joinResponse.data.userId,
-            username: joinResponse.data.username,
+            userId: joinResponse.userId,
+            username: joinResponse.username,
           };
 
           setUserInfo(userInfoData);
