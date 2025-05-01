@@ -9,7 +9,7 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 // console.log(`API будет доступен по адресу: http://localhost:${apiPort}`);
 
 // const apiBaseUrl = process.env.VITE_API_URL;
-console.log(`API будет доступен по адресу: ${apiBaseUrl}`);
+// console.log(`API будет доступен по адресу: ${apiBaseUrl}`);
 
 export default defineConfig({
   plugins: [react(), basicSsl()], // basicSsl - для https
