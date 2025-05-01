@@ -98,9 +98,11 @@ namespace WatchTogetherAPI.Controllers
                 // Получаем URL фронтенд-приложения из конфигурации или используем резервное значение
                 // var frontendUrl = _configuration["App:FrontendUrl"] ?? "http://localhost:80";   // App:FrontendUrl - это ключ в appsettings.json
 
-                var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") 
-                  ?? _configuration["App:FrontendUrl"];
+                // var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") 
+                //   ?? _configuration["App:FrontendUrl"];
                 //   ?? "http://localhost:80";
+                
+                var frontendUrl = "https://watchtogether-frontend.onrender.com";
                 
                 // Получаем существующего пользователя по кукам или создаем нового гостевого пользователя
                 var currentUser = await GetOrCreateUserAsync(cancellationToken);
@@ -234,9 +236,11 @@ namespace WatchTogetherAPI.Controllers
                 {
                     // var frontendUrl = _configuration["App:FrontendUrl"] ?? "http://localhost:80";
 
-                    var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") 
-                        ?? _configuration["App:FrontendUrl"];
+                    // var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") 
+                    //     ?? _configuration["App:FrontendUrl"];
                         // ?? "http://localhost:80";
+
+                    var frontendUrl = "https://watchtogether-frontend.onrender.com";
 
                     room.InvitationLink = $"{frontendUrl}/room/{room.RoomId}";
                     await _context.SaveChangesAsync(cancellationToken);
