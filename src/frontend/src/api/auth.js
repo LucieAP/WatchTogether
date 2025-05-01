@@ -4,7 +4,7 @@ import { apiClient } from "./client";
 // Получить информацию о текущем пользователе
 export const getCurrentUser = async () => {
   try {
-    return await apiClient.get("/auth/me");
+    return await apiClient.get("auth/me");
   } catch (error) {
     console.error("Error fetching current user:", error);
     throw error;
@@ -14,7 +14,7 @@ export const getCurrentUser = async () => {
 // Вход пользователя
 export const login = async (username, password) => {
   try {
-    return await apiClient.post("/auth/login", { username, password });
+    return await apiClient.post("auth/login", { username, password });
   } catch (error) {
     console.error("Error logging in:", error);
     throw error;
@@ -24,7 +24,7 @@ export const login = async (username, password) => {
 // Аутентификация через Google
 export const loginWithGoogle = async (token) => {
   try {
-    return await apiClient.post("/auth/google", { token });
+    return await apiClient.post("auth/google", { token });
   } catch (error) {
     console.error("Error logging in with Google:", error);
     throw error;
@@ -34,7 +34,7 @@ export const loginWithGoogle = async (token) => {
 // Регистрация пользователя
 export const register = async (username, password, confirmPassword) => {
   try {
-    return await apiClient.post("/auth/register", {
+    return await apiClient.post("auth/register", {
       username,
       password,
       confirmPassword,
@@ -48,7 +48,7 @@ export const register = async (username, password, confirmPassword) => {
 // Выход пользователя
 export const logout = async () => {
   try {
-    return await apiClient.post("/auth/logout");
+    return await apiClient.post("auth/logout");
   } catch (error) {
     console.error("Error during logout:", error);
     throw error;
