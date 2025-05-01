@@ -49,7 +49,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy # Зависимость от готовности БД
-    entrypoint: /app/wait-for-it.sh ${DB_HOST:-postgres} ${DB_PORT:-5432} dotnet WatchTogetherAPI.dll
+    # entrypoint: /app/wait-for-it.sh ${DB_HOST:-postgres} ${DB_PORT:-5432} dotnet WatchTogetherAPI.dll
 
   # Фронтенд приложения на React
   frontend:
