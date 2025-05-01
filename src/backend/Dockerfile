@@ -37,4 +37,5 @@ COPY wait-for-it.sh /app/wait-for-it.sh
 RUN chmod +x /app/wait-for-it.sh
 
 # Точка входа: ожидаем готовности PostgreSQL перед запуском приложения
-ENTRYPOINT ["/app/wait-for-it.sh", "postgres", "5432", "dotnet", "WatchTogetherAPI.dll"] 
+# ENTRYPOINT ["/app/wait-for-it.sh", "postgres", "5432", "dotnet", "WatchTogetherAPI.dll"] 
+ENTRYPOINT ["dotnet", "WatchTogetherAPI.dll"]
