@@ -8,7 +8,7 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 // const apiPort = process.env.API_PORT || "5000";
 // console.log(`API будет доступен по адресу: http://localhost:${apiPort}`);
 
-const apiBaseUrl = process.env.VITE_API_URL || "http://localhost:5000";
+const apiBaseUrl = process.env.VITE_API_URL;
 console.log(`API будет доступен по адресу: ${apiBaseUrl}`);
 
 export default defineConfig({
