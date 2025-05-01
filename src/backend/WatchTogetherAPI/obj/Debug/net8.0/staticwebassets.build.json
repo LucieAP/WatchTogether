@@ -1,58 +1,11 @@
 {
   "Version": 1,
-  "Hash": "JL5sS1GZFENO7kqbDD8Lgae4Ibj4RcGfgyC/xFg1vO8=",
+  "Hash": "tEQ0hTI3p/S93bXAN75xMs71iQOpaRnyTP3fmHugXeo=",
   "Source": "WatchTogetherAPI",
   "BasePath": "_content/WatchTogetherAPI",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [
-    {
-      "Name": "WatchTogetherAPI\\wwwroot",
-      "Source": "WatchTogetherAPI",
-      "ContentRoot": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\",
-      "BasePath": "_content/WatchTogetherAPI",
-      "Pattern": "**"
-    }
-  ],
-  "Assets": [
-    {
-      "Identity": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\icons\\gear-icon.png",
-      "SourceId": "WatchTogetherAPI",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\",
-      "BasePath": "_content/WatchTogetherAPI",
-      "RelativePath": "icons/gear-icon.png",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\icons\\gear-icon.png"
-    },
-    {
-      "Identity": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\index.html",
-      "SourceId": "WatchTogetherAPI",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\zzz\\Desktop\\diplom\\WatchTogether\\src\\backend\\WatchTogetherAPI\\wwwroot\\",
-      "BasePath": "_content/WatchTogetherAPI",
-      "RelativePath": "index.html",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\index.html"
-    }
-  ]
+  "DiscoveryPatterns": [],
+  "Assets": []
 }

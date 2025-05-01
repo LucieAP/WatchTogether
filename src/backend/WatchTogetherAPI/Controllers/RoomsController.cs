@@ -10,6 +10,7 @@ using WatchTogetherAPI.Data.AppDbContext;
 using WatchTogetherAPI.Hubs;
 using WatchTogetherAPI.Models;
 using WatchTogetherAPI.Models.DTO;
+using Microsoft.Extensions.Configuration;
 
 namespace WatchTogetherAPI.Controllers
 {
@@ -21,12 +22,14 @@ namespace WatchTogetherAPI.Controllers
         private readonly ILogger<RoomsController> _logger;
         private readonly Random _random = new();
         private readonly IHubContext<MediaHub> _hubContext;
+        private readonly IConfiguration _configuration;
 
-        public RoomsController(AppDbContext context, ILogger<RoomsController> logger, IHubContext<MediaHub> hubContext)
+        public RoomsController(AppDbContext context, ILogger<RoomsController> logger, IHubContext<MediaHub> hubContext, IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
             _hubContext = hubContext;
+            _configuration = configuration;
         }
 
         // GET: api/Rooms
@@ -92,8 +95,8 @@ namespace WatchTogetherAPI.Controllers
 
             try
             {
-                // Генерация базового URL
-                var baseUrl = $"https://{HttpContext.Request.Host}";
+                // Получаем URL фронтенд-приложения из конфигурации или используем резервное значение
+                var frontendUrl = _configuration["App:FrontendUrl"] ?? "http://localhost:80";   // App:FrontendUrl - это ключ в appsettings.json
                 
                 // Получаем существующего пользователя по кукам или создаем нового гостевого пользователя
                 var currentUser = await GetOrCreateUserAsync(cancellationToken);
@@ -135,7 +138,7 @@ namespace WatchTogetherAPI.Controllers
                 await _context.SaveChangesAsync(cancellationToken);      // Сохранение newRoom, чтобы получить RoomId
 
                 // Формируем полную ссылку
-                newRoom.InvitationLink = $"{baseUrl}/room/{newRoom.RoomId}";
+                newRoom.InvitationLink = $"{frontendUrl}/room/{newRoom.RoomId}";
                 await _context.SaveChangesAsync(cancellationToken);
 
                 // Добавляем участника (только если пользователь еще не является участником)
@@ -225,8 +228,8 @@ namespace WatchTogetherAPI.Controllers
                 // Формируем полную ссылку если она не заполнена
                 if (string.IsNullOrEmpty(room.InvitationLink))
                 {
-                    var baseUrl = $"https://{HttpContext.Request.Host}";
-                    room.InvitationLink = $"{baseUrl}/room/{room.RoomId}";
+                    var frontendUrl = _configuration["App:FrontendUrl"] ?? "http://localhost:80";
+                    room.InvitationLink = $"{frontendUrl}/room/{room.RoomId}";
                     await _context.SaveChangesAsync(cancellationToken);
                 }
 
@@ -1026,11 +1029,11 @@ namespace WatchTogetherAPI.Controllers
             
             // Пытаемся найти существующего гостевого пользователя с тем же IP/User-Agent
             var existingGuestUser = await _context.Users
-                .Where(u => u.Status == UserStatus.UnAuthed)
-                .FirstOrDefaultAsync(u => 
-                    EF.Functions.Like(u.Username, $"guest_%") && 
-                    u.CreatedAt > DateTime.UtcNow.AddDays(-7), // Ограничиваем поиск пользователей, созданных в течение последней недели
-                    cancellationToken);
+                .Where(u => u.Status == UserStatus.UnAuthed && 
+                            EF.Functions.Like(u.Username, $"guest_%") && 
+                            u.Fingerprint == fingerprint &&
+                            u.CreatedAt > DateTime.UtcNow.AddDays(-7))
+                .FirstOrDefaultAsync(cancellationToken);
             
             if (existingGuestUser != null)
             {
@@ -1048,7 +1051,8 @@ namespace WatchTogetherAPI.Controllers
             {
                 Username = GenerateRandomUsername(),
                 Status = UserStatus.UnAuthed,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Fingerprint = fingerprint
             };
 
             _context.Users.Add(newUser);

@@ -38,6 +38,8 @@ namespace WatchTogetherAPI.Models
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        public string? Fingerprint { get; set; }
+
         // Навигационные свойства с внешними сущностями
 
         //[JsonIgnore]
