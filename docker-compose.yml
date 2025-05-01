@@ -46,6 +46,7 @@ services:
       - ApplyMigrations=true # Флаг применения миграций при запуске
       - DB_HOST=${DB_HOST:-postgres} # Часть после :- (т.е. postgres) — это значение по умолчанию
       - DB_PORT=${DB_PORT:-5432}
+      - App__FrontendUrl=${FRONTEND_URL:-http://localhost:80} # URL фронтенда для генерации ссылок
     depends_on:
       postgres:
         condition: service_healthy # Зависимость от готовности БД
