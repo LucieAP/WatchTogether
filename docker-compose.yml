@@ -44,9 +44,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production # Окружение приложения
       - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING:-Host=postgres;Port=5432;Database=WatchTogetherDb;Username=postgres;Password=postgres} # Строка подключения к БД из .env
       - ApplyMigrations=true # Флаг применения миграций при запуске
+      - DB_HOST=${DB_HOST:-postgres} # Часть после :- (т.е. postgres) — это значение по умолчанию
+      - DB_PORT=${DB_PORT:-5432}
     depends_on:
       postgres:
         condition: service_healthy # Зависимость от готовности БД
+    entrypoint: /app/wait-for-it.sh ${DB_HOST:-postgres} ${DB_PORT:-5432} dotnet WatchTogetherAPI.dll
 
   # Фронтенд приложения на React
   frontend:
