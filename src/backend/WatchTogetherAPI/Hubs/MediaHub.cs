@@ -156,16 +156,36 @@ namespace WatchTogetherAPI.Hubs
 
                 // Проверяем является ли пользователь участником комнаты
                 // Если нет, то добавляем его в комнату
-                if (!room.Participants.Any(p => p.UserId == parsedUserId))
+                var isUserParticipant = room.Participants.Any(p => p.UserId == parsedUserId);
+                if (!isUserParticipant)
                 {
                     _logger.LogInformation("Добавляем пользователя {UserId} в комнату {RoomId} через SignalR", userId, roomId);
-                    room.Participants.Add(new Participant
+                    try
                     {
-                        UserId = parsedUserId,
-                        Role = ParticipantRole.Member,
-                        JoinedAt = DateTime.UtcNow
-                    });
-                    await _context.SaveChangesAsync(cancellationToken);
+                        var newParticipant = new Participant
+                        {
+                            RoomId = parsedRoomId,
+                            UserId = parsedUserId,
+                            Role = ParticipantRole.Member,
+                            JoinedAt = DateTime.UtcNow
+                        };
+                        
+                        _context.Participants.Add(newParticipant);
+                        await _context.SaveChangesAsync(cancellationToken);
+                    }
+                    catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("PK_Participants") == true)
+                    {
+                        _logger.LogWarning("Пользователь {UserId} уже присоединен к комнате {RoomId}. Возможна гонка условий.", 
+                            userId, roomId);
+                        // Участник уже существует, игнорируем ошибку и продолжаем
+                    }
+                    
+                    // Перезагружаем комнату с участниками после добавления нового участника
+                    room = await _context.Rooms
+                        .Include(r => r.Participants)
+                        .Include(r => r.VideoState)
+                            .ThenInclude(vs => vs.CurrentVideo)
+                        .FirstOrDefaultAsync(r => r.RoomId == parsedRoomId, cancellationToken);
                 }
 
                 _connectionRooms[Context.ConnectionId] = roomId;

@@ -93,7 +93,7 @@ namespace WatchTogetherAPI.Controllers
             try
             {
                 // Генерация базового URL
-                var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+                var baseUrl = $"https://{HttpContext.Request.Host}";
                 
                 // Получаем существующего пользователя по кукам или создаем нового гостевого пользователя
                 var currentUser = await GetOrCreateUserAsync(cancellationToken);
@@ -138,18 +138,33 @@ namespace WatchTogetherAPI.Controllers
                 newRoom.InvitationLink = $"{baseUrl}/room/{newRoom.RoomId}";
                 await _context.SaveChangesAsync(cancellationToken);
 
-                // Добавляем участника
-                var participant = new Participant
+                // Добавляем участника (только если пользователь еще не является участником)
+                var existingParticipant = await _context.Participants
+                    .FirstOrDefaultAsync(p => p.RoomId == newRoom.RoomId && p.UserId == currentUser.UserId, cancellationToken);
+                
+                if (existingParticipant == null)
                 {
-                    RoomId = newRoom.RoomId,
-                    UserId = currentUser.UserId,
-                    // Для публичных комнат создатель становится ведущим (Host)
-                    Role = newRoom.Status == RoomStatus.Public ? ParticipantRole.Host : ParticipantRole.Creator,
-                    JoinedAt = DateTime.UtcNow
-                };
+                    try
+                    {
+                        var participant = new Participant
+                        {
+                            RoomId = newRoom.RoomId,
+                            UserId = currentUser.UserId,
+                            // Для публичных комнат создатель становится ведущим (Host)
+                            Role = newRoom.Status == RoomStatus.Public ? ParticipantRole.Host : ParticipantRole.Creator,
+                            JoinedAt = DateTime.UtcNow
+                        };
 
-                _context.Participants.Add(participant);
-                await _context.SaveChangesAsync(cancellationToken);
+                        _context.Participants.Add(participant);
+                        await _context.SaveChangesAsync(cancellationToken);
+                    }
+                    catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("PK_Participants") == true)
+                    {
+                        _logger.LogWarning("Пользователь {UserId} уже присоединен к комнате {RoomId}. Возможна гонка условий.", 
+                            currentUser.UserId, newRoom.RoomId);
+                        // Участник уже существует, игнорируем ошибку и продолжаем
+                    }
+                }
 
                 // Фиксируем транзакцию
                 await transaction.CommitAsync(cancellationToken);
@@ -210,7 +225,7 @@ namespace WatchTogetherAPI.Controllers
                 // Формируем полную ссылку если она не заполнена
                 if (string.IsNullOrEmpty(room.InvitationLink))
                 {
-                    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+                    var baseUrl = $"https://{HttpContext.Request.Host}";
                     room.InvitationLink = $"{baseUrl}/room/{room.RoomId}";
                     await _context.SaveChangesAsync(cancellationToken);
                 }
@@ -220,19 +235,27 @@ namespace WatchTogetherAPI.Controllers
 
                 // Основная логика добавления участника
                 // Проверка наличия пользователя в списке участников комнаты, и если его там нет, добавляем его в базу данных как нового участника 
-
                 if (currentUser.UserId != room.CreatedByUserId &&
                     !room.Participants.Any(p => p.UserId == currentUser.UserId))
                 {
-                    _context.Participants.Add(new Participant
+                    try
                     {
-                        RoomId = roomId,
-                        UserId = currentUser.UserId,
-                        Role = ParticipantRole.Member,
-                        JoinedAt = DateTime.UtcNow
-                    });
+                        _context.Participants.Add(new Participant
+                        {
+                            RoomId = roomId,
+                            UserId = currentUser.UserId,
+                            Role = ParticipantRole.Member,
+                            JoinedAt = DateTime.UtcNow
+                        });
 
-                    await _context.SaveChangesAsync(cancellationToken);
+                        await _context.SaveChangesAsync(cancellationToken);
+                    }
+                    catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("PK_Participants") == true)
+                    {
+                        _logger.LogWarning("Пользователь {UserId} уже присоединен к комнате {RoomId}. Возможна гонка условий.", 
+                            currentUser.UserId, roomId);
+                        // Участник уже существует, игнорируем ошибку и продолжаем
+                    }
 
                     // Обновляем данные комнаты после изменений
                     room = await _context.Rooms
@@ -247,8 +270,8 @@ namespace WatchTogetherAPI.Controllers
                 // 2. Если комната публичная - только создатель (Creator) или ведущий (Host) могут управлять видео
                 var participant = room.Participants.FirstOrDefault(p => p.UserId == currentUser.UserId);
                 var canControlVideo = room.Status == RoomStatus.Private || 
-                                     (participant?.Role == ParticipantRole.Host || 
-                                      participant?.Role == ParticipantRole.Creator);
+                                    (participant?.Role == ParticipantRole.Host || 
+                                    participant?.Role == ParticipantRole.Creator);
 
                 var response = new
                 {
@@ -986,6 +1009,9 @@ namespace WatchTogetherAPI.Controllers
                 else
                 {
                     _logger.LogWarning("Пользователь с ID {UserId} найден в cookie, но отсутствует в базе данных", userId);
+                    
+                    // Удаляем недействительный cookie
+                    Response.Cookies.Delete("X-User-Id");
                 }
             }
             else
@@ -993,8 +1019,31 @@ namespace WatchTogetherAPI.Controllers
                 _logger.LogInformation("Идентификатор пользователя не найден в cookie или невалиден");
             }
 
-            // Если идентификатор отсутствует, невалиден или пользователь с таким Guid не найден в базе данных, создаётся новый объект User:
-            // Т.е. если пользователь - новый, он всегда будет гостевым с рандомным именем пользователя
+            // Проверяем наличие IP-адреса клиента для более точной идентификации гостей
+            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
+            var fingerprint = $"{clientIp}_{userAgent}";
+            
+            // Пытаемся найти существующего гостевого пользователя с тем же IP/User-Agent
+            var existingGuestUser = await _context.Users
+                .Where(u => u.Status == UserStatus.UnAuthed)
+                .FirstOrDefaultAsync(u => 
+                    EF.Functions.Like(u.Username, $"guest_%") && 
+                    u.CreatedAt > DateTime.UtcNow.AddDays(-7), // Ограничиваем поиск пользователей, созданных в течение последней недели
+                    cancellationToken);
+            
+            if (existingGuestUser != null)
+            {
+                _logger.LogInformation("Найден существующий гостевой пользователь: {UserId}, {Username}", 
+                    existingGuestUser.UserId, existingGuestUser.Username);
+                
+                // Устанавливаем cookie для этого пользователя
+                SetUserCookie(existingGuestUser.UserId);
+                
+                return existingGuestUser;
+            }
+
+            // Если не нашли подходящего гостевого пользователя, создаем нового
             var newUser = new User
             {
                 Username = GenerateRandomUsername(),
@@ -1005,14 +1054,23 @@ namespace WatchTogetherAPI.Controllers
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Создан новый пользователь: {UserId}, {Username}", newUser.UserId, newUser.Username);
-
+            
             // Устанавливаем Cookie в ответе
+            SetUserCookie(newUser.UserId);
+
+            return newUser;
+        }
+
+        // Вспомогательный метод для установки cookie пользователя
+        private void SetUserCookie(Guid userId)
+        {
             var cookieOptions = new CookieOptions
             {
                 Path = "/",                     // cookie будет доступно для всех страниц сайта
                 MaxAge = TimeSpan.FromDays(7),  // Срок жизни куки
                 HttpOnly = true,                // cookie недоступно из JavaScript, что защищает от XSS-атак
-                IsEssential = true              // Для соблюдения GDPR
+                IsEssential = true,             // Для соблюдения GDPR
+                SameSite = SameSiteMode.Lax     // По умолчанию Lax
             };
             
             // Настраиваем SameSite и Secure в зависимости от окружения
@@ -1021,14 +1079,8 @@ namespace WatchTogetherAPI.Controllers
                 cookieOptions.Secure = true;
                 cookieOptions.SameSite = SameSiteMode.None;
             }
-            else
-            {
-                cookieOptions.SameSite = SameSiteMode.Lax;
-            }
 
-            Response.Cookies.Append("X-User-Id", newUser.UserId.ToString(), cookieOptions);
-
-            return newUser;
+            Response.Cookies.Append("X-User-Id", userId.ToString(), cookieOptions);
         }
 
         // Генератор никнеймов
