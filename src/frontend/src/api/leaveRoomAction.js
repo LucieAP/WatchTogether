@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiClient } from "./client";
 
 // Глобальная ссылка на обработчик beforeunload
 let beforeUnloadHandler = null;
@@ -28,18 +28,18 @@ export const leaveRoom = async (
     }
 
     // Отправляем запрос на сервер о выходе из комнаты
-    const response = await axios.post(`/api/Rooms/${roomId}/leave`, {
+    const response = await apiClient.post(`Rooms/${roomId}/leave`, {
       leaveType: leaveType,
     });
 
-    console.log("Leave room response:", response.data);
+    console.log("Leave room response:", response);
 
     // Перенаправляем пользователя на главную страницу после успешного выхода
     if (navigate) {
       navigate("/");
     }
 
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Error leaving room:", error);
     // Даже при ошибке пытаемся перенаправить пользователя
@@ -95,7 +95,13 @@ export const setupBrowserCloseHandler = (roomId, connectionRef) => {
     try {
       const data = JSON.stringify({ leaveType: 1 }); // 1 - BrowserClose
       const blob = new Blob([data], { type: "application/json" });
-      navigator.sendBeacon(`/api/Rooms/${roomId}/leave`, blob);
+
+      // В случае prod-окружения используем полный URL
+      const url = import.meta.env.VITE_API_URL
+        ? `${import.meta.env.VITE_API_URL}/api/Rooms/${roomId}/leave`
+        : `/api/Rooms/${roomId}/leave`;
+
+      navigator.sendBeacon(url, blob);
     } catch (e) {
       console.error("[LEAVE] Error sending leave request on page unload:", e);
     }

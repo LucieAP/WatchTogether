@@ -12,9 +12,14 @@ export const createConnection = (
   onVideoStateUpdated,
   onConnectionStateChanged // колбэк для отслеживания состояния соединения
 ) => {
+  // Определяем базовый URL для mediaHub
+  const hubUrl = import.meta.env.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL}/mediaHub` // Абсолютный URL для продакшена
+    : "/mediaHub"; // Относительный URL для разработки (через прокси vite)
+
   // Настраиваем параметры автоматического переподключения
   const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/mediaHub", {
+    .withUrl(hubUrl, {
       skipNegotiation: true,
       transport: signalR.HttpTransportType.WebSockets,
     })

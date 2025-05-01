@@ -1,9 +1,10 @@
 // API клиент для взаимодействия с сервером
 import axios from "axios";
 
-// Используем относительный путь, чтобы запросы шли через прокси настроенный в vite.config.js
-// Это позволит правильно генерировать URL-адреса на сервере через HttpContext.Request
-const API_BASE = "/api";
+// Определяем базовый URL в зависимости от окружения
+const API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api` // Абсолютный URL для продакшена
+  : "/api"; // Относительный URL для разработки (через прокси vite)
 
 // Создаём экземпляр Axios с базовыми настройками
 const apiClient = axios.create({

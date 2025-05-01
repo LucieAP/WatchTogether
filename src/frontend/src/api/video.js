@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiClient } from "./client";
 
 /**
  * Добавляет видео в комнату
@@ -18,13 +18,13 @@ export const addVideo = async (
 ) => {
   try {
     console.log("addVideo: ", roomId, videoId, title, duration, videoType);
-    const response = await axios.put(`/api/Rooms/${roomId}/video`, {
+    const response = await apiClient.put(`Rooms/${roomId}/video`, {
       videoId,
       title,
       durationInSeconds: duration,
       videoType,
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Ошибка при добавлении видео:", error);
     throw error;
@@ -38,8 +38,8 @@ export const addVideo = async (
  */
 export const removeVideo = async (roomId) => {
   try {
-    const response = await axios.delete(`/api/Rooms/${roomId}/video`);
-    return response.data;
+    const response = await apiClient.delete(`Rooms/${roomId}/video`);
+    return response;
   } catch (error) {
     // Извлекаем сообщение об ошибке из ответа, если оно доступно
     const errorMessage =

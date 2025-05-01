@@ -1,9 +1,8 @@
-import axios from "axios";
+import { apiClient } from "./client";
 import axiosRetry from "axios-retry"; // библиотека для автоматических повторных попыток запросов
 
-// Настраиваем axios-retry для автоматических повторных попыток
-const axiosWithRetry = axios.create();
-axiosRetry(axiosWithRetry, {
+// Настраиваем axiosRetry для apiClient
+axiosRetry(apiClient, {
   retries: 3, // Количество повторных попыток
   retryDelay: (retryCount) => {
     return retryCount * 1000; // Увеличивающийся интервал (1с, 2с, 3с)
@@ -24,8 +23,8 @@ axiosRetry(axiosWithRetry, {
  */
 export const getRoomParticipants = async (roomId) => {
   try {
-    const response = await axiosWithRetry.get(`/api/Rooms/${roomId}`);
-    return response.data.room.participants;
+    const response = await apiClient.get(`Rooms/${roomId}`);
+    return response.room.participants;
   } catch (error) {
     console.error("Ошибка при получении участников комнаты:", error);
     throw error;
@@ -61,12 +60,9 @@ export const removeParticipant = async (roomId, userId) => {
 
   // Принудительно удаляем все соединения SignalR для удаляемого пользователя
   try {
-    await axiosWithRetry.post(
-      `/api/Rooms/${roomId}/forceDisconnect/${userId}`,
-      {
-        reason: "Admin kicked user",
-      }
-    );
+    await apiClient.post(`Rooms/${roomId}/forceDisconnect/${userId}`, {
+      reason: "Admin kicked user",
+    });
     console.log(
       `[УДАЛЕНИЕ] Отправлен запрос на принудительное отключение SignalR`
     );
@@ -103,8 +99,8 @@ export const removeParticipant = async (roomId, userId) => {
 
       // Отправляем запрос на удаление с уникальным временным штампом для избежания кэширования
       const timestamp = new Date().getTime();
-      const response = await axiosWithRetry.delete(
-        `/api/Rooms/${roomId}/participants/${userId}?t=${timestamp}`,
+      const response = await apiClient.delete(
+        `Rooms/${roomId}/participants/${userId}?t=${timestamp}`,
         {
           timeout: 10000, // Увеличиваем таймаут до 10 секунд
           headers: {
@@ -116,7 +112,7 @@ export const removeParticipant = async (roomId, userId) => {
         }
       );
 
-      console.log(`[УДАЛЕНИЕ] Сервер вернул успешный ответ:`, response.data);
+      console.log(`[УДАЛЕНИЕ] Сервер вернул успешный ответ:`, response);
 
       // Ждем 1.5 секунды перед проверкой результата
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -132,8 +128,8 @@ export const removeParticipant = async (roomId, userId) => {
 
         // Для надежности выполняем еще одну попытку удаления
         try {
-          await axiosWithRetry.delete(
-            `/api/Rooms/${roomId}/participants/${userId}?final=true`
+          await apiClient.delete(
+            `Rooms/${roomId}/participants/${userId}?final=true`
           );
           console.log(
             `[УДАЛЕНИЕ] Отправлен финальный запрос на удаление для гарантии`
@@ -145,7 +141,7 @@ export const removeParticipant = async (roomId, userId) => {
           );
         }
 
-        return response.data;
+        return response;
       } else {
         console.warn(
           `[УДАЛЕНИЕ] Пользователь ${userId} все еще в комнате несмотря на успешный ответ сервера!`

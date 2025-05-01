@@ -5,34 +5,31 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 // Порт API по умолчанию:
 // - Локальный запуск: 7143 (устанавливается в .env или через npm run dev:local)
 // - Docker: 5000 (устанавливается через npm run dev:docker)
-// const apiPort = process.env.API_PORT || "5000";
-// console.log(`API будет доступен по адресу: http://localhost:${apiPort}`);
 
-// const apiBaseUrl = process.env.VITE_API_URL;
-// console.log(`API будет доступен по адресу: ${apiBaseUrl}`);
+export default defineConfig(({ mode }) => {
+  const isDevelopment = mode === "development";
 
-export default defineConfig({
-  plugins: [react(), basicSsl()], // basicSsl - для https
-  server: {
-    proxy: {
-      "/api": {
-        // target: "http://localhost:5000",
-        // target: `http://localhost:${apiPort}`,
-        // target: "http://localhost:7143",
-        // target: apiBaseUrl,
-        target: `https://watchtogether-backend.onrender.com`,
-        secure: false, // отключить проверку самоподписанного сертификата https
-        changeOrigin: true,
-      },
-      "/mediaHub": {
-        // target: "http://localhost:5000",
-        // target: `http://localhost:${apiPort}`,
-        // target: apiBaseUrl,
-        target: `https://watchtogether-backend.onrender.com`,
-        secure: false,
-        ws: true, // Включаем WebSocket для SignalR
-        changeOrigin: true,
-      },
+  return {
+    plugins: [react(), basicSsl()], // basicSsl - для https
+    server: isDevelopment
+      ? {
+          proxy: {
+            "/api": {
+              target: process.env.VITE_API_URL || "http://localhost:7143",
+              secure: false,
+              changeOrigin: true,
+            },
+            "/mediaHub": {
+              target: process.env.VITE_API_URL || "http://localhost:7143",
+              secure: false,
+              ws: true, // Включаем WebSocket для SignalR
+              changeOrigin: true,
+            },
+          },
+        }
+      : {},
+    define: {
+      "process.env.VITE_API_URL": JSON.stringify(process.env.VITE_API_URL),
     },
-  },
+  };
 });
