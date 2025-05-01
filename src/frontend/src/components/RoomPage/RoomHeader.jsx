@@ -10,6 +10,7 @@ import { calculateTimeLeft } from "../RoomPage/utils/roomHeaderHelpers";
 import { useConnection } from "../../context/ConnectionContext";
 import ConnectionStatus from "../shared/ConnectionStatus";
 import ConnectionIndicator from "../shared/ConnectionIndicator";
+
 export default function RoomHeader({
   onSettingsClick,
   roomName,

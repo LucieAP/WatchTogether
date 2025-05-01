@@ -22,6 +22,14 @@ export const SettingsModal = ({
   const [roomName, setRoomName] = useState(initialRoomName);
   const [description, setDescription] = useState(initialDescription);
 
+  // Обновляем локальное состояние при изменении входных параметров
+  useEffect(() => {
+    if (isOpen) {
+      setRoomName(initialRoomName);
+      setDescription(initialDescription);
+    }
+  }, [isOpen, initialRoomName, initialDescription]);
+
   // Проверяем права доступа при открытии модального окна
   useEffect(() => {
     if (isOpen && !canControlVideo) {
