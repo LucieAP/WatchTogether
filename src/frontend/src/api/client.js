@@ -40,6 +40,11 @@ apiClient.interceptors.response.use(
     enhancedError.originalError = error;
     enhancedError.responseData = error.response?.data;
 
+    // Если есть код ошибки Firebase, добавляем его
+    if (error.code) {
+      enhancedError.code = error.code;
+    }
+
     // Добавляем информацию о статус коде
     if (error.response) {
       switch (error.response.status) {
@@ -65,8 +70,10 @@ apiClient.interceptors.response.use(
       enhancedError.type = "NETWORK_ERROR";
     }
 
-    // Логируем ошибку в консоль для отладки
-    console.error(`API Error [${enhancedError.type}]:`, errorMessage, error);
+    // Логируем ошибку в консоль для отладки только в режиме разработки
+    if (import.meta.env.DEV) {
+      console.error(`API Error [${enhancedError.type}]:`, errorMessage, error);
+    }
 
     throw enhancedError;
   }

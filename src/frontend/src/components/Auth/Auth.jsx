@@ -120,10 +120,16 @@ const Auth = () => {
       }
     } catch (err) {
       console.error("Ошибка при входе через Google:", err);
-      setError(
-        err.message ||
-          "Произошла ошибка при входе через Google. Пожалуйста, попробуйте снова."
-      );
+
+      // Не показываем ошибку, если пользователь просто закрыл окно входа через Google
+      if (err.code === "auth/popup-closed-by-user") {
+        // Просто игнорируем эту ошибку, не показываем её пользователю
+      } else {
+        setError(
+          err.message ||
+            "Произошла ошибка при входе через Google. Пожалуйста, попробуйте снова."
+        );
+      }
     } finally {
       setLoading(false);
     }

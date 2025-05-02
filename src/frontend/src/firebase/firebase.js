@@ -35,7 +35,14 @@ export const signInWithGoogle = async () => {
       token: await result.user.getIdToken(),
     };
   } catch (error) {
-    console.error("Ошибка при входе через Google:", error);
+    // console.error("Ошибка при входе через Google:", error);
+
+    // Проверяем, была ли это ошибка закрытия окна
+    if (error.code === "auth/popup-closed-by-user") {
+      // Добавляем код ошибки в объект, чтобы можно было проверить его в компоненте Auth
+      throw { ...error, code: "auth/popup-closed-by-user" };
+    }
+
     throw error;
   }
 };
@@ -45,7 +52,7 @@ export const signOutFromFirebase = async () => {
   try {
     await signOut(auth);
   } catch (error) {
-    console.error("Ошибка при выходе из Firebase:", error);
+    // console.error("Ошибка при выходе из Firebase:", error);
     throw error;
   }
 };
