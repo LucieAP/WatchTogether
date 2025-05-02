@@ -32,7 +32,43 @@ apiClient.interceptors.response.use(
       error.message ||
       "Ошибка сервера";
 
-    throw new Error(errorMessage);
+    // Создаем расширенный объект ошибки
+    const enhancedError = new Error(errorMessage);
+
+    // Добавляем дополнительную информацию об ошибке
+    enhancedError.statusCode = error.response?.status;
+    enhancedError.originalError = error;
+    enhancedError.responseData = error.response?.data;
+
+    // Добавляем информацию о статус коде
+    if (error.response) {
+      switch (error.response.status) {
+        case 400:
+          enhancedError.type = "BAD_REQUEST";
+          break;
+        case 401:
+          enhancedError.type = "UNAUTHORIZED";
+          break;
+        case 403:
+          enhancedError.type = "FORBIDDEN";
+          break;
+        case 404:
+          enhancedError.type = "NOT_FOUND";
+          break;
+        case 500:
+          enhancedError.type = "SERVER_ERROR";
+          break;
+        default:
+          enhancedError.type = "UNKNOWN_ERROR";
+      }
+    } else {
+      enhancedError.type = "NETWORK_ERROR";
+    }
+
+    // Логируем ошибку в консоль для отладки
+    console.error(`API Error [${enhancedError.type}]:`, errorMessage, error);
+
+    throw enhancedError;
   }
 );
 
