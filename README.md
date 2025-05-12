@@ -120,14 +120,6 @@ WatchTogether/
 - Управление пользователями и правами доступа
 - Поддержка YouTube плеера
 
-## Разработка и вклад в проект
-
-1. Сделайте форк репозитория
-2. Создайте ветку для новой функциональности (`git checkout -b feature/amazing-feature`)
-3. Зафиксируйте изменения (`git commit -m 'Add some amazing feature'`)
-4. Отправьте изменения в вашу ветку (`git push origin feature/amazing-feature`)
-5. Создайте Pull Request
-
 ## Лицензия
 
 Данный проект распространяется под лицензией [MIT](https://opensource.org/licenses/MIT).
