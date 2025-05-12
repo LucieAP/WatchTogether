@@ -90,7 +90,9 @@ namespace WatchTogetherAPI
                 options.AddPolicy("AllowAll", policy =>
                 {
                     policy/*.AllowAnyOrigin()*/
-                          .WithOrigins("https://localhost:5173", "https://watchtogether-frontend.onrender.com", "http://localhost:80", "http://localhost")
+                          .WithOrigins("https://localhost:5173", "https://watchtogether-frontend.onrender.com", 
+                                        "http://localhost:80", "http://localhost", 
+                                        "http://192.168.0.103", "http://192.168.0.103:5000")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .WithExposedHeaders("X-User-Id") // Разрешаем клиенту видеть X-User-Id

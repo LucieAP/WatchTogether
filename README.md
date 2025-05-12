@@ -18,6 +18,7 @@
 - Bootstrap 5
 - Axios
 - React Router
+- SignalR Client
 
 ### Инфраструктура
 
